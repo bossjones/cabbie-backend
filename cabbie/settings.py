@@ -239,7 +239,7 @@ LOCATION_SERVER_PORT = 8080
 
 try:
     from local_settings import *
-except:
+except ImportError:
     pass
 
 
