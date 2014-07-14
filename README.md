@@ -31,3 +31,11 @@ To compile SASS:
 gem install sass
 gem install compass
 sass --watch cabbie/static/sass/:cabbie/static/css/ --compass
+```
+
+
+To create a local development environment:
+
+```bash
+cp cabbie/local_settings.py.template cabbie/local_settings.py
+```
