@@ -77,7 +77,12 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
 
     # Project apps
-    #'cabbie.apps.account',
+    'cabbie.apps.account',
+    'cabbie.apps.drive',
+    'cabbie.apps.payment',
+    'cabbie.apps.notification',
+    'cabbie.apps.stats',
+    'cabbie.apps.track',
 )
 
 DATABASES = {
