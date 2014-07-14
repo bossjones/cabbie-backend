@@ -109,9 +109,11 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
+            '()': 'cabbie.utils.log.ColorFormatter',
             'format': '%(asctime)s %(levelname)-8s %(name)-30s %(message)s'
         },
         'simple': {
+            '()': 'cabbie.utils.log.ColorFormatter',
             'format': '%(asctime)s %(levelname)-8s %(message)s'
         },
     },
@@ -223,6 +225,13 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGINATE_BY': 10,
 }
+
+
+# Location
+# --------
+
+LOCATION_SERVER_PORT = 8080
+
 
 
 # Local settings
