@@ -31,8 +31,10 @@ class Driver(AbstractRole):
 
 
 class Ride(AbstractTimestampModel):
-    INITIATED, REQUESTED, APPROVED, REJECTED, CANCELED, ARRIVED, BOARDED, COMPLETED, PAID = \
-    'initiated', 'requested', 'approved', 'rejected', 'canceled', 'arrived', 'boarded', 'completed', 'paid'
+    INITIATED, REQUESTED, APPROVED, REJECTED, CANCELED, \
+        ARRIVED, BOARDED, COMPLETED, PAID = \
+    'initiated', 'requested', 'approved', 'rejected', 'canceled', \
+        'arrived', 'boarded', 'completed', 'paid'
     STATES = (
         (INITIATED, _('initiated')),
         (REQUESTED, _('requested')),
