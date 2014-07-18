@@ -24,6 +24,7 @@ urlpatterns += patterns('',
 router = routers.DefaultRouter(trailing_slash=False)
 
 router.register(r'users', import_('cabbie.apps.account.views.UserViewSet'))
+router.register(r'rides', import_('cabbie.apps.drive.views.RideViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/', include(router.urls)),

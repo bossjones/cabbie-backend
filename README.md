@@ -1,12 +1,13 @@
-Cabbie
-======
+# Cabbie
 
-Prerequisites
+## Prerequisites
 
 - python (>=2.7)
 - pip
 - git
 
+
+## Installation
 
 To set up a virtual environment, run following commands in order:
 
@@ -39,3 +40,7 @@ To create a local development environment:
 ```bash
 cp cabbie/local_settings.py.template cabbie/local_settings.py
 ```
+
+## Checklist
+
+- Permission control for REST API
