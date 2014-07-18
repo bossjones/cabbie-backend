@@ -88,15 +88,10 @@ INSTALLED_APPS = (
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'cabbie',
         'USER': 'cabbie',
-        'PASSWORD': 'zoql123',
         'HOST': '127.0.0.1',
-        'PORT': '',
-        'OPTIONS': {
-            'init_command': 'SET storage_engine=INNODB',
-        },
     },
 }
 
