@@ -10,4 +10,4 @@ class RideViewSet(viewsets.ModelViewSet):
     serializer_class = RideSerializer
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        return self.queryset.filter(passenger__user=self.request.user)
