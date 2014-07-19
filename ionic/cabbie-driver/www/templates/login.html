@@ -1,0 +1,25 @@
+<ion-header-bar class="bar-dark">
+  <h1 class="title">Cabbie Driver</h1>
+</ion-header-bar>
+<ion-content scroll="false">
+  <form ng-submit="submit()">
+    <div class="list">
+      <label class="item item-input">
+        <span class="input-label">아이디</span>
+        <input type="text" ng-model="data.username">
+      </label>
+      <label class="item item-input">
+        <span class="input-label">비밀번호</span>
+        <input type="password" ng-model="data.password">
+      </label>
+      <label class="item">
+        <button class="button button-block button-positive" type="submit">로그인하기</button>
+      </label>
+    </div>
+  </form>
+  <div class="padding">
+    <p>
+      <a class="button button-inline button-clear button-positive" href="#/signup" nav-clear>회원가입</a>
+    </p>
+  </div>
+</ion-content>

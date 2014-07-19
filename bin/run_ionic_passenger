@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ionic/cabbie-passenger
+ionic serve 8200 82000

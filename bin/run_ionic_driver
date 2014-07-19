@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ionic/cabbie-driver
+ionic serve 8100 81000

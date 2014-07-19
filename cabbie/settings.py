@@ -51,6 +51,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -70,6 +71,7 @@ INSTALLED_APPS = (
     # 3rd-party apps
     'coffin',
     'djcelery',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
 
@@ -221,6 +223,12 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
     'PAGINATE_BY': 10,
 }
+
+
+# CORS
+# ----
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Location
