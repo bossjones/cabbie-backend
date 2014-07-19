@@ -142,7 +142,7 @@ LOGGING = {
         'cabbie': {
             'handlers': ['file'],
             'level': 'INFO',
-            'propagate': True,
+            'propagate': False,
         },
     }
 }

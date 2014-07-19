@@ -4,8 +4,9 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 // Constant & Configugration
 // -------------------------
 
-.constant('authRequired', false)
+.constant('authRequired', true)
 .constant('apiHost', 'http://localhost:8000')
+.constant('locationHost', 'localhost:8080')
 
 .config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.xsrfCookieName = 'csrftoken';
@@ -200,8 +201,10 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 }])
 
 .controller('SignupCtrl', [
-    '$scope', '$location', '$ionicLoading', '$ionicPopup', 'Auth', 'User',
-    function ($scope, $location, $ionicLoading, $ionicPopup, Auth, User) {
+    '$scope', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
+    'Auth', 'User',
+    function ($scope, $location, $ionicViewService, $ionicLoading, $ionicPopup,
+              Auth, User) {
   $scope.data = {};
   $scope.submit = function () {
     var user = new User($scope.data);
@@ -227,9 +230,22 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
       });
     });
   };
+
+  var init = function () {
+    var deregister = $scope.$on('$stateChangeStart', function () {
+      $ionicViewService.nextViewOptions({
+        disableAnimate: true,
+        disableBack: true
+      });
+      deregister();
+    });
+  };
+
+  init();
 }])
 
-.controller('MainCtrl', ['$scope', function ($scope) {
+.controller('MainCtrl', [
+    '$scope', 'locationHost', 'Auth', function ($scope, locationHost, Auth) {
   $scope.located = false;
   $scope.map = {
     control: {},
@@ -241,11 +257,24 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
   };
   $scope.currentLocation = {};
 
+  var onGetLocation = function () {
+    var ws = new WebSocket('ws://' + locationHost + '/location');
+    ws.onopen = function() {
+      ws.send(JSON.stringify({
+        token: Auth.getToken(),
+        location: $scope.currentLocation
+      }));
+    };
+    ws.onmessage = function (evt) {
+      console.log(evt.data);
+    };
+  };
   var init = function () {
     navigator.geolocation.getCurrentPosition(function (position) {
       $scope.map.control.refresh(position.coords);
       $scope.currentLocation = position.coords;
       $scope.located = true;
+      onGetLocation();
     });
   };
 
