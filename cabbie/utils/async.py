@@ -5,7 +5,6 @@ import time
 import traceback
 
 import simplejson
-import tornado.web
 from tornado.ioloop import PeriodicCallback
 
 from cabbie.utils.log import LoggableMixin
@@ -103,7 +102,7 @@ class ErrandRunner(LoggableMixin, SingletonMixin, threading.Thread):
         self._queue.put(self._stop)
 
 
-class AbstractHandler(LoggableMixin, tornado.web.RequestHandler):
+class RenderMixin(object):
     def render_json(self, data=None, status=True,
                     content_type='application/json', **header_kwargs):
         response = {
@@ -118,4 +117,4 @@ class AbstractHandler(LoggableMixin, tornado.web.RequestHandler):
         self.write(simplejson.dumps(response))
 
     def render_error_msg(self, msg, **response_kwargs):
-        return self.render_json({ 'msg': msg }, False)
+        return self.render_json({'msg': msg}, False)

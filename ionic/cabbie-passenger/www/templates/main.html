@@ -1,0 +1,10 @@
+<ion-view title="메인">
+  <ion-nav-buttons side="left">
+    <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
+  </ion-nav-buttons>
+  <ion-content>
+    <google-map center="map.center" zoom="map.zoom" control="map.control" ng-show="located">
+      <marker coords="currentLocation">
+    </google-map>
+  </ion-content>
+</ion-view>

@@ -41,6 +41,17 @@ To create a local development environment:
 cp cabbie/local_settings.py.template cabbie/local_settings.py
 ```
 
+
+To create a local testing environment with Ionic:
+
+```bash
+cd ionic/cabbie-driver # or ionic/cabbie-passenger
+npm install
+ionic serve
+gulp watch
+```
+
+
 ## Checklist
 
 - Permission control for REST API
