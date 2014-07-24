@@ -1,33 +1,8 @@
 from django.contrib.gis.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from cabbie.apps.account.models import User
+from cabbie.apps.account.models import Passenger, Driver
 from cabbie.common.models import ActiveMixin, AbstractTimestampModel
-
-
-# Abstract
-# --------
-
-class AbstractRole(ActiveMixin, AbstractTimestampModel):
-    user = models.OneToOneField(User, related_name='%(class)s')
-
-    class Meta(AbstractTimestampModel.Meta):
-        abstract = True
-
-    def __unicode__(self):
-        return self.user.__unicode__()
-
-
-# Concrete
-# --------
-
-class Passenger(AbstractRole):
-    ride_count = models.PositiveIntegerField(default=0)
-
-
-class Driver(AbstractRole):
-    licence_number = models.CharField(max_length=100, unique=True)
-    ride_count = models.PositiveIntegerField(default=0)
 
 
 class Ride(AbstractTimestampModel):

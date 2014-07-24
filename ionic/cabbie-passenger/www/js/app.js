@@ -106,12 +106,11 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     '$q', '$http', '$window', '$rootScope',
     function ($q, $http, $window, $rootScope) {
   return {
-    login: function (username, password) {
+    login: function (phone, password) {
       var deferred = $q.defer();
 
-      $http.post('/api/auth/', { username: username, password: password })
+      $http.post('/api/auth/', { username: phone, password: password })
         .success(function (data) {
-          $window.localStorage.setItem('auth.username', username);
           $window.localStorage.setItem('auth.token', data.token);
           $rootScope.$broadcast('auth.login');
           deferred.resolve();
@@ -123,13 +122,10 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
       return deferred.promise;
     },
     logout: function () {
-      angular.forEach(['auth.username', 'auth.token'], function (key) {
+      angular.forEach(['auth.token'], function (key) {
         $window.localStorage.removeItem(key);
       });
       $rootScope.$broadcast('auth.logout');
-    },
-    getUsername: function () {
-      return $window.localStorage.getItem('auth.username');
     },
     getToken: function () {
       return $window.localStorage.getItem('auth.token');
@@ -139,8 +135,19 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     }
   };
 }])
-.factory('User', ['$resource', function ($resource) {
-  return $resource('/api/users/:id/:action', { id: '@id' }, {
+.factory('Passenger', ['$resource', function ($resource) {
+  return $resource('/api/passengers/:id/:action', { id: '@id' }, {
+    query: {
+      method: 'GET',
+      isArray: true,
+      transformResponse: function (data) {
+        return JSON.parse(data).results;
+      }
+    }
+  });
+}])
+.factory('Driver', ['$resource', function ($resource) {
+  return $resource('/api/drivers/:id/:action', { id: '@id' }, {
     query: {
       method: 'GET',
       isArray: true,
@@ -171,7 +178,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
   $scope.data = {};
   $scope.submit = function () {
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    Auth.login($scope.data.username, $scope.data.password)
+    Auth.login($scope.data.phone, $scope.data.password)
       .then(function () {
         $location.url('/app/main');
       })
@@ -202,15 +209,15 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 
 .controller('SignupCtrl', [
     '$scope', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
-    'Auth', 'User',
+    'Auth', 'Passenger',
     function ($scope, $location, $ionicViewService, $ionicLoading, $ionicPopup,
-              Auth, User) {
+              Auth, Passenger) {
   $scope.data = {};
   $scope.submit = function () {
-    var user = new User($scope.data);
+    var passenger = new Passenger($scope.data);
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    user.$save().then(function () {
-      Auth.login($scope.data.username, $scope.data.password).then(function () {
+    passenger.$save().then(function () {
+      Auth.login($scope.data.phone, $scope.data.password).then(function () {
         $ionicLoading.hide();
         $location.url('/app/main');
       });

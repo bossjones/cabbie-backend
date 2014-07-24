@@ -19,8 +19,15 @@ class PasswordValidator(validators.RegexValidator):
     code = 'password'
 
 
+class PhoneValidator(validators.RegexValidator):
+    regex = re.compile('^\d{10,11}$')
+    message = _('Must be 10 or 11 digits')
+    code = 'phone'
+
+
 validate_username = UsernameValidator()
 validate_password = PasswordValidator()
+validate_phone = PhoneValidator()
 validate_email = validators.validate_email
 validate_url = validators.URLValidator()
 
@@ -35,5 +42,6 @@ def _validation_wrapper(validator, value):
 
 is_valid_username = functools.partial(_validation_wrapper, validate_username)
 is_valid_password = functools.partial(_validation_wrapper, validate_password)
+is_valid_phone = functools.partial(_validation_wrapper, validate_phone)
 is_valid_url = functools.partial(_validation_wrapper, validate_url)
 is_valid_email = functools.partial(_validation_wrapper, validate_email)

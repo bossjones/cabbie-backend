@@ -12,18 +12,20 @@ class UserQuerySet(models.QuerySet):
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, password, **fields):
-        if not email:
-            raise ValueError('Users must have an email address')
+    def create_user(self, phone, password, **fields):
+        if not phone:
+            raise ValueError('Users must have a phone number')
 
-        user = self.model(username=username, email=self.normalize_email(email),
-                          **fields)
+        if 'email' in fields:
+            fields['email'] = self.normalize_email(fields['email'])
+
+        user = self.model(phone=phone, **fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, password, **fields):
-        user = self.create_user(username, email, password=password, **fields)
+    def create_superuser(self, phone, password, **fields):
+        user = self.create_user(phone, password, **fields)
         user.is_staff = True
         user.is_superuser = True
         user.save(update_fields=['is_staff', 'is_superuser'], using=self._db)
@@ -31,3 +33,5 @@ class UserManager(BaseUserManager):
 
 
 UserManager = UserManager.from_queryset(UserQuerySet)
+PassengerManager = UserManager
+DriverManager = UserManager
