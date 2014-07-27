@@ -2,7 +2,7 @@ from django.contrib.gis.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.common.models import ActiveMixin, AbstractTimestampModel
+from cabbie.common.models import AbstractTimestampModel
 
 
 class Ride(AbstractTimestampModel):
@@ -40,3 +40,5 @@ class RideHistory(AbstractTimestampModel):
     state = models.CharField(max_length=100, choices=Ride.STATES)
     passenger_location = models.PointField()
     driver_location = models.PointField(blank=True, null=True)
+
+    # FIXME: Extra data

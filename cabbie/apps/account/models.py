@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -7,19 +8,6 @@ from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.models import ActiveMixin, AbstractTimestampModel
 from cabbie.utils.validator import validate_phone
-
-
-# Abstract
-# --------
-
-class AbstractRole(ActiveMixin, AbstractTimestampModel):
-    user = models.OneToOneField('User', related_name='%(class)s')
-
-    class Meta(AbstractTimestampModel.Meta):
-        abstract = True
-
-    def __unicode__(self):
-        return self.user.__unicode__()
 
 
 # Concrete
