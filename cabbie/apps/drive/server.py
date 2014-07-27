@@ -19,11 +19,18 @@ from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.time_ import HOUR, MINUTE
 
 
+# Module private & Util
+# ---------------------
+
 _loop = tornado.ioloop.IOLoop.instance()
 
 def delay(seconds, callback):
+    """Friendly shortcut for IOLoop's add_timeout method."""
     _loop.add_timeout(datetime.timedelta(seconds=seconds), callback)
 
+
+# Estimator
+# ---------
 
 class Estimate(object):
     def __init__(self, distance, time):
@@ -77,82 +84,13 @@ class TmapEstimator(AbstractEstimator):
         raise NotImplementedError
 
 
-class ObjectManager(LoggableMixin, SingletonMixin):
-    expire_interval = 5 * MINUTE
-
-    def __init__(self):
-        self._cache = {}
-
-    def get_driver(self, driver_id, **kwargs):
-        return self._get_user(Driver, driver_id, **kwargs)
-
-    def get_driver_all(self, driver_ids, **kwargs):
-        return self._get_user_all(Driver, driver_ids, **kwargs)
-
-    def get_passenger(self, passenger_id, **kwargs):
-        return self._get_user(Passenger, passenger_id, **kwargs)
-
-    def get_passenger_all(self, passenger_ids, **kwargs):
-        return self._get_user_all(Passenger, passenger_ids, **kwargs)
-
-    def serialize(self, user):
-        serialized = {
-            'id': user.id,
-            'name': user.name,
-            'phone': user.phone,
-        }
-        if isinstance(user, Passenger):
-            serialized.update({
-                'ride_count': user.ride_count,
-                'rating': 3.5,
-            })
-        if isinstance(user, Driver):
-            serialized.update({
-                'ride_count': user.ride_count,
-                'licence_number': user.licence_number,
-                'rating': 2.5,
-            })
-        return serialized
-
-    def _get_user(self, model_class, user_id, force_refresh=False,
-                  serialize=True):
-        now = time.time()
-        entry = self._cache.get(user_id)
-        if (force_refresh or not entry
-                or now - entry['refreshed_at'] >= self.expire_interval):
-            entry = {
-                'refreshed_at': now,
-                'object': model_class.objects.get(pk=user_id),
-            }
-            self._cache[user_id] = entry
-        return self.serialize(entry['object']) if serialize else entry['object']
-
-    def _get_user_all(self, model_class, user_ids, force_refresh=False,
-                      serialize=True):
-        now = time.time()
-        data = {}
-        to_refresh = []
-
-        for user_id in user_ids:
-            entry = self._cache.get(user_id)
-            if (force_refresh or not entry
-                    or now - entry['refreshed_at'] >= self.expire_interval):
-                to_refresh.append(user_id)
-            else:
-                data[user_id] = entry['object']
-
-        for user in model_class.objects.filter(id__in=to_refresh):
-            data[user.id] = user
-            self._cache[user.id] = {'refreshed_at': now, 'object': user}
-
-        if serialize:
-            data = dict([(user_id, self.serialize(user))
-                         for user_id, user in data.iteritems()])
-
-        return data
-
+# Proxy
+# -----
 
 class RideProxy(LoggableMixin):
+    """Proxy of `Ride` model for asynchronous save operation and session
+    management."""
+
     def __init__(self, passenger_id, location):
         super(RideProxy, self).__init__()
         self._passenger_id = passenger_id
@@ -237,7 +175,88 @@ class RideProxy(LoggableMixin):
         # FIXME: Syncing to DB
 
 
+# Managers
+# --------
+
+class ObjectManager(LoggableMixin, SingletonMixin):
+    """In-memory cache of model instances."""
+    expire_interval = 5 * MINUTE
+
+    def __init__(self):
+        self._cache = {}
+
+    def get_driver(self, driver_id, **kwargs):
+        return self._get_user(Driver, driver_id, **kwargs)
+
+    def get_driver_all(self, driver_ids, **kwargs):
+        return self._get_user_all(Driver, driver_ids, **kwargs)
+
+    def get_passenger(self, passenger_id, **kwargs):
+        return self._get_user(Passenger, passenger_id, **kwargs)
+
+    def get_passenger_all(self, passenger_ids, **kwargs):
+        return self._get_user_all(Passenger, passenger_ids, **kwargs)
+
+    def serialize(self, user):
+        serialized = {
+            'id': user.id,
+            'name': user.name,
+            'phone': user.phone,
+        }
+        if isinstance(user, Passenger):
+            serialized.update({
+                'ride_count': user.ride_count,
+                'rating': 3.5,
+            })
+        if isinstance(user, Driver):
+            serialized.update({
+                'ride_count': user.ride_count,
+                'licence_number': user.licence_number,
+                'rating': 2.5,
+            })
+        return serialized
+
+    def _get_user(self, model_class, user_id, force_refresh=False,
+                  serialize=True):
+        now = time.time()
+        entry = self._cache.get(user_id)
+        if (force_refresh or not entry
+                or now - entry['refreshed_at'] >= self.expire_interval):
+            entry = {
+                'refreshed_at': now,
+                'object': model_class.objects.get(pk=user_id),
+            }
+            self._cache[user_id] = entry
+        return self.serialize(entry['object']) if serialize else entry['object']
+
+    def _get_user_all(self, model_class, user_ids, force_refresh=False,
+                      serialize=True):
+        now = time.time()
+        data = {}
+        to_refresh = []
+
+        for user_id in user_ids:
+            entry = self._cache.get(user_id)
+            if (force_refresh or not entry
+                    or now - entry['refreshed_at'] >= self.expire_interval):
+                to_refresh.append(user_id)
+            else:
+                data[user_id] = entry['object']
+
+        for user in model_class.objects.filter(id__in=to_refresh):
+            data[user.id] = user
+            self._cache[user.id] = {'refreshed_at': now, 'object': user}
+
+        if serialize:
+            data = dict([(user_id, self.serialize(user))
+                         for user_id, user in data.iteritems()])
+
+        return data
+
+
 class LocationManager(LoggableMixin, SingletonMixin):
+    """Dynamic assignment of drivers and passengers using Rtree index."""
+
     estimator_class = HaversineEstimator
     refresh_interval = 1
     candidate_count = 15
@@ -348,6 +367,22 @@ class LocationManager(LoggableMixin, SingletonMixin):
         delay(self.refresh_interval, self._refresh)
 
 
+class Authenticator(LoggableMixin, SingletonMixin):
+    """Authenticates (web)socket connections with token."""
+
+    # TODO: Cache (token, user_id) pair
+
+    def authenticate(self, token, role):
+        try:
+            user = Token.objects.select_related('user').get(key=token).user
+        except Token.DoesNotExist:
+            return None
+        else:
+            # Double check if the user has specified role
+            role = user.get_role(role)
+            return user.id if role is not None else None
+
+
 class SessionManager(LoggableMixin, SingletonMixin):
     """Central point to manage all concurrent (web)socket connections."""
 
@@ -383,25 +418,11 @@ class SessionManager(LoggableMixin, SingletonMixin):
         pass
 
 
-class Authenticator(LoggableMixin, SingletonMixin):
-    """Authenticates (web)socket connections with token."""
-
-    # TODO: Cache (token, user_id) pair
-
-    def authenticate(self, token, role):
-        try:
-            user = Token.objects.select_related('user').get(key=token).user
-        except Token.DoesNotExist:
-            return None
-        else:
-            # Double check if the user has specified role
-            role = user.get_role(role)
-            return user.id if role is not None else None
-
+# Session
+# -------
 
 class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
-    # Websocket handlers
-    # ------------------
+    """Represents a (web)socket session of driver or passenger."""
 
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
@@ -591,6 +612,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_disconnect(self):
         self.send('passenger_disconnected')
 
+
+# Server
+# ------
 
 class LocationServer(LoggableMixin, SingletonMixin):
     def start(self):
