@@ -44,8 +44,8 @@
     <!-- Approved -->
     <div class="card" ng-show="state == 'approved'">
       <div class="item item-text-wrap item-button-right">
-        파파가 지금 달려갑니다! (남은 시간: {{ estimate.time }}초)
-        <button type="button" class="button button-assertive">콜 취소</button>
+        파파가 지금 달려갑니다!
+        <button type="button" class="button button-assertive" ng-click="cancel()">콜 취소</button>
       </div>
     </div>
 
@@ -53,7 +53,7 @@
     <div class="card" ng-show="state == 'arrived'">
       <div class="item item-text-wrap item-button-right">
         택시가 도착했습니다!
-        <button type="button" class="button button-positive">전화</button>
+        <button type="button" class="button button-positive" ng-click="call()">전화</button>
       </div>
     </div>
 

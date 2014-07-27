@@ -249,7 +249,11 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 
     switch (payload.type) {
       case 'error':
-        alert(data.msg);
+        $ionicPopup.alert({
+          title: '오류',
+          template: data.msg,
+          okText: '확인'
+        });
         break;
 
       case 'auth_succeeded':
@@ -291,7 +295,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         RateModal.open().then(function (data) {
           send('passenger_rate', {
             rating: data.rating,
-            comment: data.comment
+            comment: data.comment || ''
           });
           transitTo('initialized');
         });
@@ -471,7 +475,8 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 }])
 
 .controller('MainCtrl', [
-    '$scope', 'locationHost', 'Session', function ($scope, locationHost, Session) {
+    '$scope', '$ionicPopup', 'locationHost', 'Session',
+    function ($scope, $ionicPopup, locationHost, Session) {
   $scope.located = false;
   $scope.map = {
     control: {},
@@ -490,6 +495,26 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     Session.request($scope.assignment.best.driver_id);
   };
   $scope.requestCandidates = function () {
+    // FIXME: Implement
+  };
+  $scope.call = function () {
+    $ionicPopup.alert({
+      title: '전화걸기',
+      template: '전화걸기',
+      okText: '확인'
+    });
+  };
+  $scope.cancel = function () {
+    $ionicPopup.confirm({
+      title: '콜 취소',
+      template: '정말 취소하시겠습니가? 평가에 부정적으로 반영됩니다.',
+      okText: '취소',
+      cancelText: '돌아가기'
+    }).then(function (confirm) {
+      if (confirm) {
+        Session.cancel();
+      }
+    });
   };
 
   var init = function () {

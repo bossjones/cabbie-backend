@@ -192,8 +192,8 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
   };
 }])
 .factory('Session', [
-    '$q', '$timeout', 'locationHost', 'locationTrackInterval', 'Auth', 'RateModal',
-    function ($q, $timeout, locationHost, locationTrackInterval, Auth, RateModal) {
+    '$q', '$timeout', '$ionicPopup', 'locationHost', 'locationTrackInterval', 'Auth', 'RateModal',
+    function ($q, $timeout, $ionicPopup, locationHost, locationTrackInterval, Auth, RateModal) {
   var authenticated = false;
   var activated = false;
   var location = null;
@@ -220,7 +220,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       location.longitude += (Math.random() - 1) * 5 / 1000.0;
       location.latitude += (Math.random() - 1) * 5 / 1000.0;
 
-      state == 'initialized' && activated && send('driver_update_location', {
+      (state == 'initialized' && activated || state == 'approved') && send('driver_update_location', {
         location: [location.longitude, location.latitude]
       });
       angular.forEach(locationCallbacks, function (callback) {
@@ -266,6 +266,11 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
         break;
 
       case 'driver_canceled':
+        $ionicPopup.alert({
+          title: '콜 취소',
+          template: '승객에 의해 콜이 취소되었습니다.',
+          okText: '확인'
+        });
         transitTo('initialized');
         break;
     }
@@ -313,7 +318,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       send('driver_complete');
 
       RateModal.open().then(function (data) {
-        that.rate(data.rating, data.comment);
+        that.rate(data.rating, data.comment || '');
         transitTo('initialized');
       });
     },
