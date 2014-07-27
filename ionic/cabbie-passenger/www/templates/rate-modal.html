@@ -1,0 +1,31 @@
+<div class="modal">
+  <ion-header-bar class="bar-dark">
+    <h1 class="title">평가하기</h1>
+  </ion-header-bar>
+  <ion-content class="has-header" overflow-scroll="true">
+    <div class="card list">
+      <div class="item item-divider">
+        평점을 선택하세요.
+      </div>
+      <label class="item item-radio item-text-wrap" ng-repeat="number in [] | range:[1,6]">
+        <input type="radio" name="rating" ng-value="number" ng-model="model.rating">
+        <div class="item-content">
+          {{ number }}
+        </div>
+        <i class="radio-icon ion-checkmark"></i>
+      </label>
+    </div>
+    <div class="card list">
+      <div class="item item-divider">
+        코멘트를 입력하세요.
+      </div>
+      <label class="item item-input">
+        <input type="text" ng-model="model.comment">
+      </label>
+    </div>
+  </ion-content>
+  <ion-footer-bar align-title="middle" class="bar-light">
+    <button class="button button-positive pull-right" ng-click="submit()">제출하기</button>
+  </ion-footer-bar>
+</div>
+

@@ -12,6 +12,7 @@ import tornado.web
 import tornado.websocket
 
 from cabbie.apps.account.models import Driver, Passenger
+from cabbie.apps.drive.models import Ride
 from cabbie.utils.geo import haversine, Rtree2D
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
@@ -99,6 +100,7 @@ class ObjectManager(LoggableMixin, SingletonMixin):
 
         serialized = {
             'name': user.name,
+            'phone': user.phone,
         }
         if isinstance(user, Passenger):
             serialized.update({
@@ -151,6 +153,78 @@ class ObjectManager(LoggableMixin, SingletonMixin):
         return data
 
 
+class RideProxy(LoggableMixin):
+    def __init__(self, passenger_id, location):
+        super(RideProxy, self).__init__()
+        self._passenger_id = passenger_id
+        self._passenger_location = location
+        self._driver_id = None
+        self._state = None
+
+    @property
+    def passenger_session(self):
+        return SessionManager().get(self._passenger_id)
+
+    @property
+    def driver_session(self):
+        return SessionManager().get(self._driver_id)
+
+    def set_driver(self, driver_id):
+        self._driver_id = driver_id
+        self.driver_session.set_ride_proxy(self)
+
+    def reset_driver(self):
+        self.driver_session.set_ride_proxy(None)
+        self._driver_id = None
+
+    def request(self):
+        self.driver_session.notify_driver_request({
+            'passenger_id': self._passenger_id,
+            'passenger': ObjectManager().get_passenger(self._passenger_id),
+            'location': self._passenger_location,
+        })
+        self._transition_to(Ride.REQUESTED)
+
+    def cancel(self):
+        self.driver_session.notify_driver_cancel()
+        self._transition_to(Ride.CANCELED)
+
+    def approve(self):
+        self.passenger_session.notify_passenger_approve()
+        self._transition_to(Ride.APPROVED)
+
+    def reject(self, reason):
+        self.passenger_session.notify_passenger_reject(reason)
+        self._transition_to(Ride.REJECTED)
+        self.reset_driver()
+
+    def arrive(self):
+        self.passenger_session.notify_passenger_arrive()
+        self._transition_to(Ride.ARRIVED)
+
+    def board(self):
+        self.passenger_session.notify_passenger_board()
+        self._transition_to(Ride.BOARDED)
+
+    def complete(self):
+        self.passenger_session.notify_passenger_complete()
+        self._transition_to(Ride.COMPLETED)
+
+    def passenger_rate(self, rating, comment):
+        # FIXME: Syncing to DB
+        pass
+
+    def driver_rate(self, rating, comment):
+        # FIXME: Syncing to DB
+        pass
+
+    def _transition_to(self, state):
+        self.info('Transiting from `{old}` to `{new}`'.format(
+            old=self._state, new=state))
+        self._state = state
+        # FIXME: Syncing to DB
+
+
 class LocationManager(LoggableMixin, SingletonMixin):
     estimator_class = HaversineEstimator
     refresh_interval = 1
@@ -177,6 +251,7 @@ class LocationManager(LoggableMixin, SingletonMixin):
             self.error('Failed to remove {0}'.format(driver_id))
 
         # FIXME: Re-assign immediately
+        # FIXME: Cancel the request or on-going ride process
 
     def watch(self, passenger_id, location):
         watch = self._watches.get(passenger_id)
@@ -187,6 +262,12 @@ class LocationManager(LoggableMixin, SingletonMixin):
             }
             self._watches[passenger_id] = watch
         watch['location'] = location
+
+    def unwatch(self, passenger_id):
+        try:
+            del self._watches[passenger_id]
+        except KeyError:
+            self.error('Failed to remove {0}'.format(passenger_id))
 
     # Private
     # -------
@@ -239,7 +320,7 @@ class LocationManager(LoggableMixin, SingletonMixin):
             # TODO: Handle the case when all candidates are already assigned
 
             if not self._is_same_assignment(prev_assignment, assignment):
-                SessionManager().get(passenger_id).notify_assignment(
+                SessionManager().get(passenger_id).notify_passenger_assign(
                     assignment)
                 watch['assignment'] = assignment
 
@@ -308,6 +389,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         super(Session, self).__init__(*args, **kwargs)
         self._user_id = None
         self._role = None
+        self._ride_proxy = None
 
     def __unicode__(self):
         return (u'Session({role}-{id})'.format(role=self._role[0].upper(),
@@ -372,15 +454,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         self.send('auth_succeeded')
 
-        # FIXME
-        #def send_request():
-            #self.send('driver_requested', {
-                #'user_id': 1,
-                #'ride_id': 1,
-            #})
-        #import datetime
-        #_loop.add_timeout(datetime.timedelta(seconds=3), send_request)
-
+    def set_ride_proxy(self, ride_proxy):
+        self._ride_proxy = ride_proxy
 
     # Driver-side
     # -----------
@@ -395,36 +470,38 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         LocationManager().remove(self._user_id)
 
-    def handle_driver_approve(self, ride_id):
+    def handle_driver_approve(self):
         self.info('Approved')
-        pass
+        self._ride_proxy.approve()
 
-    def handle_driver_reject(self, ride_id, reason):
+    def handle_driver_reject(self, reason):
         self.info('Rejected')
-        pass
+        self._ride_proxy.reject(reason)
 
-    def handle_driver_arrive(self, ride_id):
+    def handle_driver_arrive(self):
         self.info('Arrived')
-        pass
+        self._ride_proxy.arrive()
 
-    def handle_driver_board(self, ride_id):
+    def handle_driver_board(self):
         self.info('Boarded')
-        pass
+        self._ride_proxy.board()
 
-    def handle_driver_complete(self, ride_id, rating, comment):
+    def handle_driver_complete(self):
         self.info('Completed')
-        pass
+        self._ride_proxy.complete()
+
+    def handle_driver_rate(self, rating, comment):
+        self.info('Rated')
+        self._ride_proxy.driver_rate(rating, comment)
+
+    def notify_driver_request(self, data):
+        self.send('driver_requested', data)
+
+    def notify_driver_cancel(self):
+        self.send('driver_canceled')
 
     # Passenger-side
     # --------------
-
-    #def handle_passenger_update_location(self, location):
-        #self.debug('Updating location to {0}'.format(location))
-
-        #LocationManager().update(self._user_id, location)
-
-    #def handle_passenger_request_cancel(self):
-        #self.info('Request cancelled')
 
     def handle_passenger_watch(self, location):
         self.info('Watched')
@@ -433,23 +510,45 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def handle_passenger_request(self, driver_id, location):
         self.info('Requested')
 
-        # FIXME: Sync data via RideProxy or something
-        #ride = RideProxy()
+        # Remove driver and passenger from location manager first
+        LocationManager().remove(driver_id)
+        LocationManager().unwatch(self._user_id)
 
-        SessionManager().get(driver_id).send('driver_requested', {
-            'passenger_id': self._user_id,
-            'passenger': ObjectManager().get_passenger(self._user_id),
-            'location': location,
-        })
+        # Create a new ride proxy instance
+        proxy = RideProxy(self._user_id, location)
+        proxy.set_driver(driver_id)
+        proxy.request()
 
-    def handle_passenger_cancel(self, ride_id):
+        self.set_ride_proxy(proxy)
+
+    def handle_passenger_cancel(self):
         self.info('Cancelled')
+        self._ride_proxy.cancel()
 
-    def notify_assignment(self, assignment):
+    def handle_passenger_rate(self, rating, comment):
+        self.info('Rated')
+        self._ride_proxy.passenger_rate(rating, comment)
+
+    def notify_passenger_assign(self, assignment):
         self.debug('Notifying new assignment: {0}'.format(assignment))
         self.send('passenger_assigned', {
             'assignment': assignment,
         })
+
+    def notify_passenger_approve(self):
+        self.send('passenger_approved')
+
+    def notify_passenger_reject(self, reason):
+        self.send('passenger_rejected', {'reason': reason})
+
+    def notify_passenger_arrive(self):
+        self.send('passenger_arrived')
+
+    def notify_passenger_board(self):
+        self.send('passenger_boarded')
+
+    def notify_passenger_complete(self):
+        self.send('passenger_completed')
 
 
 class LocationServer(LoggableMixin, SingletonMixin):

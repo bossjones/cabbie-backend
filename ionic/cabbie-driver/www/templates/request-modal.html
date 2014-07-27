@@ -1,0 +1,55 @@
+<div class="modal">
+  <ion-header-bar class="bar-dark">
+    <h1 class="title">요청 승객 정보</h1>
+    <div class="buttons">
+      <button class="button button-clear" ng-click="modalClose()">닫기</button>
+    </div>
+  </ion-header-bar>
+  <ion-content class="has-header" overflow-scroll="true">
+    <div class="list">
+      <div class="item item-divider">
+        승객 정보를 확인하세요.
+      </div>
+      <div class="item item-text-wrap">
+        {{ requestData.passenger.name }}
+        <span class="item-note">
+          승객 이름
+        </span>
+      </div>
+      <div class="item item-text-wrap">
+        {{ requestData.location[0] }},{{ requestData.location[1] }}
+        <span class="item-note">
+          승객 위치
+        </span>
+      </div>
+      <div class="item item-text-wrap">
+        {{ requestData.passenger.ride_count }}
+        <span class="item-note">
+          총 탑승 횟수
+        </span>
+      </div>
+      <div class="item item-text-wrap">
+        {{ requestData.passenger.rating }}
+        <span class="item-note">
+          승객 평점
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <button type="button" class="button button-block button-positive" ng-click="modalApprove()">
+          승인
+        </button>
+      </div>
+      <div class="col">
+        <button type="button" class="button button-block button-assertive" ng-click="modalReject()">
+          거절
+        </button>
+      </div>
+    </div>
+  </ion-content>
+  <!--<ion-footer-bar align-title="middle" class="bar-light">-->
+    <!--<button class="button button-positive pull-right" ng-click="modalApprove()">승인</button>-->
+  <!--</ion-footer-bar>-->
+</div>
+

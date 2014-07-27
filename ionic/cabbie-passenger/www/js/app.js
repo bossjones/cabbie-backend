@@ -87,6 +87,17 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     };
   };
 })
+.filter('range', function() {
+  return function(input, range) {
+    start = range[0];
+    end = range[1];
+    offset = end > start ? 1 : -1;
+    for (var i = start; i != end; i += offset) {
+      input.push(i);
+    }
+    return input;
+  };
+})
 
 
 // Factory
@@ -149,9 +160,48 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     }
   };
 }])
+.factory('RateModal', [
+    '$q', '$rootScope', '$ionicModal', function ($q, $rootScope, $ionicModal) {
+  return {
+    open: function () {
+      var deferred = $q.defer();
+      var $scope = $rootScope.$new();
+
+      $scope.modal = null;
+      $scope.resolveData = null;
+      $scope.model = {};
+
+      $scope.$on('$destroy', function () {});
+      $scope.$on('modal.removed', function () {});
+      $scope.$on('modal.hidden', function () {
+        $scope.resolveData && deferred.resolve($scope.resolveData);
+      });
+
+      $scope.close = function () {
+        $scope.modal.remove();
+      };
+      $scope.submit = function () {
+        $scope.resolveData = $scope.model;
+        $scope.close();
+      };
+      $scope.init = function () {};
+
+      $ionicModal.fromTemplateUrl('templates/rate-modal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+      }).then(function (instance) {
+        $scope.modal = instance;
+        $scope.modal.show();
+        $scope.init();
+      });
+
+      return deferred.promise;
+    }
+  };
+}])
 .factory('Session', [
-    '$q', '$timeout', 'locationHost', 'locationTrackInterval', 'Auth',
-    function ($q, $timeout, locationHost, locationTrackInterval, Auth) {
+    '$q', '$timeout', '$ionicPopup', 'locationHost', 'locationTrackInterval', 'Auth', 'RateModal',
+    function ($q, $timeout, $ionicPopup, locationHost, locationTrackInterval, Auth, RateModal) {
   var authenticated = false;
   var location = null;
   var state = null;
@@ -217,18 +267,34 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         break;
 
       case 'passenger_approved':
+        transitTo('approved');
         break;
 
       case 'passenger_rejected':
+        $ionicPopup.alert({
+          title: '요청 거절',
+          template: '기사님이 승객님의 요청을 거졀하였습니다 - ' + data.reason,
+          okText: '확인'
+        });
+        transitTo('initialized');
         break;
 
       case 'passenger_arrived':
+        transitTo('arrived');
         break;
 
       case 'passenger_boarded':
+        transitTo('boarded');
         break;
 
       case 'passenger_completed':
+        RateModal.open().then(function (data) {
+          send('passenger_rate', {
+            rating: data.rating,
+            comment: data.comment
+          });
+          transitTo('initialized');
+        });
         break;
     }
   };
@@ -264,6 +330,12 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         reason: reason
       });
       transitTo('initialized');
+    },
+    rate: function (rating, comment) {
+      send('passenger_rate', {
+        rating: rating,
+        comment: comment
+      });
     },
 
     onLocationChange: function (callback, once) {
@@ -439,7 +511,6 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
           break;
 
         case 'requested':
-          console.log(data);
           break;
       };
     });
