@@ -6,12 +6,11 @@ from cabbie.common.models import AbstractTimestampModel
 
 
 class Ride(AbstractTimestampModel):
-    INITIATED, REQUESTED, APPROVED, REJECTED, CANCELED, \
-        ARRIVED, BOARDED, COMPLETED, PAID = \
-    'initiated', 'requested', 'approved', 'rejected', 'canceled', \
-        'arrived', 'boarded', 'completed', 'paid'
+    REQUESTED, APPROVED, REJECTED, CANCELED, ARRIVED, BOARDED, \
+        COMPLETED, PAID = \
+    'requested', 'approved', 'rejected', 'canceled', 'arrived', 'boarded', \
+        'completed', 'paid'
     STATES = (
-        (INITIATED, _('initiated')),
         (REQUESTED, _('requested')),
         (APPROVED, _('approved')),
         (REJECTED, _('rejected')),

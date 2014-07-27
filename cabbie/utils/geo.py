@@ -39,6 +39,9 @@ class Rtree2D(object):
     def to_coords(location):
         return (location[0], location[1], location[0], location[1])
 
+    def keys(self):
+        return self._locations.keys()
+
     def get(self, id, objects=False):
         return self._locations.get(id)
 

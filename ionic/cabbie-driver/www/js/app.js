@@ -76,6 +76,22 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 }])
 
 
+// Filter
+// ------
+
+.filter('range', function() {
+  return function(input, range) {
+    start = range[0];
+    end = range[1];
+    offset = end > start ? 1 : -1;
+    for (var i = start; i != end; i += offset) {
+      input.push(i);
+    }
+    return input;
+  };
+})
+
+
 // Factory
 // -------
 
@@ -136,9 +152,48 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     }
   };
 }])
+.factory('RateModal', [
+    '$q', '$rootScope', '$ionicModal', function ($q, $rootScope, $ionicModal) {
+  return {
+    open: function () {
+      var deferred = $q.defer();
+      var $scope = $rootScope.$new();
+
+      $scope.modal = null;
+      $scope.resolveData = null;
+      $scope.model = {};
+
+      $scope.$on('$destroy', function () {});
+      $scope.$on('modal.removed', function () {});
+      $scope.$on('modal.hidden', function () {
+        $scope.resolveData && deferred.resolve($scope.resolveData);
+      });
+
+      $scope.close = function () {
+        $scope.modal.remove();
+      };
+      $scope.submit = function () {
+        $scope.resolveData = $scope.model;
+        $scope.close();
+      };
+      $scope.init = function () {};
+
+      $ionicModal.fromTemplateUrl('templates/rate-modal.html', {
+        scope: $scope,
+        animation: 'slide-in-up'
+      }).then(function (instance) {
+        $scope.modal = instance;
+        $scope.modal.show();
+        $scope.init();
+      });
+
+      return deferred.promise;
+    }
+  };
+}])
 .factory('Session', [
-    '$q', '$timeout', 'locationHost', 'locationTrackInterval', 'Auth',
-    function ($q, $timeout, locationHost, locationTrackInterval, Auth) {
+    '$q', '$timeout', '$ionicPopup', 'locationHost', 'locationTrackInterval', 'Auth', 'RateModal',
+    function ($q, $timeout, $ionicPopup, locationHost, locationTrackInterval, Auth, RateModal) {
   var authenticated = false;
   var activated = false;
   var location = null;
@@ -165,7 +220,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       location.longitude += (Math.random() - 1) * 5 / 1000.0;
       location.latitude += (Math.random() - 1) * 5 / 1000.0;
 
-      activated && send('driver_update_location', {
+      (state == 'initialized' && activated || state == 'approved') && send('driver_update_location', {
         location: [location.longitude, location.latitude]
       });
       angular.forEach(locationCallbacks, function (callback) {
@@ -210,11 +265,21 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
         transitTo('requested', data);
         break;
 
-      case 'driver_requested_canceled':
+      case 'driver_canceled':
+        $ionicPopup.alert({
+          title: '콜 취소',
+          template: '승객에 의해 콜이 취소되었습니다.',
+          okText: '확인'
+        });
         transitTo('initialized');
         break;
 
-      case 'driver_canceled':
+      case 'driver_disconnected':
+        $ionicPopup.alert({
+          title: '연결 끊김',
+          template: '승객의 연결이 끊겼습니다.',
+          okText: '확인'
+        });
         transitTo('initialized');
         break;
     }
@@ -256,12 +321,21 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       send('driver_board');
       transitTo('boarded');
     },
-    complete: function (rating, comment) {
-      send('driver_complete', {
+    complete: function () {
+      var that = this;
+
+      send('driver_complete');
+
+      RateModal.open().then(function (data) {
+        that.rate(data.rating, data.comment || '');
+        transitTo('initialized');
+      });
+    },
+    rate: function (rating, comment) {
+      send('driver_rate', {
         rating: rating,
         comment: comment
       });
-      transitTo('initialized');
     },
 
     onLocationChange: function (callback) {
@@ -389,7 +463,8 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 }])
 
 .controller('MainCtrl', [
-    '$scope', 'locationHost', 'Session', function ($scope, locationHost, Session) {
+    '$scope', '$ionicModal', 'locationHost', 'Session',
+    function ($scope, $ionicModal, locationHost, Session) {
   $scope.located = false;
   $scope.activated = false;
   $scope.map = {
@@ -402,9 +477,49 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
   };
   $scope.location = {};
   $scope.state = null;
+  $scope.modal = null;
+  $scope.requestData = null;
+
   $scope.toggleActivate = function () {
     $scope.activated = !$scope.activated;
     Session[$scope.activated ? 'activate' : 'deactivate']();
+  };
+  $scope.showRequestModal = function () {
+    if ($scope.processing) {
+      return;
+    }
+    $scope.processing = true;
+
+    $ionicModal.fromTemplateUrl('templates/request-modal.html', {
+      scope: $scope,
+      animation: 'slide-in-up'
+    }).then(function (modal) {
+      $scope.modal = modal;
+      $scope.modal.show();
+      $scope.processing = false;
+    });
+  };
+  $scope.modalClose = function () {
+    $scope.modal && $scope.modal.remove();
+  };
+  $scope.modalApprove = function () {
+    $scope.modalClose();
+    Session.approve();
+  };
+  $scope.modalReject = function () {
+    var reason = 'test reason'; // FIXME: Needs to be explicitly selected
+    $scope.modalClose();
+    Session.reject(reason);
+  };
+
+  $scope.arrive = function () {
+    Session.arrive();
+  };
+  $scope.board = function () {
+    Session.board();
+  };
+  $scope.complete = function () {
+    Session.complete();
   };
 
   var init = function () {
@@ -418,7 +533,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 
       switch (newState) {
         case 'requested':
-          console.log(data);
+          $scope.requestData = data;
           break;
       };
     });

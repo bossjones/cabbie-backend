@@ -1,4 +1,4 @@
-<ion-view title="메인">
+<ion-view title="기사앱 메인">
   <ion-nav-buttons side="left">
     <button menu-toggle="left" class="button button-icon icon ion-navicon"></button>
   </ion-nav-buttons>
@@ -14,22 +14,22 @@
         </button>
       </div>
       <div ng-show="state == 'requested'">
-        <button type="button" class="button button-block button-assertive" ng-click="">
+        <button type="button" class="button button-block button-assertive" ng-click="showRequestModal()">
           콜이 수신되었습니다
         </button>
       </div>
       <div ng-show="state == 'approved'">
-        <button type="button" class="button button-block button-positive" ng-click="">
+        <button type="button" class="button button-block button-positive" ng-click="arrive()">
           도착 메시지 보내기
         </button>
       </div>
       <div ng-show="state == 'arrived'">
-        <button type="button" class="button button-block button-positive" ng-click="">
+        <button type="button" class="button button-block button-positive" ng-click="board()">
           승객 탑승
         </button>
       </div>
       <div ng-show="state == 'boarded'">
-        <button type="button" class="button button-block button-positive" ng-click="">
+        <button type="button" class="button button-block button-positive" ng-click="complete()">
           목적지 도착
         </button>
       </div>
