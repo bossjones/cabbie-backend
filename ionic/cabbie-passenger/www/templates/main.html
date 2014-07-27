@@ -4,7 +4,41 @@
   </ion-nav-buttons>
   <ion-content>
     <google-map center="map.center" zoom="map.zoom" control="map.control" ng-show="located">
-      <marker coords="currentLocation">
+      <marker coords="location">
+      <marker coords="candidate.location" icon="taxiIcon" ng-repeat="candidate in assignment.candidates">
     </google-map>
+
+    <!-- Initialize -->
+    <div class="card" ng-show="state == 'initialized'">
+      <div class="item item-text-wrap">
+        배차 정보를 기다리는 중... <i class="icon ion-loading-c"></i>
+      </div>
+    </div>
+
+    <!-- Assigned -->
+    <div class="row" ng-show="state == 'assigned' && assignment.candidates.length">
+      <div class="col">
+        <button type="button" class="button button-block button-positive" ng-click="requestBest()">
+          자동배차 - {{ assignment.best.estimate.time }}초
+        </button>
+      </div>
+      <div class="col">
+        <button type="button" class="button button-block button-calm" ng-click="requestCandidates()">
+          택시고르기 - {{ assignment.candidates.length }}대
+        </button>
+      </div>
+    </div>
+    <div class="card" ng-show="state == 'assigned' && !assignment.candidates.length">
+      <div class="item item-text-wrap">
+        현재 배차 가능한 택시가 없습니다.
+      </div>
+    </div>
+
+    <!-- Requested -->
+    <div class="card" ng-show="state == 'requested'">
+      <div class="item item-text-wrap">
+        기사의 응답을 기다리는 중... <i class="icon ion-loading-c"></i>
+      </div>
+    </div>
   </ion-content>
 </ion-view>

@@ -8,22 +8,22 @@
   <form name="form" novalidate ng-submit="submit()">
     <div class="list">
       <label class="item item-input">
-        <span class="input-label">아이디</span>
-        <input type="text" name="username" ng-model="data.username" placeholder="happyuser" required>
-        <i class="icon ion-alert-circled error" ng-show="form.username.$dirty && form.username.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.username.$dirty && !form.username.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">이메일</span>
-        <input type="email" name="email" ng-model="data.email" placeholder="happyuser@gmail.com" required>
-        <i class="icon ion-alert-circled error" ng-show="form.email.$dirty && form.email.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.email.$dirty && !form.email.$invalid"></i>
+        <span class="input-label">전화번호</span>
+        <input type="text" name="phone" ng-model="data.phone" placeholder="01099991234" required>
+        <i class="icon ion-alert-circled error" ng-show="form.phone.$dirty && form.phone.$invalid"></i>
+        <i class="icon ion-checkmark-round valid" ng-show="form.phone.$dirty && !form.phone.$invalid"></i>
       </label>
       <label class="item item-input">
         <span class="input-label">이름</span>
         <input type="text" name="name" ng-model="data.name" placeholder="이행복" required>
         <i class="icon ion-alert-circled error" ng-show="form.name.$dirty && form.name.$invalid"></i>
         <i class="icon ion-checkmark-round valid" ng-show="form.name.$dirty && !form.name.$invalid"></i>
+      </label>
+      <label class="item item-input">
+        <span class="input-label">이메일</span>
+        <input type="text" name="email" ng-model="data.email" placeholder="happyuser@gmail.com" required>
+        <i class="icon ion-alert-circled error" ng-show="form.email.$dirty && form.email.$invalid"></i>
+        <i class="icon ion-checkmark-round valid" ng-show="form.email.$dirty && !form.email.$invalid"></i>
       </label>
       <label class="item item-input">
         <span class="input-label">비밀번호</span>
@@ -42,4 +42,3 @@
     </p>
   </div>
 </ion-content>
-

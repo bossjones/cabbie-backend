@@ -4,9 +4,10 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 // Constant & Configugration
 // -------------------------
 
-.constant('authRequired', true)
 .constant('apiHost', 'http://localhost:8000')
 .constant('locationHost', 'localhost:8080')
+.constant('authRequired', true)
+.constant('locationTrackInterval', 1000)
 
 .config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.xsrfCookieName = 'csrftoken';
@@ -106,12 +107,11 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     '$q', '$http', '$window', '$rootScope',
     function ($q, $http, $window, $rootScope) {
   return {
-    login: function (username, password) {
+    login: function (phone, password) {
       var deferred = $q.defer();
 
-      $http.post('/api/auth/', { username: username, password: password })
+      $http.post('/api/auth/', { username: phone, password: password })
         .success(function (data) {
-          $window.localStorage.setItem('auth.username', username);
           $window.localStorage.setItem('auth.token', data.token);
           $rootScope.$broadcast('auth.login');
           deferred.resolve();
@@ -123,13 +123,10 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       return deferred.promise;
     },
     logout: function () {
-      angular.forEach(['auth.username', 'auth.token'], function (key) {
+      angular.forEach(['auth.token'], function (key) {
         $window.localStorage.removeItem(key);
       });
       $rootScope.$broadcast('auth.logout');
-    },
-    getUsername: function () {
-      return $window.localStorage.getItem('auth.username');
     },
     getToken: function () {
       return $window.localStorage.getItem('auth.token');
@@ -139,8 +136,155 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     }
   };
 }])
-.factory('User', ['$resource', function ($resource) {
-  return $resource('/api/users/:id/:action', { id: '@id' }, {
+.factory('Session', [
+    '$q', '$timeout', 'locationHost', 'locationTrackInterval', 'Auth',
+    function ($q, $timeout, locationHost, locationTrackInterval, Auth) {
+  var authenticated = false;
+  var activated = false;
+  var location = null;
+  var state = null;
+  var ws = null;
+  var authCallbacks = [];
+  var locationCallbacks = [];
+  var stateCallbacks = [];
+
+  var send = function (type, data) {
+    ws.send(JSON.stringify({
+      type: type,
+      data: data
+    }));
+  };
+  var track = function () {
+    navigator.geolocation.getCurrentPosition(function (position) {
+      location = {
+        longitude: position.coords.longitude,
+        latitude: position.coords.latitude
+      };
+
+      // FIXME
+      location.longitude += (Math.random() - 1) * 5 / 1000.0;
+      location.latitude += (Math.random() - 1) * 5 / 1000.0;
+
+      activated && send('driver_update_location', {
+        location: [location.longitude, location.latitude]
+      });
+      angular.forEach(locationCallbacks, function (callback) {
+        callback(location);
+      });
+      $timeout(track, locationTrackInterval);
+    });
+  };
+  var transitTo = function (newState, data) {
+    var oldState = state;
+    state = newState;
+    angular.forEach(stateCallbacks, function (callback) {
+      callback(newState, oldState, data);
+    });
+  };
+  var onOpen = function () {
+    send('auth', {
+      role: 'driver',
+      token: Auth.getToken()
+    });
+  };
+  var onReceive = function (packet) {
+    var payload = JSON.parse(packet.data);
+    var data = payload.data;
+
+    console.log(payload);
+
+    switch (payload.type) {
+      case 'error':
+        alert(data.msg);
+        break;
+
+      case 'auth_succeeded':
+        authenticated = true;
+        angular.forEach(authCallbacks, function (callback) {
+          callback();
+        });
+        transitTo('initialized');
+        break;
+
+      case 'driver_requested':
+        transitTo('requested', data);
+        break;
+
+      case 'driver_requested_canceled':
+        transitTo('initialized');
+        break;
+
+      case 'driver_canceled':
+        transitTo('initialized');
+        break;
+    }
+  };
+
+  return {
+    initialize: function () {
+      if (!!ws) {
+        return;
+      }
+      ws = new WebSocket('ws://' + locationHost + '/location');
+      ws.onopen = onOpen;
+      ws.onmessage = onReceive;
+
+      track();
+    },
+    activate: function () {
+      activated = true;
+    },
+    deactivate: function () {
+      activated = false;
+      send('driver_deactivate');
+    },
+    approve: function () {
+      send('driver_approve');
+      transitTo('approved');
+    },
+    reject: function (reason) {
+      send('driver_reject', {
+        reason: reason
+      });
+      transitTo('initialized');
+    },
+    arrive: function () {
+      send('driver_arrive');
+      transitTo('arrived');
+    },
+    board: function () {
+      send('driver_board');
+      transitTo('boarded');
+    },
+    complete: function (rating, comment) {
+      send('driver_complete', {
+        rating: rating,
+        comment: comment
+      });
+      transitTo('initialized');
+    },
+
+    onLocationChange: function (callback) {
+      locationCallbacks.push(callback);
+    },
+    onStateChange: function (callback) {
+      stateCallbacks.push(callback);
+    }
+  };
+}])
+.factory('Passenger', ['$resource', function ($resource) {
+  return $resource('/api/passengers/:id/:action', { id: '@id' }, {
+    query: {
+      method: 'GET',
+      isArray: true,
+      transformResponse: function (data) {
+        return JSON.parse(data).results;
+      }
+    }
+  });
+}])
+.factory('Driver', ['$resource', function ($resource) {
+  return $resource('/api/drivers/:id/:action', { id: '@id' }, {
     query: {
       method: 'GET',
       isArray: true,
@@ -171,7 +315,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
   $scope.data = {};
   $scope.submit = function () {
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    Auth.login($scope.data.username, $scope.data.password)
+    Auth.login($scope.data.phone, $scope.data.password)
       .then(function () {
         $location.url('/app/main');
       })
@@ -202,15 +346,15 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 
 .controller('SignupCtrl', [
     '$scope', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
-    'Auth', 'User',
+    'Auth', 'Driver',
     function ($scope, $location, $ionicViewService, $ionicLoading, $ionicPopup,
-              Auth, User) {
+              Auth, Driver) {
   $scope.data = {};
   $scope.submit = function () {
-    var user = new User($scope.data);
+    var driver = new Driver($scope.data);
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    user.$save().then(function () {
-      Auth.login($scope.data.username, $scope.data.password).then(function () {
+    driver.$save().then(function () {
+      Auth.login($scope.data.phone, $scope.data.password).then(function () {
         $ionicLoading.hide();
         $location.url('/app/main');
       });
@@ -245,37 +389,40 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 }])
 
 .controller('MainCtrl', [
-    '$scope', 'locationHost', 'Auth', function ($scope, locationHost, Auth) {
+    '$scope', 'locationHost', 'Session', function ($scope, locationHost, Session) {
   $scope.located = false;
+  $scope.activated = false;
   $scope.map = {
     control: {},
     center: {
       latitude: 0,
       longitude: 0
     },
-    zoom: 16
+    zoom: 15
   };
-  $scope.currentLocation = {};
+  $scope.location = {};
+  $scope.state = null;
+  $scope.toggleActivate = function () {
+    $scope.activated = !$scope.activated;
+    Session[$scope.activated ? 'activate' : 'deactivate']();
+  };
 
-  var onGetLocation = function () {
-    var ws = new WebSocket('ws://' + locationHost + '/location');
-    ws.onopen = function() {
-      ws.send(JSON.stringify({
-        token: Auth.getToken(),
-        location: $scope.currentLocation
-      }));
-    };
-    ws.onmessage = function (evt) {
-      console.log(evt.data);
-    };
-  };
   var init = function () {
-    navigator.geolocation.getCurrentPosition(function (position) {
-      $scope.map.control.refresh(position.coords);
-      $scope.currentLocation = position.coords;
+    Session.onLocationChange(function (location) {
+      $scope.location = location;
+      $scope.map.control.refresh(location);
       $scope.located = true;
-      onGetLocation();
     });
+    Session.onStateChange(function (newState, oldState, data) {
+      $scope.state = newState;
+
+      switch (newState) {
+        case 'requested':
+          console.log(data);
+          break;
+      };
+    });
+    Session.initialize();
   };
 
   init();

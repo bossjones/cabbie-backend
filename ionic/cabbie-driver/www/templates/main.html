@@ -4,7 +4,35 @@
   </ion-nav-buttons>
   <ion-content>
     <google-map center="map.center" zoom="map.zoom" control="map.control" ng-show="located">
-      <marker coords="currentLocation">
+      <marker coords="location">
     </google-map>
+    <div class="padding">
+      <div ng-show="state == 'initialized'">
+        <button type="button" class="button button-block" ng-class="{'button-positive': !activated}" ng-click="toggleActivate()">
+          <span ng-show="!activated">콜 수신하기</span>
+          <span ng-show="activated">콜 수신 취소</span>
+        </button>
+      </div>
+      <div ng-show="state == 'requested'">
+        <button type="button" class="button button-block button-assertive" ng-click="">
+          콜이 수신되었습니다
+        </button>
+      </div>
+      <div ng-show="state == 'approved'">
+        <button type="button" class="button button-block button-positive" ng-click="">
+          도착 메시지 보내기
+        </button>
+      </div>
+      <div ng-show="state == 'arrived'">
+        <button type="button" class="button button-block button-positive" ng-click="">
+          승객 탑승
+        </button>
+      </div>
+      <div ng-show="state == 'boarded'">
+        <button type="button" class="button button-block button-positive" ng-click="">
+          목적지 도착
+        </button>
+      </div>
+    </div>
   </ion-content>
 </ion-view>
