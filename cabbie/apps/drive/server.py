@@ -96,9 +96,8 @@ class ObjectManager(LoggableMixin, SingletonMixin):
         return self._get_user_all(Passenger, passenger_ids, **kwargs)
 
     def serialize(self, user):
-        # FIXME: Implement
-
         serialized = {
+            'id': user.id,
             'name': user.name,
             'phone': user.phone,
         }
@@ -161,25 +160,34 @@ class RideProxy(LoggableMixin):
         self._driver_id = None
         self._state = None
 
+        self.passenger_session.ride_proxy = self
+
     @property
-    def passenger_session(self):
-        return SessionManager().get(self._passenger_id)
+    def driver(self):
+        return ObjectManager().get_driver(self._driver_id)
+
+    @property
+    def passenger(self):
+        return ObjectManager().get_passenger(self._passenger_id)
 
     @property
     def driver_session(self):
         return SessionManager().get(self._driver_id)
 
+    @property
+    def passenger_session(self):
+        return SessionManager().get(self._passenger_id)
+
     def set_driver(self, driver_id):
         self._driver_id = driver_id
-        self.driver_session.set_ride_proxy(self)
+        self.driver_session.ride_proxy = self
 
     def reset_driver(self):
-        self.driver_session.set_ride_proxy(None)
+        self.driver_session.ride_proxy = None
         self._driver_id = None
 
     def request(self):
-        self.driver_session.notify_driver_request({
-            'passenger_id': self._passenger_id,
+        self.driver_session.notify_driver_request(**{
             'passenger': ObjectManager().get_passenger(self._passenger_id),
             'location': self._passenger_location,
         })
@@ -188,6 +196,7 @@ class RideProxy(LoggableMixin):
     def cancel(self):
         self.driver_session.notify_driver_cancel()
         self._transition_to(Ride.CANCELED)
+        self.reset_driver()
 
     def approve(self):
         self.passenger_session.notify_passenger_approve()
@@ -197,6 +206,9 @@ class RideProxy(LoggableMixin):
         self.passenger_session.notify_passenger_reject(reason)
         self._transition_to(Ride.REJECTED)
         self.reset_driver()
+
+    def progress(self, location):
+        self.passenger_session.notify_passenger_progress(location)
 
     def arrive(self):
         self.passenger_session.notify_passenger_arrive()
@@ -216,7 +228,7 @@ class RideProxy(LoggableMixin):
 
     def driver_rate(self, rating, comment):
         # FIXME: Syncing to DB
-        pass
+        self.reset_driver()
 
     def _transition_to(self, state):
         self.info('Transiting from `{old}` to `{new}`'.format(
@@ -234,8 +246,11 @@ class LocationManager(LoggableMixin, SingletonMixin):
         super(LocationManager, self).__init__()
         self._watches = {}
         self._index = Rtree2D()
+
         # List of passengers subscribing specific driver's location change
+        # TODO: Implement this
         self._subscribers = defaultdict(set)
+
         self._refresh()
 
     # Public
@@ -286,9 +301,12 @@ class LocationManager(LoggableMixin, SingletonMixin):
         zombies = []
         assigned = set()
 
+        drivers = ObjectManager().get_driver_all(self._index.keys())
+
         def get_assignment(location, driver_id):
             return {
                 'driver_id': driver_id,
+                'driver': drivers[driver_id],
                 'location': self._index.get(driver_id),
                 'estimate': HaversineEstimator().compute(
                     location, self._index.get(driver_id)).for_json(),
@@ -312,9 +330,9 @@ class LocationManager(LoggableMixin, SingletonMixin):
             # Compute the best match
             best = None
             for candidate in assignment['candidates']:
-                if candidate['driver_id'] not in assigned:
+                if candidate['driver']['id'] not in assigned:
                     best = candidate
-                    assigned.add(candidate['driver_id'])
+                    assigned.add(candidate['driver']['id'])
                     break
             assignment['best'] = best
             # TODO: Handle the case when all candidates are already assigned
@@ -454,8 +472,13 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         self.send('auth_succeeded')
 
-    def set_ride_proxy(self, ride_proxy):
-        self._ride_proxy = ride_proxy
+    def ride_proxy():
+        def fget(self):
+            return self._ride_proxy
+        def fset(self, value):
+            self._ride_proxy = value
+        return locals()
+    ride_proxy = property(**ride_proxy())
 
     # Driver-side
     # -----------
@@ -463,7 +486,13 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def handle_driver_update_location(self, location):
         self.debug('Updating location to {0}'.format(location))
 
-        LocationManager().update(self._user_id, location)
+        if self.ride_proxy:
+            # If there is already ride match, just forward the location info to
+            # passenger
+            self.ride_proxy.progress(location)
+        else:
+            # Otherwise, report to the location manager
+            LocationManager().update(self._user_id, location)
 
     def handle_driver_deactivate(self):
         self.info('Deactivated')
@@ -472,33 +501,39 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
     def handle_driver_approve(self):
         self.info('Approved')
-        self._ride_proxy.approve()
+        self.ride_proxy.approve()
 
     def handle_driver_reject(self, reason):
         self.info('Rejected')
-        self._ride_proxy.reject(reason)
+        self.ride_proxy.reject(reason)
 
     def handle_driver_arrive(self):
         self.info('Arrived')
-        self._ride_proxy.arrive()
+        self.ride_proxy.arrive()
 
     def handle_driver_board(self):
         self.info('Boarded')
-        self._ride_proxy.board()
+        self.ride_proxy.board()
 
     def handle_driver_complete(self):
         self.info('Completed')
-        self._ride_proxy.complete()
+        self.ride_proxy.complete()
 
     def handle_driver_rate(self, rating, comment):
         self.info('Rated')
-        self._ride_proxy.driver_rate(rating, comment)
+        self.ride_proxy.driver_rate(rating, comment)
 
-    def notify_driver_request(self, data):
-        self.send('driver_requested', data)
+    def notify_driver_request(self, passenger, location):
+        self.send('driver_requested', {
+            'passenger': passenger,
+            'location': location
+        })
 
     def notify_driver_cancel(self):
         self.send('driver_canceled')
+
+    def notify_driver_disconnect(self):
+        self.send('driver_disconnected')
 
     # Passenger-side
     # --------------
@@ -519,15 +554,13 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         proxy.set_driver(driver_id)
         proxy.request()
 
-        self.set_ride_proxy(proxy)
-
     def handle_passenger_cancel(self):
         self.info('Cancelled')
-        self._ride_proxy.cancel()
+        self.ride_proxy.cancel()
 
     def handle_passenger_rate(self, rating, comment):
         self.info('Rated')
-        self._ride_proxy.passenger_rate(rating, comment)
+        self.ride_proxy.passenger_rate(rating, comment)
 
     def notify_passenger_assign(self, assignment):
         self.debug('Notifying new assignment: {0}'.format(assignment))
@@ -541,6 +574,11 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_reject(self, reason):
         self.send('passenger_rejected', {'reason': reason})
 
+    def notify_passenger_progress(self, location):
+        self.send('passenger_progress', {
+            'location': location,
+        })
+
     def notify_passenger_arrive(self):
         self.send('passenger_arrived')
 
@@ -549,6 +587,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
     def notify_passenger_complete(self):
         self.send('passenger_completed')
+
+    def notify_passenger_disconnect(self):
+        self.send('passenger_disconnected')
 
 
 class LocationServer(LoggableMixin, SingletonMixin):

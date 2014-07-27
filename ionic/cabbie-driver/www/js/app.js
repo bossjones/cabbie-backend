@@ -273,6 +273,15 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
         });
         transitTo('initialized');
         break;
+
+      case 'driver_disconnected':
+        $ionicPopup.alert({
+          title: '연결 끊김',
+          template: '승객의 연결이 끊겼습니다.',
+          okText: '확인'
+        });
+        transitTo('initialized');
+        break;
     }
   };
 

@@ -5,6 +5,7 @@
   <ion-content>
     <google-map center="map.center" zoom="map.zoom" control="map.control" ng-show="located">
       <marker coords="location">
+      <marker coords="driver.location" icon="taxiIcon">
       <marker coords="candidate.location" icon="taxiIcon" ng-repeat="candidate in assignment.candidates">
     </google-map>
 

@@ -283,6 +283,10 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         transitTo('initialized');
         break;
 
+      case 'passenger_progress':
+        transitTo('approved', data);
+        break;
+
       case 'passenger_arrived':
         transitTo('arrived');
         break;
@@ -299,6 +303,14 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
           });
           transitTo('initialized');
         });
+        break;
+      case 'passenger_disconnected':
+        $ionicPopup.alert({
+          title: '연결 끊김',
+          template: '기사의 연결이 끊겼습니다.',
+          okText: '확인'
+        });
+        transitTo('initialized');
         break;
     }
   };
@@ -487,12 +499,19 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     zoom: 15
   };
   $scope.location = {};
-  $scope.assignment = {};
   $scope.state = null;
   $scope.taxiIcon = 'img/taxi.png';
 
+  // For 'assigned' state
+  $scope.assignment = {};
+
+  // For 'approved' state
+  $scope.driver = {
+    location: {}
+  };
+
   $scope.requestBest = function () {
-    Session.request($scope.assignment.best.driver_id);
+    Session.request($scope.assignment.best.driver.id);
   };
   $scope.requestCandidates = function () {
     // FIXME: Implement
@@ -536,6 +555,15 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
           break;
 
         case 'requested':
+          $scope.assignment = {};
+          break;
+
+        case 'approved':
+          data && data.location && ($scope.driver.location = data.location);
+          break;
+
+        case 'boarded':
+          $scope.driver.location = {};
           break;
       };
     });
