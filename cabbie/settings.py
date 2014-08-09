@@ -124,13 +124,13 @@ LOGGING = {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose'
+            'formatter': 'simple'
         },
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': os.path.join(LOG_DIR, 'cabbie.log'),
-            'formatter': 'verbose'
+            'formatter': 'simple'
         },
     },
     'loggers': {
@@ -235,6 +235,13 @@ CORS_ORIGIN_ALLOW_ALL = True
 # --------
 
 LOCATION_SERVER_PORT = 8080
+TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
+DEFAULT_SPEED = 40.0                # km/h
+TMAP_CACHE_TIMEOUT = 10 * 60        # seconds
+LOCATION_REFRESH_INTERVAL = 1       # seconds
+OBJECT_CACHE_TIMEOUT = 5 * 60       # seconds
+MAX_DISTANCE = 10 * 1000            # meters
+CANDIDATE_COUNT = 10
 
 
 

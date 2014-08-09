@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from cabbie.apps.drive.server import LocationServer
+from cabbie.apps.drive.location.server import LocationServer
 
 
 class Command(BaseCommand):

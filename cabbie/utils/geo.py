@@ -21,7 +21,11 @@ def haversine(p1, p2):
 
     # 6367 km is the radius of the Earth
     km = 6367 * c
-    return km
+    return km * 1000
+
+
+# Alias
+distance = haversine
 
 
 class Rtree2D(object):
@@ -58,6 +62,10 @@ class Rtree2D(object):
         self._index.delete(id, self.to_coords(self._locations[id]))
         del self._locations[id]
 
-    def nearest(self, location, count=1, objects=False):
-        return self._index.nearest(self.to_coords(location), num_results=count,
-                                   objects=objects)
+    def nearest(self, location, count=1, objects=False, max_distance=None):
+        ids = self._index.nearest(self.to_coords(location), num_results=count,
+                                  objects=objects)
+        if max_distance is not None:
+            ids = [id for id in ids if distance(self._locations[id], location)
+                                       <= max_distance]
+        return ids
