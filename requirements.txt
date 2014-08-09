@@ -3,7 +3,6 @@ https://www.djangoproject.com/download/1.7c1/tarball/
 Fabric==1.9.0
 Jinja2==2.7.3
 MarkupSafe==0.23
-MySQL-python==1.2.5
 Rtree==0.8.0
 amqp==1.4.5
 anyjson==0.3.3
