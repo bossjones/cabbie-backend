@@ -37,6 +37,9 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
     # Public
     # ------
 
+    def is_activated(self, driver_id):
+        return driver_id in self._driver_locations
+
     def update_location(self, driver_id, location):
         is_new = driver_id not in self._driver_locations
 
@@ -139,4 +142,5 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
                                           max_distance=max_distance)
 
     def on_driver_session_closed(self, user_id, old_session):
-        self.deactivate(user_id)
+        if self.is_activated(user_id):
+            self.deactivate(user_id)

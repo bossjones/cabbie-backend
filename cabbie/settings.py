@@ -241,6 +241,7 @@ TMAP_CACHE_TIMEOUT = 10 * 60        # seconds
 ESTIMATE_CACHE_TIMEOUT = 1 * 60     # seconds
 LOCATION_REFRESH_INTERVAL = 1       # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60      # seconds
+SESSION_CLOSE_TIMEOUT = 3           # seconds
 MAX_DISTANCE = 10 * 1000            # meters
 ESTIMATE_CACHE_DISTANCE = 200       # seconds
 CANDIDATE_COUNT = 10
