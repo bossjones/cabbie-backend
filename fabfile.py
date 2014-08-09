@@ -8,7 +8,7 @@ PROD_DIR = '/home/cabbie/workspace/cabbie-backend'
 ACTIVATE = '/home/cabbie/.virtualenvs/cabbie/bin/activate'
 
 env.roledefs = {
-    'prod': ['lee1469.cafe24.com'],
+    'prod': ['bktaxi.com'],
 }
 env.user = 'cabbie'
 env.password = 'roqkfwk1'
