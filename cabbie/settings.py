@@ -93,7 +93,9 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'cabbie',
         'USER': 'cabbie',
-        'HOST': '127.0.0.1',
+        'PASSWORD': 'roqkfwk1',
+        'HOST': 'cabbie.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
+        'PORT': 5432,
     },
 }
 
@@ -162,7 +164,7 @@ APPEND_SLASH = False
 # -----
 
 VERSION = 1
-HOST = 'cabbie.com'
+HOST = 'bktaxi.com'
 ALLOWED_HOSTS = ['.{0}'.format(HOST)]
 
 
