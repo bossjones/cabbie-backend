@@ -325,11 +325,14 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       var that = this;
 
       send('driver_complete');
+      transitTo('initialized');
 
+      /*
       RateModal.open().then(function (data) {
         that.rate(data.rating, data.comment || '');
         transitTo('initialized');
       });
+      */
     },
     rate: function (rating, comment) {
       send('driver_rate', {

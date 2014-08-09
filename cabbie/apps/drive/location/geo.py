@@ -5,11 +5,6 @@ class Location(list):
         super(Location, self).__init__(*args, **kwargs)
         self._ensure_size()
 
-    def __unicode__(self):
-        return u'Location({location})'.format(location=list(self))
-
-    __repr__ = __str__ = __unicode__
-
     def update(self, location):
         assert len(location) == 2, 'Wrong size'
         for i, coord in enumerate(location):

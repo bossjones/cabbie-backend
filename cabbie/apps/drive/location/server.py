@@ -136,10 +136,6 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.info('Completed')
         self.ride_proxy.complete()
 
-    def handle_driver_rate(self, rating, comment):
-        self.info('Rated')
-        self.ride_proxy.driver_rate(rating, comment)
-
     def notify_driver_request(self, passenger, location):
         self.send('driver_requested', {
             'passenger': passenger,
@@ -162,13 +158,16 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def handle_passenger_request(self, driver_id, location):
         self.info('Requested')
 
+        # Fetch the last driver location before deactivating
+        driver_location = DriverManager().get_driver_location(driver_id)
+
         # Change the states of drivers and passengers accordingly
         WatchManager().unwatch(self._user_id)
         DriverManager().deactivate(driver_id)
 
         # Create a new ride proxy instance
         proxy = RideProxyManager().create(self._user_id, location)
-        proxy.set_driver(driver_id)
+        proxy.set_driver(driver_id, driver_location)
         proxy.request()
 
     def handle_passenger_cancel(self):

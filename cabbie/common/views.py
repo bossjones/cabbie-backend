@@ -9,9 +9,15 @@ from coffin.views.generic import (
     UpdateView as BaseUpdateView,
     DeleteView as BaseDeleteView,
 )
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+from cabbie.utils import json
 
 
 # Mixins
@@ -29,6 +35,46 @@ class LoginRequired(object):
         return super(LoginRequired, self).dispatch(*args, **kwargs)
 
 
+class CsrfExcempt(object):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(CsrfExcempt, self).dispatch(*args, **kwargs)
+
+
+class SecretRequired(object):
+    def dispatch(self, request, *args, **kwargs):
+        if request.META.get('HTTP_SECRET') != settings.SECRET_KEY:
+            raise PermissionDenied('Secret required')
+        return super(SecretRequired, self).dispatch(request, *args, **kwargs)
+
+
+class HelperMixin(object):
+    @classmethod
+    def render_json_raw(cls, data, **response_kwargs):
+        return HttpResponse(json.dumps(data), content_type='application/json',
+                            **response_kwargs)
+    @classmethod
+    def render_json(cls, data=None, status=True, **response_kwargs):
+        response = {
+            'status': 'success' if status else 'failure',
+            'data': data if data else {},
+        }
+        return cls.render_json_raw(response)
+
+    @classmethod
+    def render_error_msg(cls, msg, **response_kwargs):
+        return cls.render_json({'msg': msg}, False)
+
+    @classmethod
+    def render_html(cls, data, **response_kwargs):
+        return HttpResponse(data, content_type='text/html',
+                            **response_kwargs)
+
+    @classmethod
+    def redirect(cls, url):
+        return HttpResponseRedirect(url)
+
+
 # View
 # ----
 
@@ -41,3 +87,7 @@ class FormView(Atomic, BaseFormView)     : pass
 class CreateView(Atomic, BaseCreateView) : pass
 class UpdateView(Atomic, BaseUpdateView) : pass
 class DeleteView(Atomic, BaseDeleteView) : pass
+
+
+class InternalView(CsrfExcempt, SecretRequired, Atomic, HelperMixin, View):
+    pass
