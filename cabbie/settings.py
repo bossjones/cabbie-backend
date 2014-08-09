@@ -238,10 +238,13 @@ LOCATION_SERVER_PORT = 8080
 TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
 DEFAULT_SPEED = 40.0                # km/h
 TMAP_CACHE_TIMEOUT = 10 * 60        # seconds
+ESTIMATE_CACHE_TIMEOUT = 1 * 60     # seconds
 LOCATION_REFRESH_INTERVAL = 1       # seconds
-OBJECT_CACHE_TIMEOUT = 5 * 60       # seconds
+OBJECT_CACHE_TIMEOUT = 10 * 60      # seconds
 MAX_DISTANCE = 10 * 1000            # meters
+ESTIMATE_CACHE_DISTANCE = 200       # seconds
 CANDIDATE_COUNT = 10
+REASSIGN_COUNT = 10
 
 
 

@@ -3,7 +3,12 @@ from math import radians, cos, sin, asin, sqrt
 from rtree.index import Rtree
 
 
-def haversine(p1, p2):
+def haversine(*p):
+    if len(p) == 1:
+        p1, p2 = p[0]
+    else:
+        p1, p2 = p
+
     """Calculate the great circle distance between two points on the earth
     (specified in decimal degrees)
     """

@@ -3,7 +3,7 @@ import tornado.web
 import tornado.websocket
 
 from cabbie.apps.drive.location.auth import Authenticator
-from cabbie.apps.drive.location.geo import LocationManager
+from cabbie.apps.drive.location.driver import DriverManager
 from cabbie.apps.drive.location.loop import start
 from cabbie.apps.drive.location.proxy import RideProxy
 from cabbie.apps.drive.location.session import SessionManager
@@ -110,11 +110,11 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
             self.ride_proxy.progress(location)
         else:
             # Otherwise, report to the location manager
-            LocationManager().update_location(self._user_id, location)
+            DriverManager().update_location(self._user_id, location)
 
     def handle_driver_deactivate(self):
         self.info('Deactivated')
-        LocationManager().deactivate(self._user_id)
+        DriverManager().deactivate(self._user_id)
 
     def handle_driver_approve(self):
         self.info('Approved')
@@ -164,7 +164,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         # Change the states of drivers and passengers accordingly
         WatchManager().unwatch(self._user_id)
-        LocationManager().deactivate(driver_id)
+        DriverManager().deactivate(driver_id)
 
         # Create a new ride proxy instance
         proxy = RideProxy(self._user_id, location)

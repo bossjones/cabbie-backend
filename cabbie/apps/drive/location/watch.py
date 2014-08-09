@@ -3,9 +3,10 @@ from collections import defaultdict
 from django.conf import settings
 from tornado import gen
 
+from cabbie.apps.drive.location.driver import DriverManager
 from cabbie.apps.drive.location.loop import delay
-from cabbie.apps.drive.location.geo import LocationManager
 from cabbie.apps.drive.location.session import SessionManager
+from cabbie.utils.geo import Rtree2D
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 
@@ -42,17 +43,20 @@ class Watch(object):
 
 class WatchManager(LoggableMixin, SingletonMixin):
     refresh_interval = settings.LOCATION_REFRESH_INTERVAL
+    candidate_count = settings.CANDIDATE_COUNT
+    reassign_count = settings.REASSIGN_COUNT
+    max_distance = settings.MAX_DISTANCE
 
     def __init__(self):
         super(WatchManager, self).__init__()
+        self._passenger_index = Rtree2D()
         self._watches_by_passenger = {}
-
         self._matches_by_driver = defaultdict(set)
         self._best_matches_by_driver = {}
 
         # Register callbacks
-        LocationManager().subscribe('activated', self.on_driver_activated)
-        LocationManager().subscribe('deactivated', self.on_driver_deactivated)
+        DriverManager().subscribe('activated', self.on_driver_activated)
+        DriverManager().subscribe('deactivated', self.on_driver_deactivated)
         SessionManager().subscribe('passenger_closed',
                                    self.on_passenger_session_closed)
 
@@ -66,8 +70,9 @@ class WatchManager(LoggableMixin, SingletonMixin):
             watch = Watch(passenger_id, location)
             self._watches_by_passenger[passenger_id] = watch
 
-        # Update passnger location
+        # Update passenger location
         watch.update_location(location)
+        self._passenger_index.set(passenger_id, location)
 
         if immediate_assign:
             self.assign(passenger_id)
@@ -76,10 +81,16 @@ class WatchManager(LoggableMixin, SingletonMixin):
         watch = self._watches_by_passenger[passenger_id]
         if watch:
             self._remove_matches_by_watch(watch)
+
         try:
             del self._watches_by_passenger[passenger_id]
         except KeyError:
             self.error('Failed to remove {0}'.format(passenger_id))
+
+        try:
+            self._passenger_index.remove(passenger_id)
+        except KeyError:
+            self.error('Failed to remove {0} from index'.format(passenger_id))
 
     @gen.coroutine
     def assign(self, passenger_id):
@@ -96,9 +107,11 @@ class WatchManager(LoggableMixin, SingletonMixin):
         old_assignment = watch.assignment
 
         # TODO: Consider already matched drivers
-        candidates = yield LocationManager().get_driver_candidates(
-            watch.location)
+        candidates = yield DriverManager().get_driver_candidates(
+            passenger_id, watch.location, count=self.candidate_count,
+            max_distance=self.max_distance)
 
+        # Finding the best match
         best = None
         for candidate in candidates:
             driver_id = candidate['driver']['id']
@@ -109,11 +122,13 @@ class WatchManager(LoggableMixin, SingletonMixin):
                 continue
             if not best or candidate['estimate'].time < best['estimate'].time:
                 best = candidate
-        if not best:
-            # Heuristic. First one is the closest one, FYI
-            best = assignment['candidates'][0]
 
-        self._best_matches_by_driver[best['driver']['id']] = passenger_id
+        if not best and candidates:
+            # Heuristic. First one is the closest one, FYI
+            best = candidates[0]
+
+        if best:
+            self._best_matches_by_driver[best['driver']['id']] = passenger_id
 
         assignment = {'candidates': candidates, 'best': best}
 
@@ -124,8 +139,17 @@ class WatchManager(LoggableMixin, SingletonMixin):
                 assignment)
 
     def on_driver_activated(self, driver_id, location):
-        # FIXME: Find nearby passengers andrematch
-        pass
+        passengers = self._passenger_index.nearest(
+            location, count=self.reassign_count,
+            max_distance=self.max_distance)
+
+        self.debug(
+            'Driver {driver} was activated so reassigning for {count} '
+            'passenger(s) nearby'.format(
+                driver=driver_id, count=len(passengers)))
+
+        for passenger_id in passengers:
+            self.assign(passenger_id)
 
     def on_driver_deactivated(self, driver_id, last_location):
         to_assign = set()
@@ -137,9 +161,8 @@ class WatchManager(LoggableMixin, SingletonMixin):
 
         # Remove from matches
         passengers = self._matches_by_driver[driver_id]
-        for passenger_id in passengers:
-            passengers.remove(passenger_id)
-            to_assign.add(passenger_id)
+        to_assign.update(passengers)
+        passengers.clear()
 
         self.debug(
             'Driver {driver} was deactivated so reassigning for {count} '
@@ -160,7 +183,9 @@ class WatchManager(LoggableMixin, SingletonMixin):
     def _remove_matches_by_watch(self, watch):
         for driver_id in watch.driver_ids:
             # Remove from matches
-            self._matches_by_driver[driver_id].remove(watch.passenger_id)
+            passengers = self._matches_by_driver[driver_id]
+            if watch.passenger_id in passengers:
+                passengers.remove(watch.passenger_id)
 
             # Remove from best matches
             if (self._best_matches_by_driver.get(driver_id)
@@ -191,5 +216,3 @@ class WatchManager(LoggableMixin, SingletonMixin):
             self.unwatch(passenger_id)
 
         delay(self.refresh_interval, self._refresh)
-
-

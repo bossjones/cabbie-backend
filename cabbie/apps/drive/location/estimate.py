@@ -83,24 +83,23 @@ class TmapEstimator(AbstractEstimator):
     url = 'https://apis.skplanetx.com/tmap/routes?version=1'
     cache_timeout = settings.TMAP_CACHE_TIMEOUT
 
-    # TODO: Normalized caching (adjusting location to pseudo-location)
-
     def __init__(self, *args, **kwargs):
         super(TmapEstimator, self).__init__(*args, **kwargs)
+        self._count = 0
         self._caches = {}
 
-    def _get_cache_key(self, source, destination):
+    def _cache_key(self, source, destination):
         return (tuple(source), tuple(destination))
 
     def _set_cache(self, source, destination, estimate):
-        key = self._get_cache_key(source, destination)
+        key = self._cache_key(source, destination)
         self._caches[key] = {
             'last': time.time(),
             'estimate': estimate,
         }
 
     def _get_cache(self, source, destination):
-        key = self._get_cache_key(source, destination)
+        key = self._cache_key(source, destination)
         entry = self._caches.get(key)
         if not entry:
             return None
@@ -110,7 +109,10 @@ class TmapEstimator(AbstractEstimator):
 
     @gen.coroutine
     def estimate(self, source, destination, force_refresh=False):
-        self.debug('Estimating')
+        self._count += 1
+
+        self.debug('Estimating (Total {0} requested so far)'.format(
+            self._count))
 
         estimate = self._get_cache(source, destination)
         if estimate:
