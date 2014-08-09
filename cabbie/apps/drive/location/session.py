@@ -1,3 +1,6 @@
+from django.conf import settings
+
+from cabbie.apps.drive.location.loop import delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
@@ -7,6 +10,10 @@ class SessionManager(LoggableMixin, SingletonMixin, PubsubMixin):
     """Central point to manage all concurrent (web)socket connections."""
 
     # TODO: Heartbeating periodically to check if connection is live (ping)
+    # TODO: Buffer session-related function calls when a session is temporarily
+    # unavailable
+
+    session_close_timeout = settings.SESSION_CLOSE_TIMEOUT
 
     def __init__(self):
         super(SessionManager, self).__init__()
@@ -29,5 +36,10 @@ class SessionManager(LoggableMixin, SingletonMixin, PubsubMixin):
             del self._sessions[user_id]
         except KeyError:
             self.error('Failed to remove {0}'.format(user_id))
-        self.publish('{role}_closed'.format(role=old_session.role),
-                     user_id, old_session)
+
+        # Have buffer before broadcasting the session-closed event
+        def on_delay():
+            if user_id not in self._sessions:
+                self.publish('{role}_closed'.format(role=old_session.role),
+                            user_id, old_session)
+        delay(self.session_close_timeout, on_delay)
