@@ -7,7 +7,7 @@ class UserSerializer(AbstractSerializer):
         model = User
         fields = ('id', 'phone', 'password', 'name', 'date_joined')
         read_only_fields = ('date_joined',)
-        write_only_fields = ('phone', 'password')
+        write_only_fields = ('password',)
 
 
 class PassengerSerializer(UserSerializer):
