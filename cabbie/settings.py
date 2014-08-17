@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
 
     # Admin
+    'suit',
     'django.contrib.admin',
     'django.contrib.admindocs',
 
@@ -249,6 +250,14 @@ ESTIMATE_CACHE_DISTANCE = 200       # seconds
 CANDIDATE_COUNT = 10
 REASSIGN_COUNT = 10
 
+
+# Suit
+# ----
+
+SUIT_CONFIG = {
+    'ADMIN_NAME': 'CABBIE',
+    'LIST_PER_PAGE': 100,
+}
 
 
 # Local settings
