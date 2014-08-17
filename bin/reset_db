@@ -9,6 +9,7 @@ psql -d cabbie -c "create extension postgis_topology"
 rm cabbie/apps/**/migrations/0*
 $PYTHON manage.py makemigrations
 $PYTHON manage.py migrate
+$PYTHON manage.py loaddata fixtures/*.json
 
 #createlang plpgsql cabbie
 #psql -d cabbie -f postgis.sql

@@ -32,11 +32,16 @@ router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
 
 urlpatterns += patterns('',
-    url(r'^api/', include(router.urls)),
+    url(r'^api/drivers/verify',
+        import_('cabbie.apps.account.views.DriverVerifyView').as_view()),
 )
 
 urlpatterns += patterns('',
     url(r'^api/auth/', 'rest_framework.authtoken.views.obtain_auth_token')
+)
+
+urlpatterns += patterns('',
+    url(r'^api/', include(router.urls)),
 )
 
 

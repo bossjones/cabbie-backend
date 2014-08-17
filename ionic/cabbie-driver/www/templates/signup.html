@@ -2,37 +2,26 @@
   <h1 class="title">Cabbie Driver</h1>
 </ion-header-bar>
 <div class="bar bar-subheader bar-calm">
-  <h1 class="title">회원가입</h1>
+  <h1 class="title">회원인증</h1>
 </div>
+
 <ion-content class="has-subheader">
   <form name="form" novalidate ng-submit="submit()">
     <div class="list">
       <label class="item item-input">
         <span class="input-label">전화번호</span>
-        <input type="text" name="phone" ng-model="data.phone" placeholder="01099991234" required>
+        <input type="text" name="phone" ng-model="data.phone" placeholder="01099991234" required readonly>
         <i class="icon ion-alert-circled error" ng-show="form.phone.$dirty && form.phone.$invalid"></i>
         <i class="icon ion-checkmark-round valid" ng-show="form.phone.$dirty && !form.phone.$invalid"></i>
       </label>
       <label class="item item-input">
-        <span class="input-label">이름</span>
-        <input type="text" name="name" ng-model="data.name" placeholder="이행복" required>
-        <i class="icon ion-alert-circled error" ng-show="form.name.$dirty && form.name.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.name.$dirty && !form.name.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">자격증번호</span>
-        <input type="text" name="license" ng-model="data.license" placeholder="2000-24-20880" required>
-        <i class="icon ion-alert-circled error" ng-show="form.email.$dirty && form.license.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.email.$dirty && !form.license.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">비밀번호</span>
-        <input type="password" model="password" ng-model="data.password" placeholder="비밀번호" required>
-        <i class="icon ion-alert-circled error" ng-show="form.password.$dirty && form.password.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.password.$dirty && !form.password.$invalid"></i>
+        <span class="input-label">인증번호</span>
+        <input type="text" name="verification_code" ng-model="data.verification_code" placeholder="1111" required>
+        <i class="icon ion-alert-circled error" ng-show="form.email.$dirty && form.verification_code.$invalid"></i>
+        <i class="icon ion-checkmark-round valid" ng-show="form.email.$dirty && !form.verification_code.$invalid"></i>
       </label>
       <label class="item">
-        <button class="button button-block button-calm" type="submit" ng-disabled="form.$invalid">가입하기</button>
+        <button class="button button-block button-calm" type="submit" ng-disabled="form.$invalid">인증하기</button>
       </label>
     </div>
   </form>
@@ -42,43 +31,3 @@
     </p>
   </div>
 </ion-content>
-
-<ion-content class="has-subheader">
-  <form name="form" novalidate ng-submit="submit()">
-    <div class="list">
-      <label class="item item-input">
-        <span class="input-label">전화번호</span>
-        <input type="text" name="phone" ng-model="data.phone" placeholder="01099991234" required>
-        <i class="icon ion-alert-circled error" ng-show="form.phone.$dirty && form.phone.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.phone.$dirty && !form.phone.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">이름</span>
-        <input type="text" name="name" ng-model="data.name" placeholder="이행복" required>
-        <i class="icon ion-alert-circled error" ng-show="form.name.$dirty && form.name.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.name.$dirty && !form.name.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">자격증번호</span>
-        <input type="text" name="licence_number" ng-model="data.licence_number" placeholder="2000-24-20880" required>
-        <i class="icon ion-alert-circled error" ng-show="form.email.$dirty && form.licence_number.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.email.$dirty && !form.licence_number.$invalid"></i>
-      </label>
-      <label class="item item-input">
-        <span class="input-label">비밀번호</span>
-        <input type="password" model="password" ng-model="data.password" placeholder="비밀번호" required>
-        <i class="icon ion-alert-circled error" ng-show="form.password.$dirty && form.password.$invalid"></i>
-        <i class="icon ion-checkmark-round valid" ng-show="form.password.$dirty && !form.password.$invalid"></i>
-      </label>
-      <label class="item">
-        <button class="button button-block button-calm" type="submit" ng-disabled="form.$invalid">가입하기</button>
-      </label>
-    </div>
-  </form>
-  <div class="padding">
-    <p>
-      <a class="button button-inline button-clear button-positive" href="#/login" nav-clear>로그인</a>
-    </p>
-  </div>
-</ion-content>
-

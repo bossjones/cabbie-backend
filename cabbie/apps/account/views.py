@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.account.serializers import (
@@ -37,3 +38,23 @@ class PassengerViewSet(AbstractUserViewSet):
 class DriverViewSet(AbstractUserViewSet):
     model = Driver
     serializer_class = DriverSerializer
+
+
+class DriverVerifyView(APIView):
+    def _render_error(self, msg):
+        return Response({'error':msg}, status=status.HTTP_401_UNAUTHORIZED)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            driver = Driver.objects.get(phone=request.DATA['phone'])
+        except Driver.DoesNotExist as e:
+            return self._render_error(unicode(e))
+        if driver.is_verified:
+            return self._render_error('Already verified')
+        if driver.verification_code != request.DATA['verification_code']:
+            return self._render_error('Invalid verification code')
+
+        driver.is_verified = True
+        driver.save()
+
+        return Response({'login_key': driver.get_login_key()})

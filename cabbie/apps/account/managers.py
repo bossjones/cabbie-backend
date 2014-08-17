@@ -1,11 +1,6 @@
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
 
-from cabbie.utils.model import get_model_lazily
-
-
-User = get_model_lazily('account.User')
-
 
 class UserQuerySet(models.QuerySet):
     pass

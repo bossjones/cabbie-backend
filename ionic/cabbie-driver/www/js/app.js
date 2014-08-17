@@ -119,6 +119,13 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     }
   };
 }])
+.factory('Device', [function () {
+  return {
+    getPhoneNumber: function () {
+      return '01012341234';
+    }
+  };
+}])
 .factory('Auth', [
     '$q', '$http', '$window', '$rootScope',
     function ($q, $http, $window, $rootScope) {
@@ -146,6 +153,12 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     },
     getToken: function () {
       return $window.localStorage.getItem('auth.token');
+    },
+    setLoginKey: function (key) {
+      $window.localStorage.setItem('auth.key', key);
+    },
+    getLoginKey: function () {
+      return $window.localStorage.getItem('auth.key');
     },
     isAuthenticated: function () {
       return !!$window.localStorage.getItem('auth.token');
@@ -386,13 +399,13 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 
 .controller('LoginCtrl', [
     '$location', '$scope', '$ionicViewService', '$ionicPopup', '$ionicLoading',
-    'Auth',
+    'Device', 'Auth',
     function ($location, $scope, $ionicViewService, $ionicPopup, $ionicLoading,
-              Auth) {
+              Device, Auth) {
   $scope.data = {};
   $scope.submit = function () {
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    Auth.login($scope.data.phone, $scope.data.password)
+    Auth.login($scope.data.phone, Auth.getLoginKey())
       .then(function () {
         $location.url('/app/main');
       })
@@ -416,20 +429,44 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       });
       deregister();
     });
+
+    $scope.data.phone = Device.getPhoneNumber();
   };
 
   init();
 }])
 
 .controller('SignupCtrl', [
-    '$scope', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
-    'Auth', 'Driver',
-    function ($scope, $location, $ionicViewService, $ionicLoading, $ionicPopup,
-              Auth, Driver) {
+    '$scope', '$location', '$http', '$ionicViewService', '$ionicLoading', '$ionicPopup',
+    'Device', 'Auth', 'Driver',
+    function ($scope, $location, $http, $ionicViewService, $ionicLoading, $ionicPopup,
+              Device, Auth, Driver) {
   $scope.data = {};
   $scope.submit = function () {
-    var driver = new Driver($scope.data);
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
+
+    $http.post('/api/drivers/verify', $scope.data)
+      .success(function (r) {
+        Auth.setLoginKey(r.login_key);
+        Auth.login($scope.data.phone, Auth.getLoginKey()).then(function () {
+          $ionicLoading.hide();
+          $location.url('/app/main');
+        });
+      })
+      .error(function (r) {
+        $ionicPopup.alert({
+          title: '인증 실패',
+          template: r.error,
+          okText: '확인'
+        });
+      })
+      .finally(function () {
+        $ionicLoading.hide();
+      });
+
+    return;
+
+    var driver = new Driver($scope.data);
     driver.$save().then(function () {
       Auth.login($scope.data.phone, $scope.data.password).then(function () {
         $ionicLoading.hide();
@@ -460,6 +497,8 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       });
       deregister();
     });
+
+    $scope.data.phone = Device.getPhoneNumber();
   };
 
   init();

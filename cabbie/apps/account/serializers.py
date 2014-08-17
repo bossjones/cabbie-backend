@@ -23,6 +23,6 @@ class PassengerSerializer(UserSerializer):
 class DriverSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = Driver
-        fields = UserSerializer.Meta.fields + ('licence_number', 'ride_count')
+        fields = UserSerializer.Meta.fields + ('license_number', 'ride_count')
         read_only_fields = UserSerializer.Meta.read_only_fields \
                            + ('ride_count',)

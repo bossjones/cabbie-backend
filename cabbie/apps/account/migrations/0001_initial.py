@@ -42,7 +42,9 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Driver',
             fields=[
-                ('licence_number', models.CharField(unique=True, max_length=100, verbose_name='license number')),
+                ('verification_code', models.CharField(max_length=10)),
+                ('is_verified', models.BooleanField(default=False)),
+                ('license_number', models.CharField(unique=True, max_length=100, verbose_name='license number')),
                 ('ride_count', models.PositiveIntegerField(default=0, verbose_name='ride count')),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],

@@ -41,7 +41,7 @@ class ModelManager(LoggableMixin, SingletonMixin):
         if isinstance(user, Driver):
             serialized.update({
                 'ride_count': user.ride_count,
-                'licence_number': user.licence_number,
+                'license_number': user.license_number,
                 'rating': 2.5,
             })
         return serialized
