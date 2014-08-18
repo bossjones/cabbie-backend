@@ -52,6 +52,7 @@ gulp watch
 ```
 
 
-## Checklist
+## Todo
 
+- Add `is_accepted` field to the `Driver` model
 - Permission control for REST API
