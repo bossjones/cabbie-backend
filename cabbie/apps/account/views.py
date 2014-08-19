@@ -50,7 +50,7 @@ class DriverVerifyView(APIView):
         except Driver.DoesNotExist as e:
             return self._render_error(unicode(e))
         if driver.is_verified:
-            return self._render_error('Already verified')
+            pass
         if driver.verification_code != request.DATA['verification_code']:
             return self._render_error('Invalid verification code')
 
