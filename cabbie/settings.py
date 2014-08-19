@@ -16,7 +16,7 @@ import djcelery
 DEBUG = False
 TEMPLATE_DEBUG = False
 SECRET_KEY = '3bh%kzi)gd)-c8b49b#vrvkr=%u5a^wf6@gej1904r0ze(nwnm'
-ADMINS = (('Dev', 'mjipeo@gmail.com'),)
+ADMINS = (('Dev', 'mjipeo@gmail.com'),('Dev', 'juno.kim@bktaxi.com'))
 MANAGERS = ADMINS
 ROOT_URLCONF = 'cabbie.urls'
 WSGI_APPLICATION = 'cabbie.wsgi.application'

@@ -21,12 +21,14 @@ def prepare():
 def deploy_web():
     with cd(PROD_DIR):
         run('git pull origin master')
+        run('pip install -r requirements.txt')
         sudo('supervisorctl restart cabbie-web')
 
 @roles('prod')
 def deploy_celery():
     with cd(PROD_DIR):
         run('git pull origin master')
+        run('pip install -r requirements.txt')
         sudo('supervisorctl restart cabbie-celery')
         sudo('supervisorctl restart cabbie-celerybeat')
 
@@ -34,6 +36,7 @@ def deploy_celery():
 def deploy_location():
     with cd(PROD_DIR):
         run('git pull origin master')
+        run('pip install -r requirements.txt')
         sudo('supervisorctl restart cabbie-location')
 
 def deploy():
