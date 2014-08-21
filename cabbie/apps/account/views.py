@@ -57,4 +57,4 @@ class DriverVerifyView(APIView):
         driver.is_verified = True
         driver.save()
 
-        return Response({'login_key': driver.get_login_key()})
+        return Response({'login_key': driver.get_login_key(), 'driver': DriverSerializer(driver).data})
