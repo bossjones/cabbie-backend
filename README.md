@@ -55,4 +55,5 @@ gulp watch
 ## Todo
 
 - Add `is_accepted` field to the `Driver` model
+- Dispatch estimate information to passenger and driver
 - Permission control for REST API
