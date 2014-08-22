@@ -448,20 +448,34 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     $http.post('/api/drivers/verify', $scope.data)
       .success(function (r) {
         Auth.setLoginKey(r.login_key);
-        Auth.login($scope.data.phone, Auth.getLoginKey()).then(function () {
-          $ionicLoading.hide();
-          $location.url('/app/main');
-        });
+        $http.post('/api/drivers/accept', {
+            phone: $scope.data.phone,
+            login_key: Auth.getLoginKey()
+          })
+          .success(function (r) {
+            Auth.login($scope.data.phone, Auth.getLoginKey()).then(function () {
+              $ionicLoading.hide();
+              $location.url('/app/main');
+            });
+          })
+          .error(function (r) {
+            $ionicPopup.alert({
+              title: '수락 실패',
+              template: r.error,
+              okText: '확인'
+            });
+          })
+          .finally(function () {
+            $ionicLoading.hide();
+          });
       })
       .error(function (r) {
+        $ionicLoading.hide();
         $ionicPopup.alert({
           title: '인증 실패',
           template: r.error,
           okText: '확인'
         });
-      })
-      .finally(function () {
-        $ionicLoading.hide();
       });
 
     return;

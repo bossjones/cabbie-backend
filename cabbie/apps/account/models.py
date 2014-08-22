@@ -47,6 +47,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
         except (ObjectDoesNotExist, AttributeError):
             return None
 
+    def has_role(self, role_name):
+        return bool(self.get_role(role_name))
+
 
 class Passenger(User):
     email = models.EmailField(_('email address'), unique=True)
@@ -58,6 +61,7 @@ class Passenger(User):
 class Driver(User):
     verification_code = models.CharField(max_length=10)
     is_verified = models.BooleanField(default=False)
+    is_accepted = models.BooleanField(default=False)
 
     license_number = models.CharField(_('license number'), max_length=100,
                                       unique=True)

@@ -35,9 +35,13 @@ urlpatterns += patterns('',
     url(r'^api/drivers/verify',
         import_('cabbie.apps.account.views.DriverVerifyView').as_view()),
 )
-
 urlpatterns += patterns('',
-    url(r'^api/auth/', 'rest_framework.authtoken.views.obtain_auth_token')
+    url(r'^api/drivers/accept',
+        import_('cabbie.apps.account.views.DriverAcceptView').as_view()),
+)
+urlpatterns += patterns('',
+    url(r'^api/auth',
+        import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
 )
 
 urlpatterns += patterns('',

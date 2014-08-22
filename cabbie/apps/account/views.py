@@ -1,17 +1,23 @@
 from rest_framework import viewsets, status
+from rest_framework.authtoken.views import (
+    ObtainAuthToken as BaseObtainAuthToken)
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from cabbie.apps.account.models import User, Passenger, Driver
+from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.account.serializers import (
-    UserSerializer, PassengerSerializer, DriverSerializer)
+    AuthTokenSerializer, UserSerializer, PassengerSerializer, DriverSerializer)
+from cabbie.common.views import APIMixin, APIView
 from cabbie.utils.ds import pick
 
 
 # REST
 # ----
 
-class AbstractUserViewSet(viewsets.ModelViewSet):
+class ObtainAuthToken(BaseObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+
+
+class AbstractUserViewSet(APIMixin, viewsets.ModelViewSet):
     model = None
     serializer_class = None
 
@@ -41,20 +47,35 @@ class DriverViewSet(AbstractUserViewSet):
 
 
 class DriverVerifyView(APIView):
-    def _render_error(self, msg):
-        return Response({'error':msg}, status=status.HTTP_401_UNAUTHORIZED)
-
     def post(self, request, *args, **kwargs):
         try:
             driver = Driver.objects.get(phone=request.DATA['phone'])
         except Driver.DoesNotExist as e:
-            return self._render_error(unicode(e))
-        if driver.is_verified:
-            pass
+            return self.render_error(unicode(e))
         if driver.verification_code != request.DATA['verification_code']:
-            return self._render_error('Invalid verification code')
+            return self.render_error('Invalid verification code')
 
         driver.is_verified = True
         driver.save()
 
-        return Response({'login_key': driver.get_login_key(), 'driver': DriverSerializer(driver).data})
+        return self.render({
+            'login_key': driver.get_login_key(),
+            'driver': DriverSerializer(driver).data
+        })
+
+
+class DriverAcceptView(APIView):
+    def post(self, request, *args, **kwargs):
+        try:
+            driver = Driver.objects.get(phone=request.DATA['phone'])
+        except Driver.DoesNotExist as e:
+            return self.render_error(unicode(e))
+        if not driver.is_verified:
+            return self.render_error('Must be verified first')
+        if driver.get_login_key() != request.DATA['login_key']:
+            return self.render_error('Invalid login key')
+
+        driver.is_accepted = True
+        driver.save()
+
+        return self.render()

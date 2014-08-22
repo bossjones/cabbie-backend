@@ -5,7 +5,7 @@ from cabbie.apps.account.models import Driver
 
 class DriverAdmin(admin.ModelAdmin):
     list_display = ('phone', 'name', 'license_number', 'verification_code',
-                    'is_verified', 'date_joined')
+                    'is_verified', 'is_accepted', 'date_joined')
     fields = ('phone', 'name', 'license_number')
     ordering = ('-date_joined',)
 

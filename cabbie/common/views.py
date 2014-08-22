@@ -16,6 +16,9 @@ from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView as BaseAPIView
 
 from cabbie.utils import json
 
@@ -75,6 +78,16 @@ class HelperMixin(object):
         return HttpResponseRedirect(url)
 
 
+class APIMixin(object):
+    @classmethod
+    def render(cls, data=None, **response_kwargs):
+        return Response(data or {}, **response_kwargs)
+
+    @classmethod
+    def render_error(cls, msg, status=status.HTTP_400_BAD_REQUEST):
+        return cls.render({'error': msg}, status=status)
+
+
 # View
 # ----
 
@@ -87,6 +100,10 @@ class FormView(Atomic, BaseFormView)     : pass
 class CreateView(Atomic, BaseCreateView) : pass
 class UpdateView(Atomic, BaseUpdateView) : pass
 class DeleteView(Atomic, BaseDeleteView) : pass
+
+
+class APIView(APIMixin, BaseAPIView):
+    pass
 
 
 class InternalView(CsrfExcempt, SecretRequired, Atomic, HelperMixin, View):
