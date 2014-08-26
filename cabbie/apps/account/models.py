@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
-from cabbie.common.models import ActiveMixin
+from cabbie.common.models import ActiveMixin, NullableImageMixin
 from cabbie.utils.crypt import encrypt
 from cabbie.utils.validator import validate_phone
 from cabbie.utils.verify import issue_verification_code, send_verification_code
@@ -58,7 +58,9 @@ class Passenger(User):
     objects = PassengerManager()
 
 
-class Driver(User):
+class Driver(User, NullableImageMixin):
+    IMAGE_TYPES = ('100s',)
+
     verification_code = models.CharField(max_length=10)
     is_verified = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
@@ -88,6 +90,5 @@ class Driver(User):
         self.set_password(self.get_login_key())
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
-
 
 from cabbie.apps.account.receivers import *

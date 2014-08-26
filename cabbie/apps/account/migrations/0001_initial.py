@@ -5,6 +5,7 @@ from django.db import models, migrations
 import django.utils.timezone
 from django.conf import settings
 import cabbie.utils.validator
+import cabbie.common.models
 
 
 class Migration(migrations.Migration):
@@ -42,6 +43,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Driver',
             fields=[
+                ('image', models.ImageField(height_field=b'image_height', width_field=b'image_width', null=True, upload_to=cabbie.common.models._upload_to, blank=True)),
+                ('image_key', models.CharField(max_length=100, blank=True)),
+                ('image_width', models.IntegerField(null=True, blank=True)),
+                ('image_height', models.IntegerField(null=True, blank=True)),
                 ('verification_code', models.CharField(max_length=10)),
                 ('is_verified', models.BooleanField(default=False)),
                 ('is_accepted', models.BooleanField(default=False)),
@@ -55,7 +60,7 @@ class Migration(migrations.Migration):
             options={
                 'abstract': False,
             },
-            bases=('account.user',),
+            bases=('account.user', models.Model),
         ),
         migrations.CreateModel(
             name='Passenger',

@@ -44,6 +44,10 @@ urlpatterns += patterns('',
         import_('cabbie.apps.account.views.DriverAcceptView').as_view()),
 )
 urlpatterns += patterns('',
+    url(r'^api/drivers/upload/profile_photo',
+        import_('cabbie.apps.account.views.DriverPhotoUploadView').as_view()),
+)
+urlpatterns += patterns('',
     url(r'^api/geo/poi/around',
         import_('cabbie.apps.drive.views.GeoPOIAroundView').as_view()),
 )

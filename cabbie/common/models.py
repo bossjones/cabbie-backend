@@ -333,7 +333,7 @@ class NullableImageMixin(ImageMixin):
     image = models.ImageField(upload_to=_upload_to, blank=True, null=True,
                               width_field='image_width',
                               height_field='image_height')
-    image_key = models.CharField(max_length=30, blank=True)
+    image_key = models.CharField(max_length=100, blank=True)
     image_width = models.IntegerField(blank=True, null=True)
     image_height = models.IntegerField(blank=True, null=True)
 

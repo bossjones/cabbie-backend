@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
     ObtainAuthToken as BaseObtainAuthToken)
 from rest_framework.mixins import CreateModelMixin
@@ -110,3 +111,25 @@ class DriverAcceptView(APIView):
         driver.save()
 
         return self.render()
+
+class DriverPhotoUploadView(APIView):
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, *args, **kwargs):
+       
+        file_obj = request.FILES['upload_file']
+        file_name = request.DATA['filename']
+        
+        import mimetypes
+        content_type, encoding = mimetypes.guess_type(file_name)
+        file_obj.content_type = content_type
+        file_obj._name = file_name
+
+        driver = Driver.objects.get(id=request.user.id)
+        driver.image = file_obj
+        driver.save()
+
+        return self.render({
+            'uploaded_url': driver.url
+        })
+         
