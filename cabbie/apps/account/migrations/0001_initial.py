@@ -44,8 +44,12 @@ class Migration(migrations.Migration):
             fields=[
                 ('verification_code', models.CharField(max_length=10)),
                 ('is_verified', models.BooleanField(default=False)),
+                ('is_accepted', models.BooleanField(default=False)),
                 ('license_number', models.CharField(unique=True, max_length=100, verbose_name='license number')),
+                ('car_number', models.CharField(unique=True, max_length=20, verbose_name='car number')),
+                ('company', models.CharField(max_length=50, verbose_name='company')),
                 ('ride_count', models.PositiveIntegerField(default=0, verbose_name='ride count')),
+                ('profile_photo', models.ImageField(upload_to=b'profile')),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={

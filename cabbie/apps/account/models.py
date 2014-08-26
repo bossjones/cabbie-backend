@@ -65,6 +65,9 @@ class Driver(User):
 
     license_number = models.CharField(_('license number'), max_length=100,
                                       unique=True)
+    car_number = models.CharField(_('car number'), max_length=20, unique=True)
+    company = models.CharField(_('company'), max_length=50)
+    
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
 
     objects = DriverManager()
