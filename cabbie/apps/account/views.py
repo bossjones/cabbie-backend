@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.authtoken.views import (
     ObtainAuthToken as BaseObtainAuthToken)
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny 
 
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.account.serializers import (
@@ -47,6 +48,8 @@ class DriverViewSet(AbstractUserViewSet):
 
 
 class DriverVerifyView(APIView):
+    permission_classes = (AllowAny,)    
+
     def post(self, request, *args, **kwargs):
         try:
             driver = Driver.objects.get(phone=request.DATA['phone'])
@@ -65,6 +68,8 @@ class DriverVerifyView(APIView):
 
 
 class DriverAcceptView(APIView):
+    permission_classes = (AllowAny,)    
+
     def post(self, request, *args, **kwargs):
         try:
             driver = Driver.objects.get(phone=request.DATA['phone'])
