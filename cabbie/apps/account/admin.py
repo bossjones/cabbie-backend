@@ -4,9 +4,9 @@ from cabbie.apps.account.models import Driver
 
 
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('phone', 'name', 'license_number', 'car_number', 'company', 'verification_code',
+    list_display = ('phone', 'name', 'license_number', 'car_number', 'company', 'bank_account', 'verification_code',
                     'is_verified', 'is_accepted', 'date_joined')
-    fields = ('phone', 'name', 'license_number', 'car_number', 'company')
+    fields = ('phone', 'name', 'license_number', 'car_number', 'company', 'bank_account')
     ordering = ('-date_joined',)
 
     actions = (

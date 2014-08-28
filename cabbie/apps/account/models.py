@@ -67,6 +67,8 @@ class Driver(User):
                                       unique=True)
     car_number = models.CharField(_('car number'), max_length=20, unique=True)
     company = models.CharField(_('company'), max_length=50)
+
+    bank_account = models.CharField(_('bank account'), max_length=100)
     
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
 
