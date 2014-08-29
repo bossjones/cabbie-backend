@@ -5,7 +5,7 @@ from cabbie.common.signals import post_create
 
 
 def on_post_create_user(sender, instance, **kwargs):
-    Token.objects.create(user=instance)
+    Token.objects.create(user=instance.user_ptr)
 
 
 post_create.connect(on_post_create_user, sender=Passenger,
