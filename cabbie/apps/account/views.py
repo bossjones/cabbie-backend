@@ -71,7 +71,6 @@ class ObtainAuthToken(BaseObtainAuthToken):
 class PassengerViewSet(PassengerMixin, AbstractUserViewSet):        pass
 class DriverViewSet(DriverMixin, AbstractUserViewSet):              pass
 class PassengerSignupView(PassengerMixin, AbstractUserSignupView):  pass
-class DriverSignupView(DriverMixin, AbstractUserSignupView):        pass
 
 
 class DriverVerifyView(APIView):

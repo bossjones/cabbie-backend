@@ -36,10 +36,6 @@ urlpatterns += patterns('',
         import_('cabbie.apps.account.views.PassengerSignupView').as_view()),
 )
 urlpatterns += patterns('',
-    url(r'^api/drivers/signup',
-        import_('cabbie.apps.account.views.DriverSignupView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/drivers/verify',
         import_('cabbie.apps.account.views.DriverVerifyView').as_view()),
 )
