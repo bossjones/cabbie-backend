@@ -8,6 +8,7 @@ from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, UserSerializer, PassengerSerializer, DriverSerializer)
 from cabbie.common.views import APIMixin, APIView
+from cabbie.apps.account.permissions import AllowPostToAny
 from cabbie.utils.ds import pick
 
 
@@ -40,11 +41,13 @@ class AbstractUserViewSet(APIMixin, viewsets.ModelViewSet):
 class PassengerViewSet(AbstractUserViewSet):
     model = Passenger
     serializer_class = PassengerSerializer
+    permission_classes = (AllowPostToAny,)
 
 
 class DriverViewSet(AbstractUserViewSet):
     model = Driver
     serializer_class = DriverSerializer
+    permission_classes = (AllowPostToAny,)
 
 
 class DriverVerifyView(APIView):
