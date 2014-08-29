@@ -55,6 +55,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.debug('Closed')
 
     def on_message(self, message):
+        self.debug('Received: {0}'.format(message))
         as_json = json.loads(message)
         self.debug('Received: {0}'.format(as_json))
 

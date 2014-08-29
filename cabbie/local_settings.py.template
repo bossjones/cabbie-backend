@@ -22,6 +22,12 @@ if STORATE_DEBUG:
             'HOST': 'localhost',
         }
     }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        }
+    }
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 LOGGING = {
     'version': 1,

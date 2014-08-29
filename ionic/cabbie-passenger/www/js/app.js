@@ -443,15 +443,16 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 }])
 
 .controller('SignupCtrl', [
-    '$scope', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
+    '$scope', '$http', '$location', '$ionicViewService', '$ionicLoading', '$ionicPopup',
     'Auth', 'Passenger',
-    function ($scope, $location, $ionicViewService, $ionicLoading, $ionicPopup,
+    function ($scope, $http, $location, $ionicViewService, $ionicLoading, $ionicPopup,
               Auth, Passenger) {
   $scope.data = {};
   $scope.submit = function () {
     var passenger = new Passenger($scope.data);
     $ionicLoading.show({ template: '<div class="spinner"></div>' });
-    passenger.$save().then(function () {
+    $http.post('/api/passengers/signup', $scope.data).then(function () {
+    //passenger.$save().then(function () {
       Auth.login($scope.data.phone, $scope.data.password).then(function () {
         $ionicLoading.hide();
         $location.url('/app/main');

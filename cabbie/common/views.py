@@ -18,6 +18,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.generics import GenericAPIView as BaseGenericAPIView
 from rest_framework.views import APIView as BaseAPIView
 
 from cabbie.utils import json
@@ -103,6 +104,10 @@ class DeleteView(Atomic, BaseDeleteView) : pass
 
 
 class APIView(APIMixin, BaseAPIView):
+    pass
+
+
+class GenericAPIView(APIMixin, BaseGenericAPIView):
     pass
 
 
