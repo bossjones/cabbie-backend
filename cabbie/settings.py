@@ -176,7 +176,7 @@ CONTACT_EMAIL = 'Cabbie <contact@{host}>'.format(host=HOST)
 ALLOWED_DEBUG_EMAIL = ['mjipeo@gmail.com']
 EMAIL_DELIMITER = '=====CABBIE====='
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = ''  # FIXME: Configure
+EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
 EMAIL_HOST_USER = 'AKIAJD3WYLRGE5C2HKVA'
 EMAIL_HOST_PASSWORD = 'Ala4bqSfpgYFFHi966Ys4eUINKH058fZ85nZYqLKC3yt'
 
