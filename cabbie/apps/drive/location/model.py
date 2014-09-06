@@ -42,6 +42,8 @@ class ModelManager(LoggableMixin, SingletonMixin):
             serialized.update({
                 'ride_count': user.ride_count,
                 'license_number': user.license_number,
+                'company': user.company,
+                'car_number': user.car_number,
                 'rating': 2.5,
             })
         return serialized
