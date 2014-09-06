@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cabbie.apps.account.models import Driver
+from cabbie.apps.account.models import Driver, Passenger
 
 
 class DriverAdmin(admin.ModelAdmin):
@@ -17,5 +17,10 @@ class DriverAdmin(admin.ModelAdmin):
         for driver in queryset.all():
             driver.send_verification_code()
 
+class PassengerAdmin(admin.ModelAdmin):
+    list_display = ('phone', 'name', 'email', 'ride_count', 'date_joined')
+    fields = ('phone', 'password', 'name', 'email')
+    ordering = ('-date_joined',)
 
 admin.site.register(Driver, DriverAdmin)
+admin.site.register(Passenger, PassengerAdmin)
