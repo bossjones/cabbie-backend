@@ -100,6 +100,13 @@ DATABASES = {
     },
 }
 
+# FIXME: Should be configured for production cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -246,16 +253,22 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 LOCATION_SERVER_PORT = 8080
 TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
-DEFAULT_SPEED = 40.0                # km/h
-TMAP_CACHE_TIMEOUT = 10 * 60        # seconds
-ESTIMATE_CACHE_TIMEOUT = 1 * 60     # seconds
-LOCATION_REFRESH_INTERVAL = 1       # seconds
-OBJECT_CACHE_TIMEOUT = 10 * 60      # seconds
-SESSION_CLOSE_TIMEOUT = 3           # seconds
-MAX_DISTANCE = 10 * 1000            # meters
-ESTIMATE_CACHE_DISTANCE = 200       # seconds
+DEFAULT_SPEED = 40.0                    # km/h
+TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
+ESTIMATE_CACHE_TIMEOUT = 1 * 60         # seconds
+LOCATION_REFRESH_INTERVAL = 1           # seconds
+OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
+SESSION_CLOSE_TIMEOUT = 3               # seconds
+MAX_DISTANCE = 10 * 1000                # meters
+ESTIMATE_CACHE_DISTANCE = 200           # seconds
 CANDIDATE_COUNT = 10
 REASSIGN_COUNT = 10
+
+
+# TMap
+# ----
+
+TMAP_CACHE_TIMEOUT = 60 * 60            # seconds
 
 
 # Suit
@@ -276,6 +289,12 @@ SUIT_CONFIG = {
 #AWS_SECRET_ACCESS_KEY = ''
 #AWS_STORAGE_BUCKET_NAME = 'cabbie'
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
+
+
+# Etc
+# ---
+
+DEFAULT_PAGE_SIZE = 20
 
 
 # Local settings

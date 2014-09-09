@@ -81,7 +81,7 @@ class HaversineEstimator(AbstractEstimator):
 
 class TmapEstimator(AbstractEstimator):
     url = 'https://apis.skplanetx.com/tmap/routes?version=1'
-    cache_timeout = settings.TMAP_CACHE_TIMEOUT
+    cache_timeout = settings.TMAP_ESTIMATOR_CACHE_TIMEOUT
 
     def __init__(self, *args, **kwargs):
         super(TmapEstimator, self).__init__(*args, **kwargs)

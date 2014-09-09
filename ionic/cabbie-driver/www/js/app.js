@@ -5,7 +5,9 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
 // -------------------------
 
 .constant('apiHost', 'http://localhost:8000')
+//.constant('apiHost', 'http://bktaxi.com')
 .constant('locationHost', 'localhost:8080')
+//.constant('locationHost', 'bktaxi.com:8080')
 .constant('authRequired', true)
 .constant('locationTrackInterval', 1000)
 
