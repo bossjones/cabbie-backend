@@ -1,11 +1,14 @@
+from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.http import Http404
+from rest_framework import status
 from rest_framework import viewsets
 
 from cabbie.apps.drive.models import Ride
 from cabbie.apps.drive.serializers import RideSerializer
-from cabbie.common.views import InternalView
+from cabbie.common.views import InternalView, APIView
 from cabbie.utils import json
+from cabbie.utils.geo import TMap, TMapError
 
 
 # REST
@@ -19,6 +22,50 @@ class RideViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(passenger__user=self.request.user)
+
+
+class GeoPOIView(APIView):
+    def get(self, request, *args, **kwargs):
+        data = request.GET
+        q = data['q'].strip()
+        location = data['location'].split(',') if 'location' in data else None
+        try:
+            result = TMap().poi_search(
+                q, location=location, page=data.get('page', 1),
+                count=data.get('count', settings.DEFAULT_PAGE_SIZE))
+        except TMapError as e:
+            return self.render_error(
+                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return self.render(result)
+
+
+class GeoPOIAroundView(APIView):
+    def get(self, request, *args, **kwargs):
+        data = request.GET
+        location = data['location'].split(',')
+        try:
+            result = TMap().poi_search_around(
+                location, page=data.get('page', 1),
+                count=data.get('count', settings.DEFAULT_PAGE_SIZE))
+        except TMapError as e:
+            return self.render_error(
+                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return self.render(result)
+
+
+class GeoReverseView(APIView):
+    def get(self, request, *args, **kwargs):
+        data = request.GET
+        location = data['location'].split(',')
+        try:
+            result = TMap().reverse_geocoding(location)
+        except TMapError as e:
+            return self.render_error(
+                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return self.render(result)
 
 
 # Internal
