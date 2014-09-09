@@ -27,15 +27,23 @@ class RideViewSet(viewsets.ModelViewSet):
 class GeoPOIView(APIView):
     def get(self, request, *args, **kwargs):
         data = request.GET
-        q = data['q'].strip()
-        location = data['location'].split(',') if 'location' in data else None
+        try:
+            q = data['q'].strip()
+            location = (data['location'].split(',') if 'location' in data else
+                        None)
+        except KeyError as e:
+            return self.render_error(
+                unicode(e), code='ERR_INVALID_PARAMETER',
+                status=status.HTTP_400_BAD_REQUEST)
+
         try:
             result = TMap().poi_search(
                 q, location=location, page=data.get('page', 1),
                 count=data.get('count', settings.DEFAULT_PAGE_SIZE))
         except TMapError as e:
             return self.render_error(
-                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                unicode(e), code='ERR_TMAP_ERROR',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return self.render(result)
 
@@ -43,14 +51,21 @@ class GeoPOIView(APIView):
 class GeoPOIAroundView(APIView):
     def get(self, request, *args, **kwargs):
         data = request.GET
-        location = data['location'].split(',')
+        try:
+            location = data['location'].split(',')
+        except KeyError as e:
+            return self.render_error(
+                unicode(e), code='ERR_INVALID_PARAMETER',
+                status=status.HTTP_400_BAD_REQUEST)
+
         try:
             result = TMap().poi_search_around(
                 location, page=data.get('page', 1),
                 count=data.get('count', settings.DEFAULT_PAGE_SIZE))
         except TMapError as e:
             return self.render_error(
-                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                unicode(e), code='ERR_TMAP_ERROR',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return self.render(result)
 
@@ -58,12 +73,19 @@ class GeoPOIAroundView(APIView):
 class GeoReverseView(APIView):
     def get(self, request, *args, **kwargs):
         data = request.GET
-        location = data['location'].split(',')
+        try:
+            location = data['location'].split(',')
+        except KeyError as e:
+            return self.render_error(
+                unicode(e), code='ERR_INVALID_PARAMETER',
+                status=status.HTTP_400_BAD_REQUEST)
+
         try:
             result = TMap().reverse_geocoding(location)
         except TMapError as e:
             return self.render_error(
-                unicode(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                unicode(e), code='ERR_TMAP_ERROR',
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return self.render(result)
 

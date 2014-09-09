@@ -85,8 +85,8 @@ class APIMixin(object):
         return Response(data or {}, **response_kwargs)
 
     @classmethod
-    def render_error(cls, msg, status=status.HTTP_400_BAD_REQUEST):
-        return cls.render({'error': msg}, status=status)
+    def render_error(cls, msg, code=None, status=status.HTTP_400_BAD_REQUEST):
+        return cls.render({'error': {'code': code, 'msg': msg}}, status=status)
 
 
 # View
