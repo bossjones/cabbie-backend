@@ -44,12 +44,12 @@ urlpatterns += patterns('',
         import_('cabbie.apps.account.views.DriverAcceptView').as_view()),
 )
 urlpatterns += patterns('',
-    url(r'^api/geo/poi',
-        import_('cabbie.apps.drive.views.GeoPOIView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/geo/poi/around',
         import_('cabbie.apps.drive.views.GeoPOIAroundView').as_view()),
+)
+urlpatterns += patterns('',
+    url(r'^api/geo/poi',
+        import_('cabbie.apps.drive.views.GeoPOIView').as_view()),
 )
 urlpatterns += patterns('',
     url(r'^api/geo/reverse',
