@@ -168,6 +168,7 @@ class TMap(LoggableMixin, SingletonMixin):
             'searchKeyword': q,
             'searchType': 'all',
             'searchtypCd': 'A',
+            'resCoordType': 'WGS84GEO',
         }
         if location:
             params.update({
@@ -176,7 +177,6 @@ class TMap(LoggableMixin, SingletonMixin):
                 'centerLon': location[0],
                 'centerLat': location[1],
                 'reqCoordType': 'WGS84GEO',
-                'resCoordType': 'WGS84GEO',
             })
         as_json = self._fetch('/tmap/pois', params)
 
