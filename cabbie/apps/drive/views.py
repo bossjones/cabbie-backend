@@ -87,7 +87,9 @@ class GeoReverseView(APIView):
                 unicode(e), code='ERR_TMAP_ERROR',
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return self.render(result)
+            return self.render({
+                'result': result
+            })
 
 
 # Internal
