@@ -182,6 +182,9 @@ class TMap(LoggableMixin, SingletonMixin):
 
         self.info('Successfully fetched for `poi_search`')
 
+        if 'searchPoiInfo' not in as_json:
+            return []
+
         try:
             result = as_json['searchPoiInfo']['pois']['poi']
         except KeyError as e:
@@ -202,6 +205,9 @@ class TMap(LoggableMixin, SingletonMixin):
         })
 
         self.info('Successfully fetched for `poi_search_around`')
+
+        if 'searchPoiInfo' not in as_json:
+            return []
 
         try:
             result = as_json['searchPoiInfo']['pois']['poi']
