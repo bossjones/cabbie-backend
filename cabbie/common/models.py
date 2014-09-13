@@ -345,7 +345,7 @@ class NullableImageMixin(ImageMixin):
                 if self.image else self.get_default_image_url(image_type))
 
     def get_default_image_url(self, image_type):
-        return ''
+        raise NotImplementedError
 
 
 class StrictImageMixin(ImageMixin):

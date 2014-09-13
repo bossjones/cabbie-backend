@@ -58,7 +58,7 @@ class Passenger(User):
     objects = PassengerManager()
 
 
-class Driver(User, NullableImageMixin):
+class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
 
     verification_code = models.CharField(max_length=10)
@@ -74,6 +74,15 @@ class Driver(User, NullableImageMixin):
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
 
     objects = DriverManager()
+
+    @property
+    def rating(self):
+        # FIXME: Implement this
+        import random
+        return random.randint(1, 50) / 10.0
+
+    def get_default_image_url(self, image_type):
+        return ''
 
     def get_login_key(self):
         return encrypt(self.verification_code)

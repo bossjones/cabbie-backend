@@ -44,7 +44,8 @@ class ModelManager(LoggableMixin, SingletonMixin):
                 'license_number': user.license_number,
                 'company': user.company,
                 'car_number': user.car_number,
-                'rating': 2.5,
+                'rating': user.rating,
+                'image_urls': user.get_image_urls(),
             })
         return serialized
 
