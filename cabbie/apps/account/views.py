@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
     ObtainAuthToken as BaseObtainAuthToken)
+from rest_framework.authtoken.models import Token
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
@@ -67,6 +68,13 @@ class DriverMixin(object):
 
 class ObtainAuthToken(BaseObtainAuthToken):
     serializer_class = AuthTokenSerializer
+    
+    def post(self, request):
+        serializer = self.serializer_class(data=request.DATA)
+        if serializer.is_valid():
+            token, created = Token.objects.get_or_create(user=serializer.object['user'])
+            return Response({'token':token.key, 'id':token.user.id})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class PassengerViewSet(PassengerMixin, AbstractUserViewSet):        pass
