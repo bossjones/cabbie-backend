@@ -16,15 +16,21 @@ class RideProxy(LoggableMixin, PubsubMixin):
     create_path = '/_/drive/ride/create'
     update_path = '/_/drive/ride/{pk}/update'
 
-    def __init__(self, passenger_id, location):
+    def __init__(self, passenger_id, source, destination):
         super(RideProxy, self).__init__()
         self._passenger_id = passenger_id
-        self._passenger_location = location
+        self._passenger_location = None
+        self._source = source
+        self._destination = destination
         self._driver_id = None
         self._driver_location = None
         self._state = None
         self._ride_id = None
         self._update_queue = []
+
+        # Passenger location is not updated periodically so just use the source
+        # location instead
+        self._passenger_location = self._source.get('location')
 
         self.passenger_session.ride_proxy = self
 
@@ -66,10 +72,11 @@ class RideProxy(LoggableMixin, PubsubMixin):
     def request(self):
         self.driver_session.notify_driver_request(**{
             'passenger': ModelManager().get_passenger(self._passenger_id),
-            'location': self._passenger_location,
+            'source': self._source,
+            'destination': self._destination,
         })
         self._transition_to(Ride.REQUESTED, update=False)
-        self._create()
+        self._create(source=self._source, destination=self._destination)
 
     def cancel(self):
         self.driver_session.notify_driver_cancel()
@@ -140,8 +147,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         }
 
     @gen.coroutine
-    def _create(self):
+    def _create(self, **kwargs):
         data = self._common()
+        data.update(kwargs)
         payload = yield fetch(self.create_path, data)
         if payload['status'] != 'success':
             self.error('Failed to create a ride entry')
@@ -171,8 +179,8 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         SessionManager().subscribe('driver_closed',
                                    self.on_driver_session_closed)
 
-    def create(self, passenger_id, location):
-        proxy = RideProxy(passenger_id, location)
+    def create(self, passenger_id, source, destination):
+        proxy = RideProxy(passenger_id, source, destination)
         proxy.subscribe('driver_set', self.on_ride_proxy_driver_set)
         proxy.subscribe('driver_resetted', self.on_ride_proxy_driver_resetted)
         proxy.subscribe('finished', self.on_ride_proxy_finished)

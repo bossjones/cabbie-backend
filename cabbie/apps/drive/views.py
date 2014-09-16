@@ -99,11 +99,17 @@ class InternalRideCreateView(InternalView):
     def post(self, request):
         data = json.loads(request.body)
 
+        source = data['source']
+        destination = data['destination']
+
         ride = Ride.objects.create(
             passenger_id=data['passenger_id'],
             driver_id=data['driver_id'],
             state=data['state'],
-            source=Point(*data['passenger_location'])
+            source=source,
+            source_location=Point(*source['location']),
+            destination=destination,
+            destination_location=Point(*destination['location']),
         )
 
         ride.histories.create(

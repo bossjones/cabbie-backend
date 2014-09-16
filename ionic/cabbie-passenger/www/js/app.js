@@ -337,7 +337,16 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     request: function (driverId) {
       send('passenger_request', {
         driver_id: driverId,
-        location: [location.longitude, location.latitude]
+        source: {
+          address: null,
+          poi: null,
+          location: [location.longitude, location.latitude]
+        },
+        destination: {
+          address: null,
+          poi: null,
+          location: [location.longitude, location.latitude]
+        }
       });
       transitTo('requested');
     },

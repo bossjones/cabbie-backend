@@ -33,7 +33,8 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
         verbose_name_plural = _('users')
 
     def __unicode__(self):
-        return u'User({phone})'.format(phone=self.phone)
+        return u'{class_}({phone})'.format(class_=self.__class__.__name__,
+                                           phone=self.phone)
 
     def get_full_name(self):
         return self.name

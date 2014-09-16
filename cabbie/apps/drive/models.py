@@ -30,8 +30,10 @@ class Ride(AbstractTimestampModel):
                                related_name='rides')
 
     state = models.CharField(max_length=100, choices=STATES)
-    source = models.PointField()
-    destination = models.PointField(blank=True, null=True)
+    source = JSONField()
+    source_location = models.PointField()
+    destination = JSONField(default='{}')
+    destination_location = models.PointField(blank=True, null=True)
     rating = models.PositiveIntegerField(blank=True, null=True)
     comment = models.CharField(max_length=100, blank=True)
 
