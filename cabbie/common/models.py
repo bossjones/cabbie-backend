@@ -9,7 +9,7 @@ from django.db.models import Max
 from django.db.models.fields.related import RelatedField
 from django.template.defaultfilters import slugify
 from django.utils import timezone
-import Image
+from PIL import Image
 import requests
 
 from cabbie.common.signals import (post_activate, post_inactivate,
