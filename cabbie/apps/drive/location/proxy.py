@@ -107,8 +107,8 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.notify_passenger_board()
         self._transition_to(Ride.BOARDED)
 
-    def complete(self):
-        self.passenger_session.notify_passenger_complete()
+    def complete(self, summary):
+        self.passenger_session.notify_passenger_complete(summary)
         self._transition_to(Ride.COMPLETED)
         self._reset_driver()
 

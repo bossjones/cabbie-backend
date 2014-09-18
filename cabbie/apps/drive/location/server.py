@@ -55,6 +55,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.debug('Closed')
 
     def on_message(self, message):
+        message = message.encode('utf-8')
         self.debug('Received: {0}'.format(message))
         as_json = json.loads(message)
         self.debug('Received: {0}'.format(as_json))
@@ -133,9 +134,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.info('Boarded')
         self.ride_proxy.board()
 
-    def handle_driver_complete(self):
+    def handle_driver_complete(self, summary):
         self.info('Completed')
-        self.ride_proxy.complete()
+        self.ride_proxy.complete(summary)
 
     def notify_driver_request(self, passenger, source, destination):
         self.send('driver_requested', {
@@ -206,8 +207,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_board(self):
         self.send('passenger_boarded')
 
-    def notify_passenger_complete(self):
-        self.send('passenger_completed')
+    def notify_passenger_complete(self, summary):
+        self.send('passenger_completed', {'summary': summary})
 
     def notify_passenger_disconnect(self):
         self.send('passenger_disconnected')
