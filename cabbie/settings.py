@@ -157,8 +157,8 @@ LOGGING = {
             'propagate': True,
         },
         'cabbie': {
-            'handlers': ['file'],
-            'level': 'INFO',
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
     }
@@ -269,11 +269,11 @@ TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
 DEFAULT_SPEED = 40.0                    # km/h
 TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
 ESTIMATE_CACHE_TIMEOUT = 1 * 60         # seconds
-LOCATION_REFRESH_INTERVAL = 1           # seconds
+LOCATION_REFRESH_INTERVAL = 5           # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
 SESSION_CLOSE_TIMEOUT = 3               # seconds
 MAX_DISTANCE = 10 * 1000                # meters
-ESTIMATE_CACHE_DISTANCE = 200           # seconds
+ESTIMATE_CACHE_DISTANCE = 1             # seconds
 CANDIDATE_COUNT = 10
 REASSIGN_COUNT = 10
 

@@ -121,13 +121,15 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.publish('finished', self)
 
     def passenger_disconnect(self):
-        self.driver_session.notify_driver_disconnect()
+        if self.driver_session:
+            self.driver_session.notify_driver_disconnect()
+            self.driver_session.ride_proxy = None
         self._transition_to(Ride.DISCONNECTED, sinner='passenger')
-        self.driver_session.ride_proxy = None
         self.publish('finished', self)
 
     def driver_disconnect(self):
-        self.passenger_session.notify_passenger_disconnect()
+        if self.passenger_session:
+            self.passenger_session.notify_passenger_disconnect()
         self._transition_to(Ride.DISCONNECTED, sinner='driver')
         self._reset_driver()
 
