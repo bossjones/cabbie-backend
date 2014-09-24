@@ -16,6 +16,8 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
                 raise serializers.ValidationError(u'Must be verified first')
             if not driver.is_accepted:
                 raise serializers.ValidationError(u'Must be accepted first')
+            if not driver.is_freezed:
+                raise serializers.ValidationError(u'Must be unfreezed first')
 
         return attrs
 

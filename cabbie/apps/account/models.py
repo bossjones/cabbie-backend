@@ -112,11 +112,14 @@ class Driver(NullableImageMixin, User):
     def send_verification_code(self):
         send_verification_code(self.phone, self.verification_code)
 
-    def freeze(self):
+    def freeze(self, is_freezed=True):
         if self.is_freezed:
             return
-        self.is_freezed = True
+        self.is_freezed = is_freezed
         self.save(update_fields=['is_freezed'])
+
+    def unfreeze(self):
+        self.freeze(False)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
