@@ -11,36 +11,58 @@ from cabbie.common.signals import post_create
 def on_post_create_recommend(sender, instance, **kwargs):
     recommend = instance
 
-    Transaction.objects.create(
-        user=recommend.recommender,
-        recommend=recommend,
-        transaction_type=Transaction.RECOMMEND,
-        amount=settings.POINTS_BY_TYPE['recommend'],
-    )
-    Transaction.objects.create(
-        user=recommend.recommendee,
-        recommend=recommend,
-        transaction_type=Transaction.RECOMMENDED,
-        amount=settings.POINTS_BY_TYPE['recommended'],
-    )
+    amount = settings.POINTS_BY_TYPE.get(
+        'recommend_{0}'.format(recommend.recommend_type))
+    if amount:
+        Transaction.objects.create(
+            user=recommend.recommender,
+            recommend=recommend,
+            transaction_type=Transaction.RECOMMEND,
+            amount=amount,
+        )
 
+    amount = settings.POINTS_BY_TYPE.get(
+        'recommended_{0}'.format(recommend.recommend_type))
+    if amount:
+        Transaction.objects.create(
+            user=recommend.recommendee,
+            recommend=recommend,
+            transaction_type=Transaction.RECOMMENDED,
+            amount=amount,
+        )
 
 def on_post_ride_complete(sender, ride, **kwargs):
+    passenger = ride.passenger
     note = u''
 
-    if ride.passenger.is_promotion_applicable:
+    # Basic mileage
+    if passenger.is_promotion_applicable:
         amount = settings.POINTS_BY_TYPE['mileage_promotion']
         note = u'프로모션 마일리지 적용'
     else:
         amount = settings.POINTS_BY_TYPE['mileage']
 
-    Transactions.objects.create(
-        user=ride.passenger,
+    Transaction.objects.create(
+        user=passenger,
         ride=ride,
         transaction_type=Transaction.MILEAGE,
         amount=amount,
         note=note,
     )
+
+    # Bonus mileage
+    qs = passenger.rides
+    qs = qs.filter(state=ride.COMPLETED)
+    qs = qs.filter(created_at__startswith=ride.created_at.date())
+
+    if qs.count() == 2:
+        Transaction.objects.create(
+            user=passenger,
+            ride=ride,
+            transaction_type=Transaction.MILEAGE,
+            amount=settings.POINTS_BY_TYPE['mileage_double_ride'],
+            note=u'보너스 마일리지 (1일 2회 이상 탑승)',
+        )
 
 post_create.connect(on_post_create_recommend, sender=Recommend,
                     dispatch_uid='from_payment')

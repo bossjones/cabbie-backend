@@ -302,9 +302,14 @@ DEFAULT_PAGE_SIZE = 20
 PROMOTION_DAYS = 90
 
 POINTS_BY_TYPE = {
-    'recommend': 1000,
-    'recommended': 1000,
+    'recommend_p2p': 1000,
+    'recommend_d2p': 1000,
+    'recommend_d2d': 3000,
+    'recommended_d2p': 0,
+    'recommended_p2p': 1000,
+    'recommended_d2d': 1000,
     'mileage': 100,
+    'mileage_double_ride': 200,
     'mileage_promotion': 500,
 }
 

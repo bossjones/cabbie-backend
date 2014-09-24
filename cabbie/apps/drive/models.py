@@ -5,9 +5,9 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.models import Passenger, Driver
+from cabbie.apps.drive.signals import post_ride_complete
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel
-from cabbie.utils import json
 
 
 class Ride(AbstractTimestampModel):
@@ -82,4 +82,3 @@ class RideHistory(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'여정 이력'
         verbose_name_plural = u'여정 이력'
-

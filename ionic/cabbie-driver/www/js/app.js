@@ -339,7 +339,9 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     complete: function () {
       var that = this;
 
-      send('driver_complete');
+      send('driver_complete', {
+        summary: {}
+      });
       transitTo('initialized');
 
       /*
