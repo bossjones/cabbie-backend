@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
             options={
                 'ordering': [b'-created_at'],
                 'abstract': False,
+                'verbose_name': '\uc5ec\uc815',
+                'verbose_name_plural': '\uc5ec\uc815',
             },
             bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
         ),
@@ -53,6 +55,8 @@ class Migration(migrations.Migration):
             options={
                 'ordering': [b'-created_at'],
                 'abstract': False,
+                'verbose_name': '\uc5ec\uc815 \uc774\ub825',
+                'verbose_name_plural': '\uc5ec\uc815 \uc774\ub825',
             },
             bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
         ),

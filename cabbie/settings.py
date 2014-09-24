@@ -85,9 +85,11 @@ INSTALLED_APPS = (
     'cabbie.apps.account',
     'cabbie.apps.drive',
     'cabbie.apps.payment',
-    'cabbie.apps.notification',
-    'cabbie.apps.stats',
-    'cabbie.apps.track',
+    'cabbie.apps.recommend',
+
+    #'cabbie.apps.notification',
+    #'cabbie.apps.stats',
+    #'cabbie.apps.track',
 )
 
 DATABASES = {
@@ -276,7 +278,8 @@ TMAP_CACHE_TIMEOUT = 60 * 60            # seconds
 # ----
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': 'CABBIE',
+    'ADMIN_NAME': u'흑기사 어드민',
+    'MENU_EXCLUDE': ('auth', 'authtoken', 'djcelery',),
     'LIST_PER_PAGE': 100,
 }
 
@@ -295,6 +298,15 @@ AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
 # ---
 
 DEFAULT_PAGE_SIZE = 20
+
+PROMOTION_DAYS = 90
+
+POINTS_BY_TYPE = {
+    'recommend': 1000,
+    'recommended': 1000,
+    'mileage': 100,
+    'mileage_promotion': 500,
+}
 
 
 # Local settings

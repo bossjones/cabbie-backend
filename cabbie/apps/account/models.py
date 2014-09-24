@@ -1,3 +1,8 @@
+# encoding: utf8
+
+import datetime
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
@@ -25,12 +30,14 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     is_staff = models.BooleanField(_('staff status'), default=False)
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
+    point = models.PositiveIntegerField(default=0)
+
     objects = UserManager()
 
     class Meta:
         ordering = ['-date_joined']
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        verbose_name = u'사용자'
+        verbose_name_plural = u'사용자'
 
     def __unicode__(self):
         return u'{class_}({phone})'.format(class_=self.__class__.__name__,
@@ -58,6 +65,15 @@ class Passenger(User):
 
     objects = PassengerManager()
 
+    class Meta(User.Meta):
+        verbose_name = u'승객'
+        verbose_name_plural = u'승객'
+
+    @property
+    def is_promotion_applicable(self):
+        return ((timezone.now() - self.date_joined).days
+                <= settings.PROMOTION_DAYS)
+
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -65,6 +81,7 @@ class Driver(NullableImageMixin, User):
     verification_code = models.CharField(max_length=10)
     is_verified = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
+    is_freezed = models.BooleanField(default=False)
 
     license_number = models.CharField(_('license number'), max_length=100,
                                       unique=True)
@@ -75,6 +92,10 @@ class Driver(NullableImageMixin, User):
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
 
     objects = DriverManager()
+
+    class Meta(NullableImageMixin.Meta, User.Meta):
+        verbose_name = u'기사'
+        verbose_name_plural = u'기사'
 
     @property
     def rating(self):
@@ -90,6 +111,12 @@ class Driver(NullableImageMixin, User):
 
     def send_verification_code(self):
         send_verification_code(self.phone, self.verification_code)
+
+    def freeze(self):
+        if self.is_freezed:
+            return
+        self.is_freezed = True
+        self.save(update_fields=['is_freezed'])
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

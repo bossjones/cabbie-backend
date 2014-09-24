@@ -1,3 +1,5 @@
+# encoding: utf8
+
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
@@ -39,6 +41,10 @@ class Ride(AbstractTimestampModel):
 
     objects = models.GeoManager()
 
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'여정'
+        verbose_name_plural = u'여정'
+
     def transit(self, **data):
         for field in ('state', 'driver_id', 'rating', 'comment'):
             value = data.get(field)
@@ -59,6 +65,9 @@ class Ride(AbstractTimestampModel):
             data=data,
         )
 
+        if self.state == self.COMPLETED:
+            post_ride_complete.send(sender=self.__class__, ride=self)
+
 
 class RideHistory(AbstractTimestampModel):
     ride = models.ForeignKey(Ride, related_name='histories')
@@ -69,3 +78,8 @@ class RideHistory(AbstractTimestampModel):
     passenger_location = models.PointField()
     driver_location = models.PointField(blank=True, null=True)
     data = JSONField(default='{}')
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'여정 이력'
+        verbose_name_plural = u'여정 이력'
+
