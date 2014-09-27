@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from cabbie.apps.drive.models import Ride, RideHistory
+from cabbie.apps.drive.models import Ride, RideHistory, Favorite
 
 
 class RideAdmin(admin.ModelAdmin):
@@ -14,5 +14,11 @@ class RideHistoryAdmin(admin.ModelAdmin):
                     'driver_location', 'created_at')
 
 
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('passenger', 'name', 'location', 'address', 'poi',
+                    'created_at')
+
+
 admin.site.register(Ride, RideAdmin)
 admin.site.register(RideHistory, RideHistoryAdmin)
+admin.site.register(Favorite, FavoriteAdmin)

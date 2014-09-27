@@ -4,8 +4,8 @@ from django.http import Http404
 from rest_framework import status
 from rest_framework import viewsets
 
-from cabbie.apps.drive.models import Ride
-from cabbie.apps.drive.serializers import RideSerializer
+from cabbie.apps.drive.models import Ride, Favorite
+from cabbie.apps.drive.serializers import RideSerializer, FavoriteSerializer
 from cabbie.common.views import InternalView, APIView
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
@@ -29,6 +29,16 @@ class RideViewSet(viewsets.ModelViewSet):
         elif user.has_role('driver'):
             qs = qs.filter(driver=user)
         return qs
+
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    queryset = Favorite.objects.prefetch_related('passenger').all()
+    serializer_class = FavoriteSerializer
+    filter_fields = ()
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        return self.queryset.filter(passenger=self.request.user)
 
 
 class GeoPOIView(APIView):

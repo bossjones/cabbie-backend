@@ -89,3 +89,17 @@ class RideHistory(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'여정 이력'
         verbose_name_plural = u'여정 이력'
+
+
+class Favorite(AbstractTimestampModel):
+    passenger = models.ForeignKey(Passenger, related_name='favorites')
+    name = models.CharField(max_length=100)
+    location = models.PointField()
+    address = models.CharField(max_length=1000, blank=True)
+    poi = models.CharField(max_length=1000, blank=True)
+
+    objects = models.GeoManager()
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'즐겨찾기'
+        verbose_name_plural = u'즐겨찾기'

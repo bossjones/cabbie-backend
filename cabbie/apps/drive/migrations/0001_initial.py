@@ -16,6 +16,26 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Favorite',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('name', models.CharField(max_length=100)),
+                ('location', django.contrib.gis.db.models.fields.PointField(srid=4326)),
+                ('address', models.CharField(max_length=1000, blank=True)),
+                ('poi', models.CharField(max_length=1000, blank=True)),
+                ('passenger', models.ForeignKey(to='account.Passenger')),
+            ],
+            options={
+                'ordering': [b'-created_at'],
+                'abstract': False,
+                'verbose_name': '\uc990\uaca8\ucc3e\uae30',
+                'verbose_name_plural': '\uc990\uaca8\ucc3e\uae30',
+            },
+            bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
+        ),
+        migrations.CreateModel(
             name='Ride',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
