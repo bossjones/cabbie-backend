@@ -23,13 +23,16 @@ urlpatterns += patterns('',
 
 router = routers.DefaultRouter(trailing_slash=False)
 
-#router.register(r'users', import_('cabbie.apps.account.views.UserViewSet'))
 router.register(r'passengers',
                 import_('cabbie.apps.account.views.PassengerViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
+router.register(r'transactions',
+                import_('cabbie.apps.payment.views.TransactionViewSet'))
+router.register(r'recommends',
+                import_('cabbie.apps.recommend.views.RecommendViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',

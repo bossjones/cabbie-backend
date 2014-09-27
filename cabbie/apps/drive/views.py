@@ -17,11 +17,18 @@ from cabbie.utils.geo import TMap, TMapError
 class RideViewSet(viewsets.ModelViewSet):
     queryset = Ride.objects.prefetch_related('passenger', 'driver').all()
     serializer_class = RideSerializer
-
-    # FIXME: Permission control
+    filter_fields = ('state', 'passenger', 'driver', 'created_at',
+                     'updated_at')
+    ordering = ('-created_at',)
 
     def get_queryset(self):
-        return self.queryset.filter(passenger__user=self.request.user)
+        user = self.request.user
+        qs = self.queryset
+        if user.has_role('passenger'):
+            qs = qs.filter(passenger=user)
+        elif user.has_role('driver'):
+            qs = qs.filter(driver=user)
+        return qs
 
 
 class GeoPOIView(APIView):

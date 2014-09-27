@@ -32,11 +32,17 @@ class Ride(AbstractTimestampModel):
                                related_name='rides')
 
     state = models.CharField(max_length=100, choices=STATES)
+
+    # Ride detail
     source = JSONField()
     source_location = models.PointField()
     destination = JSONField(default='{}')
     destination_location = models.PointField(blank=True, null=True)
+    summary = JSONField(default='{}')
+
+    # Rating
     rating = models.PositiveIntegerField(blank=True, null=True)
+    ratings_by_category = JSONField(default='{}')
     comment = models.CharField(max_length=100, blank=True)
 
     objects = models.GeoManager()
@@ -46,7 +52,8 @@ class Ride(AbstractTimestampModel):
         verbose_name_plural = u'여정'
 
     def transit(self, **data):
-        for field in ('state', 'driver_id', 'rating', 'comment'):
+        for field in ('state', 'driver_id', 'rating', 'ratings_by_category',
+                      'comment', 'summary'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
