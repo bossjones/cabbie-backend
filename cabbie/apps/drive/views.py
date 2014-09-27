@@ -37,6 +37,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     filter_fields = ()
     ordering = ('-created_at',)
 
+    def pre_save(self, obj):
+        obj.passenger = self.request.user
+
     def get_queryset(self):
         return self.queryset.filter(passenger=self.request.user)
 
