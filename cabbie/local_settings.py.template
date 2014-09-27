@@ -29,6 +29,19 @@ if STORATE_DEBUG:
     }
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (),
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework.filters.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',
+    ),
+    'PAGINATE_BY': 20,
+}
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
