@@ -29,6 +29,8 @@ router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
+router.register(r'favorites',
+                import_('cabbie.apps.drive.views.FavoriteViewSet'))
 router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
 router.register(r'recommends',
