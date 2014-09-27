@@ -177,9 +177,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.info('Cancelled')
         self.ride_proxy.cancel()
 
-    def handle_passenger_rate(self, rating, comment):
+    def handle_passenger_rate(self, rating, ratings_by_category, comment):
         self.info('Rated')
-        self.ride_proxy.passenger_rate(rating, comment)
+        self.ride_proxy.passenger_rate(rating, ratings_by_category, comment)
 
     def notify_passenger_assign(self, assignment):
         if assignment:

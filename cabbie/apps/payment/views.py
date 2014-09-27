@@ -18,6 +18,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 .all())
     serializer_class = TransactionSerializer
     filter_fields = ('transaction_type', 'created_at')
+    ordering = ('-created_at',)
 
     def get_queryset(self):
         user = self.request.user

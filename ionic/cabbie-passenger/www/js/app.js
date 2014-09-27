@@ -299,6 +299,11 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         RateModal.open().then(function (data) {
           send('passenger_rate', {
             rating: data.rating,
+            // THIS IS TEST DATA
+            ratings_by_category: {
+              cleanliness: 1,
+              kindness: 0
+            },
             comment: data.comment || ''
           });
           transitTo('initialized');

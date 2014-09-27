@@ -109,11 +109,13 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     def complete(self, summary):
         self.passenger_session.notify_passenger_complete(summary)
-        self._transition_to(Ride.COMPLETED)
+        self._transition_to(Ride.COMPLETED, summary=summary)
         self._reset_driver()
 
-    def passenger_rate(self, rating, comment):
-        self._transition_to(Ride.RATED, rating=rating, comment=comment)
+    def passenger_rate(self, rating, ratings_by_category, comment):
+        self._transition_to(Ride.RATED, rating=rating,
+                            ratings_by_category=ratings_by_category,
+                            comment=comment)
         self.publish('finished', self)
 
     def passenger_disconnect(self):

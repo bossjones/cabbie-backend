@@ -15,6 +15,7 @@ class RecommendViewSet(viewsets.ModelViewSet):
                 .all())
     serializer_class = RecommendSerializer
     filter_fields = ('recommend_type', 'created_at')
+    ordering = ('-created_at',)
 
     def get_queryset(self):
         user = self.request.user

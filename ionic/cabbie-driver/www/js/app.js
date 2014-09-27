@@ -340,7 +340,11 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       var that = this;
 
       send('driver_complete', {
-        summary: {}
+        // THIS IS TEST DATA
+        summary: {
+          'distance': 'test',
+          'time': 'test',
+        }
       });
       transitTo('initialized');
 

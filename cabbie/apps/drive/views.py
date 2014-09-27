@@ -19,6 +19,7 @@ class RideViewSet(viewsets.ModelViewSet):
     serializer_class = RideSerializer
     filter_fields = ('state', 'passenger', 'driver', 'created_at',
                      'updated_at')
+    ordering = ('-created_at',)
 
     def get_queryset(self):
         user = self.request.user
