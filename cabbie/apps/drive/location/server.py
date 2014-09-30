@@ -158,6 +158,10 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.info('Watched')
         WatchManager().watch(self._user_id, location)
 
+    def handle_passenger_unwatch(self):
+        self.info('Unwatched')
+        WatchManager().unwatch(self._user_id)
+
     def handle_passenger_request(self, driver_id, source, destination):
         self.info('Requested')
 
