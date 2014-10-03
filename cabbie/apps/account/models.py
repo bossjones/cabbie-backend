@@ -131,4 +131,5 @@ class Driver(NullableImageMixin, User):
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
 
+
 from cabbie.apps.account.receivers import *
