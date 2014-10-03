@@ -24,5 +24,4 @@ class FavoriteSerializer(AbstractSerializer):
 
     class Meta:
         model = Favorite
-        fields = ('id', 'passenger', 'name', 'location', 'address', 'poi',
-                  'created_at')
+        fields = ('id', 'name', 'location', 'address', 'poi', 'created_at')
