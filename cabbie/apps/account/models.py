@@ -58,6 +58,10 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def has_role(self, role_name):
         return bool(self.get_role(role_name))
 
+    @property
+    def get_remain_days_for_promotion(self):
+        from datetime import datetime, timedelta
+        return (self.date_joined + timedelta(days=settings.PROMOTION_DAYS) - timezone.now()).days
 
 class Passenger(User):
     email = models.EmailField(_('email address'), unique=True)
