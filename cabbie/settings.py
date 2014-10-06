@@ -86,9 +86,9 @@ INSTALLED_APPS = (
     'cabbie.apps.drive',
     'cabbie.apps.payment',
     'cabbie.apps.recommend',
+    'cabbie.apps.stats',
 
     #'cabbie.apps.notification',
-    #'cabbie.apps.stats',
     #'cabbie.apps.track',
 )
 
@@ -302,6 +302,7 @@ AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
 # Etc
 # ---
 
+CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
 
 PROMOTION_DAYS = 90

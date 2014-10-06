@@ -8,6 +8,8 @@ from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.signals import post_ride_complete
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel
+from cabbie.utils import json
+from cabbie.utils.crypto import encrypt
 
 
 class Ride(AbstractTimestampModel):
@@ -39,6 +41,13 @@ class Ride(AbstractTimestampModel):
     destination = JSONField(default='{}')
     destination_location = models.PointField(blank=True, null=True)
     summary = JSONField(default='{}')
+
+    # Encryption
+    source_encrypted = models.CharField(max_length=1000, blank=True)
+    source_location_encrypted = models.CharField(max_length=1000, blank=True)
+    destination_encrypted = models.CharField(max_length=1000, blank=True)
+    destination_location_encrypted = models.CharField(max_length=1000,
+                                                     blank=True)
 
     # Rating
     rating = models.PositiveIntegerField(blank=True, null=True)
@@ -74,6 +83,29 @@ class Ride(AbstractTimestampModel):
 
         if self.state == self.COMPLETED:
             post_ride_complete.send(sender=self.__class__, ride=self)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        for field in ('source', 'destination'):
+            value = getattr(self, field, None)
+            if value:
+                encrypted = encrypt(json.dumps(value))
+                encrypted_field = '{0}_encrypted'.format(field)
+                setattr(self, encrypted_field, encrypted)
+                if update_fields:
+                    update_fields.append(encrypted)
+
+        for field in ('source_location', 'destination_location'):
+            value = getattr(self, field, None)
+            if value:
+                encrypted = encrypt(json.dumps(value.coords))
+                encrypted_field = '{0}_encrypted'.format(field)
+                setattr(self, encrypted_field, encrypted)
+                if update_fields:
+                    update_fields.append(encrypted)
+
+        super(Ride, self).save(
+            force_insert, force_update, using, update_fields)
 
 
 class RideHistory(AbstractTimestampModel):
