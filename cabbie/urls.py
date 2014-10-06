@@ -3,6 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from rest_framework import routers
 
+from cabbie.common.forms import AdminAuthenticationForm
 from cabbie.utils.importlib import import_class as import_
 
 
@@ -12,6 +13,7 @@ urlpatterns = patterns('')
 # Admin
 # -----
 
+admin.site.login_form = AdminAuthenticationForm
 admin.autodiscover()
 urlpatterns += patterns('',
     (r'^admin/', include(admin.site.urls)),
