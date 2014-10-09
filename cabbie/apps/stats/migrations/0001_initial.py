@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('user', models.ForeignKey(verbose_name='\uc811\uadfc\ud55c \uc0ac\uc6a9\uc790', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': [b'-created_at'],

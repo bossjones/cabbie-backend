@@ -94,6 +94,7 @@ class Driver(NullableImageMixin, User):
     bank_account = models.CharField(_('bank account'), max_length=100)
 
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
+    deposit = models.IntegerField(_('deposit'), default=0)
 
     objects = DriverManager()
 

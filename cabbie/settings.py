@@ -283,7 +283,7 @@ TMAP_CACHE_TIMEOUT = 60 * 60            # seconds
 # ----
 
 SUIT_CONFIG = {
-    'ADMIN_NAME': u'흑기사 어드민',
+    'ADMIN_NAME': u'백기사 어드민',
     'MENU_EXCLUDE': ('auth', 'authtoken', 'djcelery',),
     'LIST_PER_PAGE': 100,
 }
@@ -318,6 +318,8 @@ POINTS_BY_TYPE = {
     'mileage_double_ride': 200,
     'mileage_promotion': 500,
 }
+
+CALL_FEE = 500
 
 
 # Local settings
