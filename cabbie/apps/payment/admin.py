@@ -4,8 +4,8 @@ from cabbie.apps.payment.models import DriverBill, DriverCoupon, Transaction
 
 
 class DriverBillAdmin(admin.ModelAdmin):
-    list_display = ('driver', 'target_month', 'amount', 'created_at')
-    fields = ('driver', 'target_month', 'amount')
+    list_display = ('driver', 'amount', 'created_at')
+    fields = ('driver', 'amount')
 
 
 class DriverCouponAdmin(admin.ModelAdmin):

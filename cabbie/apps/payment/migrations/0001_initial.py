@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('target_month', models.CharField(help_text='e.g. 201409', max_length=6)),
                 ('amount', models.PositiveIntegerField()),
                 ('driver', models.ForeignKey(to='account.Driver')),
             ],
