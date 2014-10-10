@@ -30,4 +30,20 @@ class Migration(migrations.Migration):
             },
             bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
         ),
+        migrations.CreateModel(
+            name='LocationDataProvide',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('recipient', models.CharField(max_length=100, verbose_name='\uc774\uc6a9\uc81c\uacf5\ucc98')),
+            ],
+            options={
+                'ordering': [b'-created_at'],
+                'abstract': False,
+                'verbose_name': '\uc704\uce58\uc815\ubcf4 \uc774\uc6a9\uc81c\uacf5\ub0b4\uc5ed',
+                'verbose_name_plural': '\uc704\uce58\uc815\ubcf4 \uc774\uc6a9\uc81c\uacf5\ub0b4\uc5ed',
+            },
+            bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
+        ),
     ]
