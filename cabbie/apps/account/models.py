@@ -43,6 +43,14 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
         return u'{class_}({phone})'.format(class_=self.__class__.__name__,
                                            phone=self.phone)
 
+    @property
+    def concrete(self):
+        for role_name in ('passenger', 'driver'):
+            role = self.get_role(role_name)
+            if role:
+                return role
+        return None
+
     def get_full_name(self):
         return self.name
 

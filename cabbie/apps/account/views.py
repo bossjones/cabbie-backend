@@ -7,9 +7,10 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.account.models import Passenger, Driver
+from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
+from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 
@@ -45,8 +46,19 @@ class AbstractUserSignupView(CreateModelMixin, GenericAPIView):
         serializer = self.get_serializer(data=request.DATA,
                                          files=request.FILES)
         if serializer.is_valid():
-            self.model.objects.create_user(**pick(serializer.init_data,
-                                                  *serializer.Meta.fields))
+            user = self.model.objects.create_user(**pick(
+                serializer.init_data, *serializer.Meta.fields))
+
+            recommenders = request.DATA.get('recommenders', [])
+            for recommender_id in recommenders:
+                recommender = User.objects.get(id=recommender_id).concrete
+                if not recommender:
+                    continue
+                Recommend.objects.create(
+                    recommender=recommender,
+                    recommendee=user,
+                )
+
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED,
                             headers=headers)
@@ -68,7 +80,7 @@ class DriverMixin(object):
 
 class ObtainAuthToken(BaseObtainAuthToken):
     serializer_class = AuthTokenSerializer
-    
+
     def post(self, request):
         serializer = self.serializer_class(data=request.DATA)
         if serializer.is_valid():
@@ -124,10 +136,10 @@ class DriverPhotoUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
     def post(self, request, *args, **kwargs):
-       
+
         file_obj = request.FILES['upload_file']
         file_name = request.DATA['filename']
-        
+
         import mimetypes
         content_type, encoding = mimetypes.guess_type(file_name)
         file_obj.content_type = content_type
@@ -140,4 +152,4 @@ class DriverPhotoUploadView(APIView):
         return self.render({
             'uploaded_url': driver.url
         })
-         
+
