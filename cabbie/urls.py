@@ -37,6 +37,8 @@ router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
+router.register(r'driver/bills',
+                import_('cabbie.apps.payment.views.DriverBillViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',

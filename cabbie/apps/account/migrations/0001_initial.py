@@ -57,6 +57,7 @@ class Migration(migrations.Migration):
                 ('company', models.CharField(max_length=50, verbose_name='company')),
                 ('bank_account', models.CharField(max_length=100, verbose_name='bank account')),
                 ('ride_count', models.PositiveIntegerField(default=0, verbose_name='ride count')),
+                ('deposit', models.IntegerField(default=0, verbose_name='deposit')),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={

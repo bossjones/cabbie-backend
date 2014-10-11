@@ -1,8 +1,8 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
 
-from cabbie.apps.payment.models import Transaction
-from cabbie.apps.payment.serializers import TransactionSerializer
+from cabbie.apps.payment.models import Transaction, DriverBill
+from cabbie.apps.payment.serializers import TransactionSerializer, DriverBillSerializer
 
 
 # REST
@@ -33,3 +33,13 @@ class TransactionViewSet(viewsets.ModelViewSet):
             user_object_id=user.id,
         )
         return qs
+
+class DriverBillViewSet(viewsets.ModelViewSet):
+    queryset = (DriverBill.objects
+                .prefetch_related('driver').all())
+    serializer_class = DriverBillSerializer
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        return self.queryset.filter(driver=self.request.user)
+        

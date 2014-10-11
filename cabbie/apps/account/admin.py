@@ -4,7 +4,7 @@ from cabbie.apps.account.models import Driver, Passenger
 
 
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('phone', 'name', 'point', 'license_number', 'car_number',
+    list_display = ('phone', 'name', 'deposit', 'point', 'license_number', 'car_number',
                     'company', 'bank_account', 'verification_code',
                     'is_verified', 'is_accepted', 'is_freezed', 'date_joined')
     fields = ('phone', 'name', 'license_number', 'car_number', 'company',
