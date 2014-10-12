@@ -248,6 +248,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
     ),
     'PAGINATE_BY': 20,
+    'PAGINATE_BY_PARAM': 'size',
 }
 
 

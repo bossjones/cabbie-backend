@@ -16,7 +16,8 @@ class PointField(serializers.WritableField):
         return obj.coords
 
     def from_native(self, data):
-        as_json = json.loads(data)
+        as_json = json.loads(data) if isinstance(data, basestring) else data
+        as_json = map(float, as_json)
         return Point(*as_json)
 
 

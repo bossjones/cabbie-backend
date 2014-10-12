@@ -34,7 +34,7 @@ class RideViewSet(viewsets.ModelViewSet):
 class FavoriteViewSet(viewsets.ModelViewSet):
     queryset = Favorite.objects.prefetch_related('passenger').all()
     serializer_class = FavoriteSerializer
-    filter_fields = ()
+    filter_fields = ('address',)
     ordering = ('-created_at',)
 
     def pre_save(self, obj):
