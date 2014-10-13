@@ -38,9 +38,6 @@ class PassengerSerializer(UserSerializer):
         fields = UserSerializer.Meta.fields + ('email', 'ride_count')
         read_only_fields = UserSerializer.Meta.read_only_fields \
                            + ('ride_count',)
-        write_only_fields = UserSerializer.Meta.write_only_fields \
-                            + ('email',)
-
 
 class DriverSerializer(UserSerializer):
     image_url = serializers.CharField(source='url', read_only=True)
