@@ -10,7 +10,7 @@ except ImportError:
 
 
 class LoggableMixin(object):
-    LOG_FORMAT = '{label:20} {msg}'
+    LOG_FORMAT = u'{label:20} {msg}'
 
     def __init__(self, *args, **kwargs):
         super(LoggableMixin, self).__init__(*args, **kwargs)
