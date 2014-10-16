@@ -3,7 +3,7 @@ from rest_framework.authtoken.serializers import (
     AuthTokenSerializer as BaseAuthTokenSerializer)
 
 from cabbie.apps.account.models import User, Passenger, Driver
-from cabbie.common.serializers import AbstractSerializer
+from cabbie.common.serializers import AbstractSerializer, SeparatedField
 
 
 class AuthTokenSerializer(BaseAuthTokenSerializer):
@@ -23,11 +23,13 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
 
 
 class UserSerializer(AbstractSerializer):
-    remain_days_for_promotion = serializers.CharField(source='get_remain_days_for_promotion', read_only=True)
+    remain_days_for_promotion = serializers.CharField(
+        source='get_remain_days_for_promotion', read_only=True)
 
     class Meta:
         model = User
-        fields = ('id', 'phone', 'password', 'name', 'date_joined', 'remain_days_for_promotion')
+        fields = ('id', 'phone', 'password', 'name', 'date_joined',
+                  'remain_days_for_promotion')
         read_only_fields = ('date_joined',)
         write_only_fields = ('password',)
 
@@ -39,13 +41,16 @@ class PassengerSerializer(UserSerializer):
         read_only_fields = UserSerializer.Meta.read_only_fields \
                            + ('ride_count',)
 
+
 class DriverSerializer(UserSerializer):
     image_url = serializers.CharField(source='url', read_only=True)
+    taxi_service = SeparatedField(source='taxi_service')
 
     class Meta(UserSerializer.Meta):
         model = Driver
         fields = UserSerializer.Meta.fields + (
-            'license_number', 'car_number', 'company', 'ride_count', 'deposit',
-            'image_url')
+            'license_number', 'car_number', 'car_model', 'company',
+            'max_capacity', 'taxi_type', 'taxi_service', 'about',
+            'rated_count', 'ride_count', 'deposit', 'image_url')
         read_only_fields = UserSerializer.Meta.read_only_fields \
-                           + ('ride_count', 'deposit')
+                           + ('rated_count', 'ride_count', 'deposit')

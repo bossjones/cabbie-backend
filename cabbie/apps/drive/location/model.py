@@ -36,14 +36,19 @@ class ModelManager(LoggableMixin, SingletonMixin):
         if isinstance(user, Passenger):
             serialized.update({
                 'ride_count': user.ride_count,
-                'rating': 3.5,
             })
         if isinstance(user, Driver):
             serialized.update({
-                'ride_count': user.ride_count,
                 'license_number': user.license_number,
-                'company': user.company,
                 'car_number': user.car_number,
+                'car_model': user.car_model,
+                'company': user.company,
+                'max_capacity': user.max_capacity,
+                'taxi_type': user.taxi_type,
+                'taxi_service': user.taxi_service,
+                'about': user.about,
+                'rated_count': user.rated_count,
+                'ride_count': user.ride_count,
                 'rating': user.rating,
                 'image_urls': user.get_image_urls(),
             })

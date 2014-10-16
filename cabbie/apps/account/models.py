@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
+from cabbie.common.fields import SeparatedField
 from cabbie.common.models import ActiveMixin, NullableImageMixin
 from cabbie.utils.crypt import encrypt
 from cabbie.utils.validator import validate_phone
@@ -51,6 +52,12 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                 return role
         return None
 
+    @property
+    def get_remain_days_for_promotion(self):
+        return (self.date_joined
+                + datetime.timedelta(days=settings.PROMOTION_DAYS)
+                - timezone.now()).days
+
     def get_full_name(self):
         return self.name
 
@@ -66,10 +73,6 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def has_role(self, role_name):
         return bool(self.get_role(role_name))
 
-    @property
-    def get_remain_days_for_promotion(self):
-        from datetime import datetime, timedelta
-        return (self.date_joined + timedelta(days=settings.PROMOTION_DAYS) - timezone.now()).days
 
 class Passenger(User):
     email = models.EmailField(_('email address'), unique=True)
@@ -90,6 +93,12 @@ class Passenger(User):
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
 
+    TAXI_PRIVATE, TAXI_LUXURY = 'private', 'luxury'
+    TAXI_TYPES = (
+        (TAXI_PRIVATE, u'개인'),
+        (TAXI_LUXURY, u'모범'),
+    )
+
     verification_code = models.CharField(max_length=10)
     is_verified = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
@@ -98,9 +107,15 @@ class Driver(NullableImageMixin, User):
     license_number = models.CharField(_('license number'), max_length=100,
                                       unique=True)
     car_number = models.CharField(_('car number'), max_length=20, unique=True)
+    car_model = models.CharField(_('car model'), max_length=50)
     company = models.CharField(_('company'), max_length=50)
     bank_account = models.CharField(_('bank account'), max_length=100)
+    max_capacity = models.PositiveIntegerField(_('max capacity'), default=4)
+    taxi_type = models.CharField(max_length=10, choices=TAXI_TYPES)
+    taxi_service = SeparatedField(max_length=1000, separator=',', blank=True)
+    about = models.CharField(max_length=140, blank=True)
 
+    rated_count = models.PositiveIntegerField(_('rated count'), default=0)
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
     deposit = models.IntegerField(_('deposit'), default=0)
 

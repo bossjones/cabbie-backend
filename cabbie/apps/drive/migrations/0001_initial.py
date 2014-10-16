@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
                 ('name', models.CharField(max_length=100)),
                 ('location', django.contrib.gis.db.models.fields.PointField(srid=4326)),
-                ('address', models.CharField(max_length=1000, blank=True)),
+                ('address', models.CharField(db_index=True, max_length=1000, blank=True)),
                 ('poi', models.CharField(max_length=1000, blank=True)),
                 ('passenger', models.ForeignKey(to='account.Passenger')),
             ],

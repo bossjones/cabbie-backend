@@ -11,6 +11,10 @@ class JSONField(serializers.WritableField):
     pass
 
 
+class SeparatedField(serializers.WritableField):
+    pass
+
+
 class PointField(serializers.WritableField):
     def to_native(self, obj):
         return obj.coords
