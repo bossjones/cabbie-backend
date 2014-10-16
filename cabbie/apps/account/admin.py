@@ -16,7 +16,7 @@ class DriverForm(forms.ModelForm):
 class DriverAdmin(admin.ModelAdmin):
     form = DriverForm
     list_display = ('phone', 'name', 'deposit', 'point', 'license_number',
-                    'car_number', 'company', 'bank_account',
+                    'car_number', 'company', 'bank_account', 'rating',
                     'verification_code', 'is_verified', 'is_accepted',
                     'is_freezed', 'date_joined')
     fields = ('phone', 'name', 'license_number', 'car_number', 'car_model',

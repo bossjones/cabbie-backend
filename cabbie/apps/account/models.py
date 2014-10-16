@@ -115,6 +115,8 @@ class Driver(NullableImageMixin, User):
     taxi_service = SeparatedField(max_length=1000, separator=',', blank=True)
     about = models.CharField(max_length=140, blank=True)
 
+    total_rating = models.PositiveIntegerField(_('total rating'), default=0)
+
     rated_count = models.PositiveIntegerField(_('rated count'), default=0)
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
     deposit = models.IntegerField(_('deposit'), default=0)
@@ -127,9 +129,8 @@ class Driver(NullableImageMixin, User):
 
     @property
     def rating(self):
-        # FIXME: Implement this
-        import random
-        return random.randint(1, 50) / 10.0
+        return (float(self.total_rating) / self.rated_count
+                if self.rated_count > 0 else None)
 
     def get_default_image_url(self, image_type):
         return ''

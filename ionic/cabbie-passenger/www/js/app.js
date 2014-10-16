@@ -502,8 +502,8 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 }])
 
 .controller('MainCtrl', [
-    '$scope', '$ionicPopup', 'locationHost', 'Session',
-    function ($scope, $ionicPopup, locationHost, Session) {
+    '$scope', '$http', '$ionicPopup', 'locationHost', 'Session',
+    function ($scope, $http, $ionicPopup, locationHost, Session) {
   $scope.located = false;
   $scope.map = {
     control: {},
@@ -552,6 +552,16 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
   };
 
   var init = function () {
+    // FIXME
+    $http.put('/api/rides/4/rate', {
+      rating: 5,
+      ratings_by_category: {
+        a: '1'
+      }
+    }).then(function (r) {
+      console.log(r);
+    });
+
     Session.onLocationChange(function (location) {
       $scope.location = location;
       $scope.map.control.refresh(location);

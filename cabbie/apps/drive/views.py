@@ -1,12 +1,13 @@
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.http import Http404
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from cabbie.apps.drive.models import Ride, Favorite
 from cabbie.apps.drive.serializers import RideSerializer, FavoriteSerializer
-from cabbie.common.views import InternalView, APIView
+from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
 
@@ -14,7 +15,7 @@ from cabbie.utils.geo import TMap, TMapError
 # REST
 # ----
 
-class RideViewSet(viewsets.ModelViewSet):
+class RideViewSet(APIMixin, viewsets.ModelViewSet):
     queryset = Ride.objects.prefetch_related('passenger', 'driver').all()
     serializer_class = RideSerializer
     filter_fields = ('state', 'passenger', 'driver', 'created_at',
@@ -24,11 +25,26 @@ class RideViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = self.queryset
+
+        if user.is_superuser:
+            return qs
+
         if user.has_role('passenger'):
             qs = qs.filter(passenger=user)
         elif user.has_role('driver'):
             qs = qs.filter(driver=user)
+
         return qs
+
+    @action(methods=['PUT'])
+    def rate(self, request, pk=None):
+        ride = self.get_object()
+        try:
+            ride.rate(int(request.DATA['rating']),
+                    request.DATA['ratings_by_category'])
+        except Exception as e:
+            return self.render_error(unicode(e))
+        return self.render()
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

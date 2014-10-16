@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework.authtoken.models import Token
 
 from cabbie.apps.account.models import Passenger, Driver
@@ -25,11 +26,11 @@ def on_post_ride_complete(sender, ride, **kwargs):
     passenger.save()
 
     # For driver, increase ride count, deduct call fee
-    driver = ride.driver 
+    driver = ride.driver
     driver.ride_count += 1
     driver.deposit -= settings.CALL_FEE
-    driver.save()   
- 
+    driver.save()
+
 
 post_create.connect(on_post_create_user, sender=Passenger,
                     dispatch_uid='from_account')
@@ -39,5 +40,5 @@ post_create.connect(on_post_create_driver_bill, sender=DriverBill,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_transaction, sender=Transaction,
                     dispatch_uid='from_account')
-post_ride_complete.connect(on_post_ride_complete, 
+post_ride_complete.connect(on_post_ride_complete,
                     dispatch_uid='from_account')

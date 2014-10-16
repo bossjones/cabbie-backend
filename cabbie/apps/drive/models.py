@@ -10,13 +10,15 @@ from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
+from cabbie.utils.increment import Incrementer
+
 
 
 class Ride(AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
-        COMPLETED, RATED = \
+        COMPLETED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
-        'arrived', 'boarded', 'completed', 'rated'
+        'arrived', 'boarded', 'completed'
     STATES = (
         (REQUESTED, _('requested')),
         (APPROVED, _('approved')),
@@ -26,7 +28,6 @@ class Ride(AbstractTimestampModel):
         (ARRIVED, _('arrived')),
         (BOARDED, _('boarded')),
         (COMPLETED, _('completed')),
-        (RATED, _('rated')),
     )
 
     passenger = models.ForeignKey(Passenger, related_name='rides')
@@ -60,9 +61,23 @@ class Ride(AbstractTimestampModel):
         verbose_name = u'여정'
         verbose_name_plural = u'여정'
 
+    def rate(self, rating, ratings_by_category):
+        if self.state not in (self.BOARDED, self.COMPLETED):
+            raise Exception(u'탑승 또는 여정 완료 후 평가가 가능합니다')
+
+        if self.rating is not None:
+            raise Exception(u'이미 평가된 상태입니다')
+
+        self.rating = rating
+        self.ratings_by_category = ratings_by_category
+        self.save(update_fields=['rating', 'ratings_by_category'])
+
+        (Incrementer()
+            .add(Driver, self.driver_id, 'rated_count')
+            .add(Driver, self.driver_id, 'total_rating', self.rating)).run()
+
     def transit(self, **data):
-        for field in ('state', 'driver_id', 'rating', 'ratings_by_category',
-                      'comment', 'summary'):
+        for field in ('state', 'driver_id', 'comment', 'summary'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
@@ -93,7 +108,7 @@ class Ride(AbstractTimestampModel):
                 encrypted_field = '{0}_encrypted'.format(field)
                 setattr(self, encrypted_field, encrypted)
                 if update_fields:
-                    update_fields.append(encrypted)
+                    update_fields.append(field)
 
         for field in ('source_location', 'destination_location'):
             value = getattr(self, field, None)
@@ -102,7 +117,7 @@ class Ride(AbstractTimestampModel):
                 encrypted_field = '{0}_encrypted'.format(field)
                 setattr(self, encrypted_field, encrypted)
                 if update_fields:
-                    update_fields.append(encrypted)
+                    update_fields.append(field)
 
         super(Ride, self).save(
             force_insert, force_update, using, update_fields)
