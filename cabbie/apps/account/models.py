@@ -1,5 +1,6 @@
 # encoding: utf8
 
+from functools import partial
 import datetime
 
 from django.conf import settings
@@ -14,6 +15,7 @@ from cabbie.apps.account.managers import (
 from cabbie.common.fields import SeparatedField
 from cabbie.common.models import ActiveMixin, NullableImageMixin
 from cabbie.utils.crypt import encrypt
+from cabbie.utils.rand import random_string
 from cabbie.utils.validator import validate_phone
 from cabbie.utils.verify import issue_verification_code, send_verification_code
 
@@ -21,9 +23,14 @@ from cabbie.utils.verify import issue_verification_code, send_verification_code
 # Concrete
 # --------
 
+def _issue_new_code():
+    return random_string(User.CODE_LEN)
+
+
 class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     USERNAME_FIELD = 'phone'  # required by Django
     REQUIRED_FIELDS = []      # required by Django
+    CODE_LEN = 6
 
     phone = models.CharField(_('phone'), max_length=11, unique=True,
                              validators=[validate_phone])
@@ -32,6 +39,8 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     point = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=10, unique=True,
+                            default=_issue_new_code)
 
     objects = UserManager()
 

@@ -43,37 +43,29 @@ router.register(r'driver/bills',
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',
         import_('cabbie.apps.account.views.PassengerSignupView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/drivers/verify',
         import_('cabbie.apps.account.views.DriverVerifyView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/drivers/accept',
         import_('cabbie.apps.account.views.DriverAcceptView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/drivers/upload/profile_photo',
         import_('cabbie.apps.account.views.DriverPhotoUploadView').as_view()),
-)
-urlpatterns += patterns('',
+    url(r'^api/recommends/query',
+        import_('cabbie.apps.recommend.views.RecommendQueryView').as_view()),
+    url(r'^api/phone/verify/issue/?$',
+        import_('cabbie.apps.account.views.PhoneVerifyIssueView').as_view()),
+    url(r'^api/phone/verify/check/?$',
+        import_('cabbie.apps.account.views.PhoneVerifyCheckView').as_view()),
+
     url(r'^api/geo/poi/around',
         import_('cabbie.apps.drive.views.GeoPOIAroundView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/geo/poi',
         import_('cabbie.apps.drive.views.GeoPOIView').as_view()),
-)
-urlpatterns += patterns('',
     url(r'^api/geo/reverse',
         import_('cabbie.apps.drive.views.GeoReverseView').as_view()),
-)
-urlpatterns += patterns('',
+
     url(r'^api/auth',
         import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
-)
 
-urlpatterns += patterns('',
     url(r'^api/', include(router.urls)),
 )
 
