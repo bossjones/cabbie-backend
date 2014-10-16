@@ -3,6 +3,7 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
 
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.account.serializers import (
@@ -40,6 +41,8 @@ class RecommendViewSet(viewsets.ModelViewSet):
 
 
 class RecommendQueryView(APIView):
+    permission_classes = (AllowAny,)
+
     def get(self, request, *args, **kwargs):
         try:
             user = User.objects.get(code=request.GET['code'])
