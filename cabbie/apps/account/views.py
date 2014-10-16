@@ -8,7 +8,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
     ObtainAuthToken as BaseObtainAuthToken)
 from rest_framework.authtoken.models import Token
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
@@ -45,7 +45,7 @@ class AbstractUserViewSet(APIMixin, viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class AbstractUserSignupView(CreateModelMixin, GenericAPIView):
+class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIView):
     permission_classes = (AllowAny,)
     model = None
     serializer_class = None

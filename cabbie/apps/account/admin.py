@@ -2,8 +2,33 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminTextareaWidget
 
-from cabbie.apps.account.models import Driver, Passenger
+from cabbie.apps.account.models import User, Driver, Passenger
 
+class StaffAdmin(admin.ModelAdmin):
+    list_display = ('name', 'phone', 'is_superuser', 'date_joined')
+
+    list_filter = (
+        ('is_staff', admin.BooleanFieldListFilter),
+    )
+
+    fields = ('name', 'phone', 'password') 
+
+    ordering = ('-date_joined',)
+
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        
+        ordering = self.get_ordering(request)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        # only staff
+        qs = qs.filter(is_staff=True)
+        return qs
+
+    def save_model(self, request, obj, form, change):
+        # force staff
+        obj.is_staff = True
+        obj.save()
 
 class DriverForm(forms.ModelForm):
     class Meta:
@@ -49,5 +74,6 @@ class PassengerAdmin(admin.ModelAdmin):
     fields = ('phone', 'password', 'name', 'email')
     ordering = ('-date_joined',)
 
+admin.site.register(User, StaffAdmin)
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Passenger, PassengerAdmin)
