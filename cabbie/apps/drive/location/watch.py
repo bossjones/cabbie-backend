@@ -12,9 +12,10 @@ from cabbie.utils.meta import SingletonMixin
 
 
 class Watch(object):
-    def __init__(self, passenger_id, location):
+    def __init__(self, passenger_id, location, charge_type=None):
         self.passenger_id = passenger_id
         self.location = location
+        self.charge_type = charge_type
         self.assignment = None
 
     @property
@@ -40,6 +41,9 @@ class Watch(object):
     def update_location(self, location):
         self.location = location
 
+    def update_charge_type(self, charge_type):
+        self.charge_type = charge_type
+
 
 class WatchManager(LoggableMixin, SingletonMixin):
     refresh_interval = settings.LOCATION_REFRESH_INTERVAL
@@ -57,22 +61,28 @@ class WatchManager(LoggableMixin, SingletonMixin):
         # Register callbacks
         DriverManager().subscribe('activated', self.on_driver_activated)
         DriverManager().subscribe('deactivated', self.on_driver_deactivated)
+        DriverManager().subscribe('charge_type_changed',
+                                  self.on_driver_charge_type_changed)
         SessionManager().subscribe('passenger_closed',
                                    self.on_passenger_session_closed)
 
         # Start periodic refreshing
         self._refresh()
 
-    def watch(self, passenger_id, location, immediate_assign=True):
+    def watch(self, passenger_id, location, charge_type=None,
+              immediate_assign=True):
         # Register watch
         watch = self._watches_by_passenger.get(passenger_id)
         if watch is None:
-            watch = Watch(passenger_id, location)
+            watch = Watch(passenger_id, location, charge_type)
             self._watches_by_passenger[passenger_id] = watch
 
         # Update passenger location
         watch.update_location(location)
         self._passenger_index.set(passenger_id, location)
+
+        # Update charge type
+        watch.update_charge_type(charge_type)
 
         if immediate_assign:
             self.assign(passenger_id)
@@ -109,7 +119,7 @@ class WatchManager(LoggableMixin, SingletonMixin):
         # TODO: Consider already matched drivers
         candidates = yield DriverManager().get_driver_candidates(
             passenger_id, watch.location, count=self.candidate_count,
-            max_distance=self.max_distance)
+            max_distance=self.max_distance, charge_type=watch.charge_type)
 
         # Finding the best match
         best = None
@@ -151,7 +161,7 @@ class WatchManager(LoggableMixin, SingletonMixin):
         for passenger_id in passengers:
             self.assign(passenger_id)
 
-    def on_driver_deactivated(self, driver_id, last_location):
+    def on_driver_deactivated(self, driver_id, location):
         to_assign = set()
 
         passenger_id = self._best_matches_by_driver.get(driver_id)
@@ -170,6 +180,12 @@ class WatchManager(LoggableMixin, SingletonMixin):
 
         for passenger_id in to_assign:
             self.assign(passenger_id)
+
+    def on_driver_charge_type_changed(self, driver_id, location, charge_type):
+        self.debug('Driver {driver} changed charge type so refreshing'.format(
+            driver=driver_id))
+        self.on_driver_deactivated(driver_id, location)
+        self.on_driver_activated(driver_id, location)
 
     def on_passenger_session_closed(self, user_id, old_session):
         if user_id in self._watches_by_passenger:

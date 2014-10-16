@@ -213,6 +213,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
   var activated = false;
   var location = null;
   var state = null;
+  var chargeType = null;
   var ws = null;
   var authCallbacks = [];
   var locationCallbacks = [];
@@ -236,6 +237,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       location.latitude += (Math.random() - 1) * 5 / 1000.0;
 
       (state == 'initialized' && activated || state == 'approved') && send('driver_update_location', {
+        charge_type: chargeType,
         location: [location.longitude, location.latitude]
       });
       angular.forEach(locationCallbacks, function (callback) {
@@ -360,6 +362,9 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
         rating: rating,
         comment: comment
       });
+    },
+    changeChargeType: function (chargeType_) {
+      chargeType = chargeType_;
     },
 
     onLocationChange: function (callback) {
@@ -539,6 +544,9 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
     },
     zoom: 15
   };
+  $scope.data = {
+    charge_type: '0'
+  };
   $scope.location = {};
   $scope.state = null;
   $scope.modal = null;
@@ -585,8 +593,13 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
   $scope.complete = function () {
     Session.complete();
   };
+  $scope.changeChargeType = function () {
+    Session.changeChargeType($scope.data.charge_type)
+  };
 
   var init = function () {
+    $scope.changeChargeType();
+
     Session.onLocationChange(function (location) {
       $scope.location = location;
       $scope.map.control.refresh(location);

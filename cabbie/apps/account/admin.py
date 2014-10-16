@@ -1,14 +1,27 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import AdminTextareaWidget
 
 from cabbie.apps.account.models import Driver, Passenger
 
 
+class DriverForm(forms.ModelForm):
+    class Meta:
+        model = Driver
+        widgets = {
+            'about': AdminTextareaWidget(),
+        }
+
+
 class DriverAdmin(admin.ModelAdmin):
-    list_display = ('phone', 'name', 'deposit', 'point', 'license_number', 'car_number',
-                    'company', 'bank_account', 'verification_code',
-                    'is_verified', 'is_accepted', 'is_freezed', 'date_joined')
-    fields = ('phone', 'name', 'license_number', 'car_number', 'company',
-              'bank_account', 'image')
+    form = DriverForm
+    list_display = ('phone', 'name', 'deposit', 'point', 'license_number',
+                    'car_number', 'company', 'bank_account', 'rating',
+                    'verification_code', 'is_verified', 'is_accepted',
+                    'is_freezed', 'date_joined')
+    fields = ('phone', 'name', 'license_number', 'car_number', 'car_model',
+              'company', 'bank_account', 'max_capacity', 'taxi_type',
+              'taxi_service', 'about', 'image')
     ordering = ('-date_joined',)
 
     actions = (

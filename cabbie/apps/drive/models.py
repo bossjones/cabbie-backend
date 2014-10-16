@@ -5,18 +5,20 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_complete
+from cabbie.apps.drive.signals import post_ride_board
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
+from cabbie.utils.increment import Incrementer
+
 
 
 class Ride(AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
-        COMPLETED, RATED = \
+        COMPLETED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
-        'arrived', 'boarded', 'completed', 'rated'
+        'arrived', 'boarded', 'completed'
     STATES = (
         (REQUESTED, _('requested')),
         (APPROVED, _('approved')),
@@ -26,7 +28,6 @@ class Ride(AbstractTimestampModel):
         (ARRIVED, _('arrived')),
         (BOARDED, _('boarded')),
         (COMPLETED, _('completed')),
-        (RATED, _('rated')),
     )
 
     passenger = models.ForeignKey(Passenger, related_name='rides')
@@ -40,6 +41,7 @@ class Ride(AbstractTimestampModel):
     source_location = models.PointField()
     destination = JSONField(default='{}')
     destination_location = models.PointField(blank=True, null=True)
+    charge_type = models.CharField(max_length=100, blank=True)
     summary = JSONField(default='{}')
 
     # Encryption
@@ -60,9 +62,23 @@ class Ride(AbstractTimestampModel):
         verbose_name = u'여정'
         verbose_name_plural = u'여정'
 
+    def rate(self, rating, ratings_by_category):
+        if self.state not in (self.BOARDED, self.COMPLETED):
+            raise Exception(u'탑승 또는 여정 완료 후 평가가 가능합니다')
+
+        if self.rating is not None:
+            raise Exception(u'이미 평가된 상태입니다')
+
+        self.rating = rating
+        self.ratings_by_category = ratings_by_category
+        self.save(update_fields=['rating', 'ratings_by_category'])
+
+        (Incrementer()
+            .add(Driver, self.driver_id, 'rated_count')
+            .add(Driver, self.driver_id, 'total_rating', self.rating)).run()
+
     def transit(self, **data):
-        for field in ('state', 'driver_id', 'rating', 'ratings_by_category',
-                      'comment', 'summary'):
+        for field in ('state', 'driver_id', 'charge_type', 'summary'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
@@ -81,8 +97,8 @@ class Ride(AbstractTimestampModel):
             data=data,
         )
 
-        if self.state == self.COMPLETED:
-            post_ride_complete.send(sender=self.__class__, ride=self)
+        if self.state == self.BOARDED:
+            post_ride_board.send(sender=self.__class__, ride=self)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -93,7 +109,7 @@ class Ride(AbstractTimestampModel):
                 encrypted_field = '{0}_encrypted'.format(field)
                 setattr(self, encrypted_field, encrypted)
                 if update_fields:
-                    update_fields.append(encrypted)
+                    update_fields.append(field)
 
         for field in ('source_location', 'destination_location'):
             value = getattr(self, field, None)
@@ -102,7 +118,7 @@ class Ride(AbstractTimestampModel):
                 encrypted_field = '{0}_encrypted'.format(field)
                 setattr(self, encrypted_field, encrypted)
                 if update_fields:
-                    update_fields.append(encrypted)
+                    update_fields.append(field)
 
         super(Ride, self).save(
             force_insert, force_update, using, update_fields)

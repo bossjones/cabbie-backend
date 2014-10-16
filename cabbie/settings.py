@@ -301,6 +301,12 @@ AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
 
+# SMS
+# ---
+
+ALLOWED_DEBUG_PHONE = ['01026254319']
+
+
 # Etc
 # ---
 

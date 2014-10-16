@@ -205,6 +205,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
   var authenticated = false;
   var location = null;
   var state = null;
+  var chargeType = null;
   var ws = null;
   var authCallbacks = [];
   var locationCallbacks = [];
@@ -334,6 +335,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     watch: function () {
       var action = function () {
         send('passenger_watch', {
+          charge_type: chargeType,
           location: [location.longitude, location.latitude]
         });
       };
@@ -366,6 +368,10 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         rating: rating,
         comment: comment
       });
+    },
+    changeChargeType: function (chargeType_) {
+      chargeType = chargeType_;
+      this.watch();
     },
 
     onLocationChange: function (callback, once) {
@@ -502,8 +508,8 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 }])
 
 .controller('MainCtrl', [
-    '$scope', '$ionicPopup', 'locationHost', 'Session',
-    function ($scope, $ionicPopup, locationHost, Session) {
+    '$scope', '$http', '$ionicPopup', 'locationHost', 'Session',
+    function ($scope, $http, $ionicPopup, locationHost, Session) {
   $scope.located = false;
   $scope.map = {
     control: {},
@@ -513,6 +519,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
     },
     zoom: 15
   };
+  $scope.data = {};
   $scope.location = {};
   $scope.state = null;
   $scope.taxiIcon = 'img/taxi.png';
@@ -530,6 +537,9 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
   };
   $scope.requestCandidates = function () {
     // FIXME: Implement
+  };
+  $scope.changeChargeType = function () {
+    Session.changeChargeType($scope.data.charge_type)
   };
   $scope.call = function () {
     $ionicPopup.alert({

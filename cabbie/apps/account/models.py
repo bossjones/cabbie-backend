@@ -1,5 +1,6 @@
 # encoding: utf8
 
+from functools import partial
 import datetime
 
 from django.conf import settings
@@ -11,8 +12,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
+from cabbie.common.fields import SeparatedField
 from cabbie.common.models import ActiveMixin, NullableImageMixin
 from cabbie.utils.crypt import encrypt
+from cabbie.utils.rand import random_string
 from cabbie.utils.validator import validate_phone
 from cabbie.utils.verify import issue_verification_code, send_verification_code
 
@@ -20,9 +23,14 @@ from cabbie.utils.verify import issue_verification_code, send_verification_code
 # Concrete
 # --------
 
+def _issue_new_code():
+    return random_string(User.CODE_LEN)
+
+
 class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     USERNAME_FIELD = 'phone'  # required by Django
     REQUIRED_FIELDS = []      # required by Django
+    CODE_LEN = 6
 
     phone = models.CharField(_('phone'), max_length=11, unique=True,
                              validators=[validate_phone])
@@ -31,6 +39,8 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
 
     point = models.PositiveIntegerField(default=0)
+    code = models.CharField(max_length=10, unique=True,
+                            default=_issue_new_code)
 
     objects = UserManager()
 
@@ -51,6 +61,12 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                 return role
         return None
 
+    @property
+    def get_remain_days_for_promotion(self):
+        return (self.date_joined
+                + datetime.timedelta(days=settings.PROMOTION_DAYS)
+                - timezone.now()).days
+
     def get_full_name(self):
         return self.name
 
@@ -66,10 +82,6 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def has_role(self, role_name):
         return bool(self.get_role(role_name))
 
-    @property
-    def get_remain_days_for_promotion(self):
-        from datetime import datetime, timedelta
-        return (self.date_joined + timedelta(days=settings.PROMOTION_DAYS) - timezone.now()).days
 
 class Passenger(User):
     email = models.EmailField(_('email address'), unique=True)
@@ -90,6 +102,12 @@ class Passenger(User):
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
 
+    TAXI_PRIVATE, TAXI_LUXURY = 'private', 'luxury'
+    TAXI_TYPES = (
+        (TAXI_PRIVATE, u'개인'),
+        (TAXI_LUXURY, u'모범'),
+    )
+
     verification_code = models.CharField(max_length=10)
     is_verified = models.BooleanField(default=False)
     is_accepted = models.BooleanField(default=False)
@@ -98,9 +116,17 @@ class Driver(NullableImageMixin, User):
     license_number = models.CharField(_('license number'), max_length=100,
                                       unique=True)
     car_number = models.CharField(_('car number'), max_length=20, unique=True)
+    car_model = models.CharField(_('car model'), max_length=50)
     company = models.CharField(_('company'), max_length=50)
     bank_account = models.CharField(_('bank account'), max_length=100)
+    max_capacity = models.PositiveIntegerField(_('max capacity'), default=4)
+    taxi_type = models.CharField(max_length=10, choices=TAXI_TYPES)
+    taxi_service = SeparatedField(max_length=1000, separator=',', blank=True)
+    about = models.CharField(max_length=140, blank=True)
 
+    total_rating = models.PositiveIntegerField(_('total rating'), default=0)
+
+    rated_count = models.PositiveIntegerField(_('rated count'), default=0)
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
     deposit = models.IntegerField(_('deposit'), default=0)
 
@@ -112,9 +138,8 @@ class Driver(NullableImageMixin, User):
 
     @property
     def rating(self):
-        # FIXME: Implement this
-        import random
-        return random.randint(1, 50) / 10.0
+        return (float(self.total_rating) / self.rated_count
+                if self.rated_count > 0 else None)
 
     def get_default_image_url(self, image_type):
         return ''

@@ -1,3 +1,8 @@
+# encoding: utf-8
+
+import re
+
+from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
@@ -10,9 +15,12 @@ from rest_framework.permissions import AllowAny
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
+from cabbie.apps.account.session import (
+    PhoneVerificationSessionManager, InvalidCode, InvalidSession)
 from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
+from cabbie.utils.validator import is_valid_phone
 
 
 # REST (Mixin/Abstract)
@@ -132,6 +140,7 @@ class DriverAcceptView(APIView):
 
         return self.render()
 
+
 class DriverPhotoUploadView(APIView):
     parser_classes = (MultiPartParser,)
 
@@ -153,3 +162,43 @@ class DriverPhotoUploadView(APIView):
             'uploaded_url': driver.url
         })
 
+
+class PhoneVerifyIssueView(GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        phone = request.DATA['phone']
+        phone = re.sub(r'[^\d]', '', phone)
+        if not is_valid_phone(phone):
+            return self.render_error(
+                u'정상적인 휴대폰 번호가 아닙니다 (숫자만 입력해주세요)')
+
+        try:
+            code = PhoneVerificationSessionManager().create(
+                request.DATA['phone'])
+        except Exception as e:
+            return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
+        else:
+            if settings.DEBUG:
+                return self.render({'code': code})
+            else:
+                return self.render()
+
+
+class PhoneVerifyCheckView(GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            PhoneVerificationSessionManager().verify(
+                request.DATA['phone'], request.DATA['code'])
+        except InvalidSession:
+            return self.render_error(
+                u'세션이 만료되었습니다. 처음부터 다시 시작해주세요.')
+        except InvalidCode:
+            return self.render_error(
+                u'인증번호가 일치하지 않습니다. 다시 확인해주세요.')
+        except Exception as e:
+            return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
+        else:
+            return self.render()

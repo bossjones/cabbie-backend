@@ -24,6 +24,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._destination = destination
         self._driver_id = None
         self._driver_location = None
+        self._driver_charge_type = None
         self._state = None
         self._ride_id = None
         self._update_queue = []
@@ -51,10 +52,11 @@ class RideProxy(LoggableMixin, PubsubMixin):
     def passenger_session(self):
         return SessionManager().get(self._passenger_id)
 
-    def set_driver(self, driver_id, location):
+    def set_driver(self, driver_id, location, charge_type):
         self.debug('Setting driver to {0}'.format(driver_id))
         self._driver_id = driver_id
         self._driver_location = location
+        self._driver_charge_type = charge_type
         self.driver_session.ride_proxy = self
         self.publish('driver_set', self, driver_id)
 
@@ -146,6 +148,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
             'driver_id': self._driver_id,
             'driver_location': self._driver_location,
             'state': self._state,
+            'charge_type': self._driver_charge_type,
         }
 
     @gen.coroutine

@@ -25,6 +25,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         super(DriverManager, self).__init__()
         self._driver_index = Rtree2D()
         self._driver_locations = defaultdict(Location)
+        self._driver_charge_types = {}
         self._estimate_cache = {}
 
         SessionManager().subscribe('driver_closed',
@@ -40,14 +41,20 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
     def is_activated(self, driver_id):
         return driver_id in self._driver_locations
 
-    def update_location(self, driver_id, location):
+    def update_location(self, driver_id, location, charge_type=None):
         is_new = driver_id not in self._driver_locations
+        old_charge_type = self._driver_charge_types.get(driver_id)
 
         self._driver_index.set(driver_id, location)
         self._driver_locations[driver_id].update(location)
 
+        self._driver_charge_types[driver_id] = charge_type
+
         if is_new:
             self.publish('activated', driver_id, location)
+        elif old_charge_type != charge_type:
+            self.publish('charge_type_changed', driver_id, location,
+                         charge_type)
 
         self.publish('location_update', driver_id, location)
 
@@ -64,18 +71,24 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         except KeyError:
             self.error('Failed to remove {0} from locations'.format(driver_id))
 
+        try:
+            del self._driver_charge_types[driver_id]
+        except KeyError:
+            self.error('Failed to remove {0} from charges'.format(driver_id))
+
         self.publish('deactivated', driver_id, last_location)
 
     @gen.coroutine
     def get_driver_candidates(self, passenger_id, location, count,
-                              max_distance):
+                              max_distance, charge_type=None):
         """Return a list of driver candidates.
 
         `passenger_id` is only need for caching.
         """
 
         candidates = list(
-            self.get_nearest_drivers(location, count, max_distance))
+            self.get_nearest_drivers(location, count, max_distance,
+                                     charge_type))
 
         locations = map(self.get_driver_location, candidates)
 
@@ -90,6 +103,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
             'driver': drivers[driver_id],
             'location': locations[i],
             'estimate': estimates[i],
+            'charge_type': self._driver_charge_types[driver_id],
         } for i, driver_id in enumerate(candidates)])
 
     @gen.coroutine
@@ -137,9 +151,17 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
     def get_driver_location(self, driver_id):
         return self._driver_locations.get(driver_id)
 
-    def get_nearest_drivers(self, location, count=None, max_distance=None):
-        return self._driver_index.nearest(location, count=count,
-                                          max_distance=max_distance)
+    def get_driver_charge_type(self, driver_id):
+        return self._driver_charge_types.get(driver_id)
+
+    def get_nearest_drivers(self, location, count=None, max_distance=None,
+                            charge_type=None):
+        ids = self._driver_index.nearest(location, count=count,
+                                         max_distance=max_distance)
+        return [
+            id_ for id_ in ids
+            if not charge_type
+            or self._driver_charge_types[id_] == charge_type]
 
     def on_driver_session_closed(self, user_id, old_session):
         if self.is_activated(user_id):

@@ -3,7 +3,7 @@
 from django.conf import settings
 
 from cabbie.apps.recommend.models import Recommend
-from cabbie.apps.drive.signals import post_ride_complete
+from cabbie.apps.drive.signals import post_ride_board
 from cabbie.apps.payment.models import Transaction
 from cabbie.common.signals import post_create
 
@@ -31,7 +31,8 @@ def on_post_create_recommend(sender, instance, **kwargs):
             amount=amount,
         )
 
-def on_post_ride_complete(sender, ride, **kwargs):
+
+def on_post_ride_board(sender, ride, **kwargs):
     # For passenger
     passenger = ride.passenger
     note = u''
@@ -65,18 +66,7 @@ def on_post_ride_complete(sender, ride, **kwargs):
             note=u'보너스 마일리지 (1일 2회 이상 탑승)',
         )
 
-    # Add ride count
-    passenger.ride_count += 1
-    passenger.save()
 
-    # For driver
-    driver = ride.driver 
-
-    # Add ride count, deduct call fee
-    driver.ride_count += 1
-    driver.deposit -= settings.CALL_FEE
-    driver.save()   
-    
 post_create.connect(on_post_create_recommend, sender=Recommend,
                     dispatch_uid='from_payment')
-post_ride_complete.connect(on_post_ride_complete, dispatch_uid='from_payment')
+post_ride_board.connect(on_post_ride_board, dispatch_uid='from_payment')

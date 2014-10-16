@@ -34,6 +34,14 @@
         현재 배차 가능한 택시가 없습니다.
       </div>
     </div>
+    <div class="padding-horizontal" ng-show="state == 'assigned'">
+      <select ng-model="data.charge_type" ng-change="changeChargeType()">
+        <option value="">모두</option>
+        <option value="0">0원</option>
+        <option value="1000">1000원</option>
+        <option value="2000">2000원</option>
+      </select>
+    </div>
 
     <!-- Requested -->
     <div class="card" ng-show="state == 'requested'">

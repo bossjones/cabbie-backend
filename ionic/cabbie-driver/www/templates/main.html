@@ -12,6 +12,13 @@
           <span ng-show="!activated">콜 수신하기</span>
           <span ng-show="activated">콜 수신 취소</span>
         </button>
+        <div>
+          <select ng-model="data.charge_type" ng-change="changeChargeType()">
+            <option value="0">0원</option>
+            <option value="1000">1000원</option>
+            <option value="2000">2000원</option>
+          </select>
+        </div>
       </div>
       <div ng-show="state == 'requested'">
         <button type="button" class="button button-block button-assertive" ng-click="showRequestModal()">
