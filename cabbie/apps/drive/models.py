@@ -41,6 +41,7 @@ class Ride(AbstractTimestampModel):
     source_location = models.PointField()
     destination = JSONField(default='{}')
     destination_location = models.PointField(blank=True, null=True)
+    charge_type = models.CharField(max_length=100, blank=True)
     summary = JSONField(default='{}')
 
     # Encryption
@@ -77,7 +78,7 @@ class Ride(AbstractTimestampModel):
             .add(Driver, self.driver_id, 'total_rating', self.rating)).run()
 
     def transit(self, **data):
-        for field in ('state', 'driver_id', 'comment', 'summary'):
+        for field in ('state', 'driver_id', 'charge_type', 'summary'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)

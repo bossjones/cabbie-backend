@@ -46,6 +46,7 @@ class Migration(migrations.Migration):
                 ('source_location', django.contrib.gis.db.models.fields.PointField(srid=4326)),
                 ('destination', cabbie.common.fields.JSONField(default=b'{}')),
                 ('destination_location', django.contrib.gis.db.models.fields.PointField(srid=4326, null=True, blank=True)),
+                ('charge_type', models.CharField(max_length=100, blank=True)),
                 ('summary', cabbie.common.fields.JSONField(default=b'{}')),
                 ('source_encrypted', models.CharField(max_length=1000, blank=True)),
                 ('source_location_encrypted', models.CharField(max_length=1000, blank=True)),

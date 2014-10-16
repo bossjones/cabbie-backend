@@ -104,8 +104,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # Driver-side
     # -----------
 
-    def handle_driver_update_location(self, location):
-        self.debug('Updating location to {0}'.format(location))
+    def handle_driver_update_location(self, location, charge_type):
+        self.debug('Updating location to {0} (charge_type: {1})'.format(
+            location, charge_type))
 
         if self.ride_proxy:
             # If there is already ride match, just forward the location info to
@@ -113,7 +114,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
             self.ride_proxy.progress(location)
         else:
             # Otherwise, report to the location manager
-            DriverManager().update_location(self._user_id, location)
+            DriverManager().update_location(self._user_id, location,
+                                            charge_type)
 
     def handle_driver_deactivate(self):
         self.info('Deactivated')
@@ -155,9 +157,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # Passenger-side
     # --------------
 
-    def handle_passenger_watch(self, location):
+    def handle_passenger_watch(self, location, charge_type):
         self.info('Watched')
-        WatchManager().watch(self._user_id, location)
+        WatchManager().watch(self._user_id, location, charge_type=charge_type)
 
     def handle_passenger_unwatch(self):
         self.info('Unwatched')
@@ -166,8 +168,9 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def handle_passenger_request(self, driver_id, source, destination):
         self.info('Requested')
 
-        # Fetch the last driver location before deactivating
+        # Fetch the last driver info before deactivating
         driver_location = DriverManager().get_driver_location(driver_id)
+        driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
 
         # Change the states of drivers and passengers accordingly
         WatchManager().unwatch(self._user_id)
@@ -175,7 +178,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         # Create a new ride proxy instance
         proxy = RideProxyManager().create(self._user_id, source, destination)
-        proxy.set_driver(driver_id, driver_location)
+        proxy.set_driver(driver_id, driver_location, driver_charge_type)
         proxy.request()
 
     def handle_passenger_cancel(self):
