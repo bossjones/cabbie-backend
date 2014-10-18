@@ -29,19 +29,17 @@ class UserSerializer(AbstractSerializer):
     class Meta:
         model = User
         fields = ('id', 'phone', 'password', 'name', 'point', 'date_joined',
-                  'remain_days_for_promotion', 'recommend_code')
-        read_only_fields = ('point', 'date_joined', 'recommend_code')
+                  'remain_days_for_promotion')
+        read_only_fields = ('point', 'date_joined')
         write_only_fields = ('password',)
 
 
 class PassengerSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = Passenger
-        fields = UserSerializer.Meta.fields + ('email', 'ride_count', 'parse_installation_object_id')
+        fields = UserSerializer.Meta.fields + ('email', 'ride_count')
         read_only_fields = UserSerializer.Meta.read_only_fields \
                            + ('ride_count',)
-        write_only_fields = UserSerializer.Meta.write_only_fields \
-                            + ('parse_installation_object_id',)
 
 
 class DriverSerializer(UserSerializer):
