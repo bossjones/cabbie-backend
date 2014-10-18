@@ -183,10 +183,7 @@ class PhoneVerifyIssueView(GenericAPIView):
         except Exception as e:
             return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
         else:
-            if settings.DEBUG:
-                return self.render({'code': code})
-            else:
-                return self.render()
+            return self.render({'code': code})
 
 
 class PhoneVerifyCheckView(GenericAPIView):
