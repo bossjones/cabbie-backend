@@ -29,22 +29,28 @@ logger = logging.getLogger(__name__)
 
 
 @celery.task
-def _send_push_notification(message, channels):
+def _send_push_notification(message, channels, **kwargs):
     try:
-        Push.message(message, channels=channels)
+        if isinstance(message, basestring):
+            Push.message(message, channels=channels, **kwargs)
+        elif isinstance(message, dict):
+            Push.alert(message, channels=channels, **kwargs)
+
     except Exception as e:
-        logger.error(u'Failed to send push ({0}, {1}): {2}'.format(
-            message, channels, e))
+        logger.error(u'Failed to send push ({0}, {1}, {2}): {3}'.format(
+            message, channels, kwargs, e))
     else:
-        logger.info(u'Successfully sent push ({0}, {1})'.format(
-            message, channels))
+        logger.info(u'Successfully sent push ({0}, {1}, {2})'.format(
+            message, channels, kwargs))
 
 
-def send_push_notification(message, channels, async=True):
+def send_push_notification(message, channels, async=True, **kwargs):
     if not getattr(_local, 'push_enabled', True):
         return
 
+    print 'kwargs:{0}'.format(kwargs)
+
     if not settings.DEBUG and async:
-        return _send_push_notification.delay(message, channels)
+        return _send_push_notification.delay(message, channels, **kwargs)
     else:
-        return _send_push_notification(message, channels)
+        return _send_push_notification(message, channels, **kwargs)

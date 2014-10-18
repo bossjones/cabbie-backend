@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_board
+from cabbie.apps.drive.signals import post_ride_board, post_ride_complete
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel
 from cabbie.utils import json
@@ -100,6 +100,9 @@ class Ride(AbstractTimestampModel):
         if self.state == self.BOARDED:
             post_ride_board.send(sender=self.__class__, ride=self)
 
+        if self.state == self.COMPLETED:
+            post_ride_complete.send(sender=self.__class__, ride=self)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         for field in ('source', 'destination'):
@@ -151,3 +154,5 @@ class Favorite(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'즐겨찾기'
         verbose_name_plural = u'즐겨찾기'
+
+from cabbie.apps.drive.receivers import *

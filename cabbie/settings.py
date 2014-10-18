@@ -303,6 +303,15 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', 'cRTKdqakXbhUTsHrzbi/
 AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
+# Push (Parse)
+PARSE_APPLICATION_ID = '7Zb99LTr2u08bqWjmXAYVqhqEJlXsaGB20oHK7DZ'
+PARSE_REST_API_KEY = 'sUDJrgh7zik3ceToqDqD4MReOGsbBbW0uQ11jsdc'
+PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
+from parse_rest.connection import register
+register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
+
+MESSAGE_RIDE_COMPLETE_TITLE = u'목적지 도착!'
+MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가해 주세요. (10초소요)'
 
 # SMS
 # ---

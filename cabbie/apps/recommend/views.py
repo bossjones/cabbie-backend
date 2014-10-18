@@ -45,19 +45,32 @@ class RecommendQueryView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            user = User.objects.get(code=request.GET['code'])
+            user = User.objects.get(recommend_code=request.GET['code'])
         except User.DoesNotExist:
             return self.render_error(u'유효하지 않은 코드입니다')
+        
+        if 'recommendee_role' not in request.GET:
+            return self.render_error(u'recommendee_role을 입력해주세요')
+
+        recommendee_role = request.GET['recommendee_role']
+
+        if recommendee_role not in ['passenger', 'driver']:
+            return self.render_error(u'올바르지 않은 피추천인 타입입니다')
 
         user = user.concrete
+
+        recommender_role = 'passenger' if isinstance(user, Passenger) else 'driver'
+
         serializer_class = (
             PassengerSerializer if isinstance(user, Passenger) else
             DriverSerializer)
         data = serializer_class(user).data
 
-        point = settings.POINTS_BY_TYPE['recommend_p2p']
+        point_key = 'recommended_{0}2{1}'.format(recommender_role[0], recommendee_role[0])
+        point = settings.POINTS_BY_TYPE[point_key]
 
         return self.render({
             'user': data,
+            'recommender_role': 'passenger' if isinstance(user, Passenger) else 'driver',
             'point': point,
         })
