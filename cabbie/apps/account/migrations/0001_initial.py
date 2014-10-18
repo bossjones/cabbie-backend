@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('is_staff', models.BooleanField(default=False, verbose_name='staff status')),
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
                 ('point', models.PositiveIntegerField(default=0)),
-                ('code', models.CharField(default=cabbie.apps.account.models._issue_new_code, unique=True, max_length=10)),
+                ('recommend_code', models.CharField(default=cabbie.apps.account.models._issue_new_code, unique=True, max_length=10)),
                 ('groups', models.ManyToManyField(to='auth.Group', verbose_name='groups', blank=True)),
                 ('user_permissions', models.ManyToManyField(to='auth.Permission', verbose_name='user permissions', blank=True)),
             ],
@@ -82,6 +82,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('email', models.EmailField(unique=True, max_length=75, verbose_name='email address')),
                 ('ride_count', models.PositiveIntegerField(default=0, verbose_name='ride count')),
+                ('parse_installation_object_id', models.CharField(max_length=20, blank=True)),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
