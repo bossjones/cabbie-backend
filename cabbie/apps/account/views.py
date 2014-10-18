@@ -21,7 +21,7 @@ from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.validator import is_valid_phone
-
+from cabbie.utils import json
 
 # REST (Mixin/Abstract)
 # ---------------------
@@ -58,6 +58,10 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                 serializer.init_data, *serializer.Meta.fields))
 
             recommenders = request.DATA.get('recommenders', [])
+
+            recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders 
+            recommenders = map(int, recommenders)
+
             for recommender_id in recommenders:
                 recommender = User.objects.get(id=recommender_id).concrete
                 if not recommender:

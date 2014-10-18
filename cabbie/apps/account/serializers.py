@@ -28,9 +28,9 @@ class UserSerializer(AbstractSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'phone', 'password', 'name', 'date_joined',
+        fields = ('id', 'phone', 'password', 'name', 'point', 'date_joined',
                   'remain_days_for_promotion')
-        read_only_fields = ('date_joined',)
+        read_only_fields = ('point', 'date_joined')
         write_only_fields = ('password',)
 
 
