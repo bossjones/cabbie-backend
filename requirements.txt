@@ -3,7 +3,7 @@ https://www.djangoproject.com/download/1.7c1/tarball/
 Fabric==1.9.0
 Jinja2==2.7.3
 MarkupSafe==0.23
-Pillow==2.5.3
+PIL==1.1.7
 Rtree==0.8.0
 amqp==1.4.5
 anyjson==0.3.3
@@ -14,6 +14,7 @@ celery==3.1.13
 django-celery==3.1.10
 django-cors-headers==0.12
 django-filter==0.7
+django-redis==3.7.1
 django-storages==1.1.8
 django-suit==0.2.9
 djangorestframework==2.3.14
@@ -25,6 +26,7 @@ git+https://github.com/dgrtwo/ParsePy.git
 psycopg2==2.5.3
 pycrypto==2.6.1
 pytz==2014.4
+redis==2.10.3
 requests==2.3.0
 simplejson==3.5.3
 tornado==3.2.2
