@@ -34,6 +34,7 @@ class Migration(migrations.Migration):
                 ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
                 ('point', models.PositiveIntegerField(default=0)),
                 ('recommend_code', models.CharField(default=cabbie.apps.account.models._issue_new_code, unique=True, max_length=10)),
+                ('is_bot', models.BooleanField(default=False)),
                 ('groups', models.ManyToManyField(to='auth.Group', verbose_name='groups', blank=True)),
                 ('user_permissions', models.ManyToManyField(to='auth.Permission', verbose_name='user permissions', blank=True)),
             ],

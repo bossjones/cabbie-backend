@@ -1,6 +1,6 @@
 from django.conf import settings
 
-from cabbie.apps.drive.location.loop import delay
+from cabbie.utils.ioloop import delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
