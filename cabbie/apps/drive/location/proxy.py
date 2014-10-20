@@ -1,9 +1,15 @@
+import time
+
+from django.conf import settings
 from tornado import gen
 
+from cabbie.apps.drive.location.estimate import TmapEstimator
+from cabbie.apps.drive.location.loop import delay
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.secret import fetch
 from cabbie.apps.drive.location.session import SessionManager
 from cabbie.apps.drive.models import Ride
+from cabbie.utils.geo import distance
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
@@ -15,6 +21,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     create_path = '/_/drive/ride/create'
     update_path = '/_/drive/ride/{pk}/update'
+    refresh_interval = settings.RIDE_ESTIMATE_REFRESH_INTERVAL
 
     def __init__(self, passenger_id, source, destination):
         super(RideProxy, self).__init__()
@@ -28,6 +35,11 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._state = None
         self._ride_id = None
         self._update_queue = []
+
+        self._estimate = None
+        self._journey = None
+        self._boarded_at = None
+        self._boarded_location = None
 
         # Passenger location is not updated periodically so just use the source
         # location instead
@@ -89,17 +101,13 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.notify_passenger_approve()
         self._transition_to(Ride.APPROVED)
 
+        # Start periodic refreshing
+        self._refresh_estimate()
+
     def reject(self, reason):
         self.passenger_session.notify_passenger_reject(reason)
         self._transition_to(Ride.REJECTED, reason=reason)
         self._reset_driver()
-
-    def progress(self, location):
-        # TODO: Periodic calculation of estimated time and distance using
-        # TmapEstimator
-        self._driver_location = location
-        if self.passenger_session:
-            self.passenger_session.notify_passenger_progress(location)
 
     def arrive(self):
         self.passenger_session.notify_passenger_arrive()
@@ -109,10 +117,29 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.notify_passenger_board()
         self._transition_to(Ride.BOARDED)
 
+        self._boarded_at = time.time()
+        self._boarded_location = self._driver_location
+
     def complete(self, summary):
         self.passenger_session.notify_passenger_complete(summary)
         self._transition_to(Ride.COMPLETED, summary=summary)
         self._reset_driver()
+
+    def update_driver_location(self, location):
+        self._driver_location = location
+
+        if self._state == Ride.APPROVED:
+            self.passenger_session.notify_passenger_progress(
+                self._driver_location, self._estimate)
+
+        elif self._state == Ride.BOARDED:
+            self._journey = {
+                'time': time.time() - self._boarded_at,
+                'distance': distance(self._driver_location,
+                                     self._boarded_location),
+            }
+            self.passenger_session.notify_passenger_journey(
+                self._driver_location, self._journey)
 
     def passenger_rate(self, rating, ratings_by_category, comment):
         self._transition_to(Ride.RATED, rating=rating,
@@ -137,6 +164,19 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._state = state
         if update:
             self._update(**kwargs)
+
+    # Estimate
+    # --------
+
+    @gen.coroutine
+    def _refresh_estimate(self):
+        if self._state != Ride.APPROVED:
+            return
+
+        self._estimate = yield TmapEstimator().estimate(
+            self._driver_location, self._passenger_location)
+
+        delay(self.refresh_interval, self._refresh_estimate)
 
     # Sync
     # ----

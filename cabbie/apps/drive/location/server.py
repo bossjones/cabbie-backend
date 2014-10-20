@@ -111,7 +111,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         if self.ride_proxy:
             # If there is already ride match, just forward the location info to
             # passenger
-            self.ride_proxy.progress(location)
+            self.ride_proxy.update_driver_location(location)
         else:
             # Otherwise, report to the location manager
             DriverManager().update_location(self._user_id, location,
@@ -200,9 +200,10 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_reject(self, reason):
         self.send('passenger_rejected', {'reason': reason})
 
-    def notify_passenger_progress(self, location):
+    def notify_passenger_progress(self, location, estimate):
         self.send('passenger_progress', {
             'location': location,
+            'estimate': estimate,
         })
 
     def notify_passenger_arrive(self):
@@ -210,6 +211,12 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
     def notify_passenger_board(self):
         self.send('passenger_boarded')
+
+    def notify_passenger_journey(self, location, journey):
+        self.send('passenger_journey', {
+            'location': location,
+            'journey': journey,
+        })
 
     def notify_passenger_complete(self, summary):
         self.send('passenger_completed', {'summary': summary})
