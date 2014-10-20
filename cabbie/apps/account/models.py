@@ -1,6 +1,5 @@
 # encoding: utf8
 
-from functools import partial
 import datetime
 
 from django.conf import settings
@@ -40,7 +39,8 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     point = models.PositiveIntegerField(default=0)
     recommend_code = models.CharField(max_length=10, unique=True,
-                            default=_issue_new_code)
+                                      default=_issue_new_code)
+    is_bot = models.BooleanField(default=False)
 
     objects = UserManager()
 

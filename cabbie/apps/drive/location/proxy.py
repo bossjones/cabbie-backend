@@ -4,12 +4,12 @@ from django.conf import settings
 from tornado import gen
 
 from cabbie.apps.drive.location.estimate import TmapEstimator
-from cabbie.apps.drive.location.loop import delay
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.secret import fetch
 from cabbie.apps.drive.location.session import SessionManager
 from cabbie.apps.drive.models import Ride
 from cabbie.utils.geo import distance
+from cabbie.utils.ioloop import delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin

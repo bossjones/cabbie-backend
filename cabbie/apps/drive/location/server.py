@@ -4,11 +4,11 @@ import tornado.websocket
 
 from cabbie.apps.drive.location.auth import Authenticator
 from cabbie.apps.drive.location.driver import DriverManager
-from cabbie.apps.drive.location.loop import start
 from cabbie.apps.drive.location.proxy import RideProxyManager
 from cabbie.apps.drive.location.session import SessionManager
 from cabbie.apps.drive.location.watch import WatchManager
 from cabbie.utils import json
+from cabbie.utils.ioloop import start
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 
