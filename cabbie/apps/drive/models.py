@@ -62,7 +62,7 @@ class Ride(AbstractTimestampModel):
         verbose_name = u'여정'
         verbose_name_plural = u'여정'
 
-    def rate(self, rating, ratings_by_category):
+    def rate(self, rating, ratings_by_category, comment):
         if self.state not in (self.BOARDED, self.COMPLETED):
             raise Exception(u'탑승 또는 여정 완료 후 평가가 가능합니다')
 
@@ -71,7 +71,8 @@ class Ride(AbstractTimestampModel):
 
         self.rating = rating
         self.ratings_by_category = ratings_by_category
-        self.save(update_fields=['rating', 'ratings_by_category'])
+        self.comment = comment
+        self.save(update_fields=['rating', 'ratings_by_category', 'comment'])
 
         (Incrementer()
             .add(Driver, self.driver_id, 'rated_count')

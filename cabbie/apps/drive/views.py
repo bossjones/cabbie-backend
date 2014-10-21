@@ -41,7 +41,8 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
         ride = self.get_object()
         try:
             ride.rate(int(request.DATA['rating']),
-                    request.DATA['ratings_by_category'])
+                    request.DATA['ratings_by_category'],
+                    request.DATA['comment'])
         except Exception as e:
             return self.render_error(unicode(e))
         return self.render()

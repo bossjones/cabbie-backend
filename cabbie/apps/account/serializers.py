@@ -37,11 +37,9 @@ class UserSerializer(AbstractSerializer):
 class PassengerSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = Passenger
-        fields = UserSerializer.Meta.fields + ('email', 'ride_count', 'parse_installation_object_id')
+        fields = UserSerializer.Meta.fields + ('email', 'ride_count') 
         read_only_fields = UserSerializer.Meta.read_only_fields \
                            + ('ride_count',)
-        write_only_fields = UserSerializer.Meta.write_only_fields \
-                            + ('parse_installation_object_id',)
 
 
 class DriverSerializer(UserSerializer):

@@ -93,8 +93,6 @@ class Passenger(User):
     email = models.EmailField(_('email address'), unique=True)
     ride_count = models.PositiveIntegerField(_('ride count'), default=0)
 
-    parse_installation_object_id = models.CharField(max_length=20, blank=True)
-
     objects = PassengerManager()
 
     class Meta(User.Meta):

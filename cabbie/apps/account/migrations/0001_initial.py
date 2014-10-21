@@ -83,7 +83,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('email', models.EmailField(unique=True, max_length=75, verbose_name='email address')),
                 ('ride_count', models.PositiveIntegerField(default=0, verbose_name='ride count')),
-                ('parse_installation_object_id', models.CharField(max_length=20, blank=True)),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
