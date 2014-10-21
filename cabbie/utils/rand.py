@@ -68,19 +68,12 @@ class Dice(object):
         assert False, 'Shouldn\'t get here'
 
 
-def _random_seed():
-    try:
-        random.seed(os.urandom(100))
-    except OSError:
-        pass
-
-
 def random_hash():
     return get_hash_value(os.urandom(100))
 
 
 def random_string(length):
-    random.seed(os.urandom(100))
+    _random_seed()
     return ''.join(random.choice(string.ascii_lowercase + string.digits)
                    for x in range(length))
 
@@ -90,13 +83,18 @@ def random_int(start, end):
     return random.randint(start, end)
 
 
+def random_float(start, end):
+    _random_seed()
+    return start + random.random() * (end - start)
+
+
 def random_digit():
     return random_int(0, 9)
 
 
 def random_gauss(mu, std=None):
-    std = std or float(mu) / 4
-    return random.gauss(mu, std)
+    _random_seed()
+    return random.gauss(mu, std or float(mu) / 4)
 
 
 def weighted_choice(odds):
@@ -108,3 +106,10 @@ def weighted_boolean(true_odd, false_odd):
         (True, true_odd),
         (False, true_odd),
     ))
+
+
+def _random_seed():
+    try:
+        random.seed(os.urandom(100))
+    except OSError:
+        pass

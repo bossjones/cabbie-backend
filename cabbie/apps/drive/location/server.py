@@ -57,9 +57,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         if not isinstance(message, unicode):
             message = message.decode('utf-8')
-        self.debug(u'Received: {0}'.format(message))
         as_json = json.loads(message)
-        self.debug(u'Received: {0}'.format(as_json))
+        #self.debug(u'Received: {0}'.format(as_json))
 
         method = as_json['type']
         data = as_json.get('data', {})
@@ -105,8 +104,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # -----------
 
     def handle_driver_update_location(self, location, charge_type):
-        self.debug('Updating location to {0} (charge_type: {1})'.format(
-            location, charge_type))
+        #self.debug('Updating location to {0} (charge_type: {1})'.format(
+            #location, charge_type))
 
         if self.ride_proxy:
             # If there is already ride match, just forward the location info to
