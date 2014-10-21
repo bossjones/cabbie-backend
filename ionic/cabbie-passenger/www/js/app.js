@@ -288,6 +288,10 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         transitTo('approved', data);
         break;
 
+      case 'passenger_journey':
+        transitTo('boarded', data);
+        break;
+
       case 'passenger_arrived':
         transitTo('arrived');
         break;
@@ -297,19 +301,9 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
         break;
 
       case 'passenger_completed':
-        RateModal.open().then(function (data) {
-          send('passenger_rate', {
-            rating: data.rating,
-            // THIS IS TEST DATA
-            ratings_by_category: {
-              cleanliness: 1,
-              kindness: 0
-            },
-            comment: data.comment || ''
-          });
-          transitTo('initialized');
-        });
+        transitTo('initialized');
         break;
+
       case 'passenger_disconnected':
         $ionicPopup.alert({
           title: '연결 끊김',
@@ -350,9 +344,9 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
           location: [location.longitude, location.latitude]
         },
         destination: {
-          address: null,
-          poi: null,
-          location: [location.longitude, location.latitude]
+          address: '서울시 강남구 삼성동',
+          poi: '삼성역',
+          location: [127.0631652, 37.5088693]
         }
       });
       transitTo('requested');
@@ -588,7 +582,7 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
           break;
 
         case 'boarded':
-          $scope.driver.location = {};
+          data && data.location && ($scope.driver.location = data.location);
           break;
       };
     });

@@ -4,9 +4,9 @@ from django.conf import settings
 from tornado import gen
 
 from cabbie.apps.drive.location.driver import DriverManager
-from cabbie.apps.drive.location.loop import delay
 from cabbie.apps.drive.location.session import SessionManager
 from cabbie.utils.geo import Rtree2D
+from cabbie.utils.ioloop import delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 

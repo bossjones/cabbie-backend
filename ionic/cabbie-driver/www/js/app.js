@@ -236,7 +236,7 @@ angular.module('cabbie-driver', ['ionic', 'ngResource', 'ngCookies', 'google-map
       location.longitude += (Math.random() - 1) * 5 / 1000.0;
       location.latitude += (Math.random() - 1) * 5 / 1000.0;
 
-      (state == 'initialized' && activated || state == 'approved') && send('driver_update_location', {
+      (state == 'initialized' && activated || state == 'approved' || state == 'boarded') && send('driver_update_location', {
         charge_type: chargeType,
         location: [location.longitude, location.latitude]
       });

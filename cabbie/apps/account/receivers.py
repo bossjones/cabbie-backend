@@ -7,18 +7,22 @@ from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
 from cabbie.common.signals import post_create
 
+
 def on_post_create_user(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
+
 
 def on_post_create_driver_bill(sender, instance, **kwargs):
     driver = instance.driver
     driver.deposit += instance.amount
     driver.save()
 
+
 def on_post_create_transaction(sender, instance, **kwargs):
     user = instance.user
     user.point += instance.amount
     user.save()
+
 
 def on_post_ride_board(sender, ride, **kwargs):
     # For passenger, increase ride count

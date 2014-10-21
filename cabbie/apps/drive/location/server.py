@@ -4,11 +4,11 @@ import tornado.websocket
 
 from cabbie.apps.drive.location.auth import Authenticator
 from cabbie.apps.drive.location.driver import DriverManager
-from cabbie.apps.drive.location.loop import start
 from cabbie.apps.drive.location.proxy import RideProxyManager
 from cabbie.apps.drive.location.session import SessionManager
 from cabbie.apps.drive.location.watch import WatchManager
 from cabbie.utils import json
+from cabbie.utils.ioloop import start
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 
@@ -57,9 +57,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def on_message(self, message):
         if not isinstance(message, unicode):
             message = message.decode('utf-8')
-        self.debug(u'Received: {0}'.format(message))
         as_json = json.loads(message)
-        self.debug(u'Received: {0}'.format(as_json))
+        #self.debug(u'Received: {0}'.format(as_json))
 
         method = as_json['type']
         data = as_json.get('data', {})
@@ -105,13 +104,13 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # -----------
 
     def handle_driver_update_location(self, location, charge_type):
-        self.debug('Updating location to {0} (charge_type: {1})'.format(
-            location, charge_type))
+        #self.debug('Updating location to {0} (charge_type: {1})'.format(
+            #location, charge_type))
 
         if self.ride_proxy:
             # If there is already ride match, just forward the location info to
             # passenger
-            self.ride_proxy.progress(location)
+            self.ride_proxy.update_driver_location(location)
         else:
             # Otherwise, report to the location manager
             DriverManager().update_location(self._user_id, location,
@@ -200,9 +199,10 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_reject(self, reason):
         self.send('passenger_rejected', {'reason': reason})
 
-    def notify_passenger_progress(self, location):
+    def notify_passenger_progress(self, location, estimate):
         self.send('passenger_progress', {
             'location': location,
+            'estimate': estimate,
         })
 
     def notify_passenger_arrive(self):
@@ -210,6 +210,12 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
     def notify_passenger_board(self):
         self.send('passenger_boarded')
+
+    def notify_passenger_journey(self, location, journey):
+        self.send('passenger_journey', {
+            'location': location,
+            'journey': journey,
+        })
 
     def notify_passenger_complete(self, summary):
         self.send('passenger_completed', {'summary': summary})
