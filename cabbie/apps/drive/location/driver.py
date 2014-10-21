@@ -156,12 +156,15 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
     def get_nearest_drivers(self, location, count=None, max_distance=None,
                             charge_type=None):
-        ids = self._driver_index.nearest(location, count=count,
+        # Heuristic
+        pseudo_count = count * 3
+        ids = self._driver_index.nearest(location, count=pseudo_count,
                                          max_distance=max_distance)
-        return [
+        ids = [
             id_ for id_ in ids
             if not charge_type
-            or self._driver_charge_types[id_] == charge_type]
+               or self._driver_charge_types[id_] == charge_type]
+        return ids[:count]
 
     def on_driver_session_closed(self, user_id, old_session):
         if self.is_activated(user_id):

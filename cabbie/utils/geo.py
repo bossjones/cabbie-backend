@@ -41,6 +41,13 @@ def haversine(*p):
 # Alias
 distance = haversine
 
+def move(source, distance, direction=(1, 1)):
+    pseudo_destination = map(sum, zip(source, direction))
+    pseudo_distance = haversine(source, pseudo_destination)
+    scale = float(distance) / pseudo_distance
+    offset = map(lambda x: x * scale, direction)
+    return map(sum, zip(source, offset))
+
 
 class Rtree2D(object):
     """Wrapper of `rtree.Index` for supporting friendly 2d operations.
@@ -80,8 +87,8 @@ class Rtree2D(object):
         ids = self._index.nearest(self.to_coords(location), num_results=count,
                                   objects=objects)
         if max_distance is not None:
-            ids = [id for id in ids
-                   if distance(self._locations[id], location) <= max_distance]
+            ids = [id_ for id_ in ids
+                   if distance(self._locations[id_], location) <= max_distance]
         return ids
 
 
