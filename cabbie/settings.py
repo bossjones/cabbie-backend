@@ -157,8 +157,8 @@ LOGGING = {
             'propagate': True,
         },
         'cabbie': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
+            'handlers': ['file'],
+            'level': 'INFO',
             'propagate': False,
         },
     }
