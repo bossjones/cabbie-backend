@@ -66,6 +66,9 @@ urlpatterns += patterns('',
     url(r'^api/auth',
         import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
 
+    url(r'^api/appversion/android/driver',
+        import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()), 
+
     url(r'^api/', include(router.urls)),
 )
 
