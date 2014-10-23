@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField
-from cabbie.common.models import ActiveMixin, NullableImageMixin
+from cabbie.common.models import ActiveMixin, NullableImageMixin, TimestampMixin
 from cabbie.utils.crypt import encrypt
 from cabbie.utils.rand import random_string
 from cabbie.utils.validator import validate_phone
@@ -174,6 +174,22 @@ class Driver(NullableImageMixin, User):
         self.set_password(self.get_login_key())
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
+
+class DriverReservation(TimestampMixin):
+    phone = models.CharField(_('phone'), max_length=11, unique=True,
+                             validators=[validate_phone])
+    name = models.CharField(_('name'), max_length=30)
+    is_joined = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = u'기사 가입신청자'
+        verbose_name_plural = u'기사 가입신청자'
+
+    def join(self, is_joined=True):
+        if self.is_joined:
+            return
+        self.is_joined = is_joined
+        self.save(update_fields=['is_joined'])
 
 
 from cabbie.apps.account.receivers import *

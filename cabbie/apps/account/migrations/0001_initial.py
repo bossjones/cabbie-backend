@@ -79,6 +79,22 @@ class Migration(migrations.Migration):
             bases=('account.user', models.Model),
         ),
         migrations.CreateModel(
+            name='DriverReservation',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('phone', models.CharField(unique=True, max_length=11, verbose_name='phone', validators=[cabbie.utils.validator.PhoneValidator()])),
+                ('name', models.CharField(max_length=30, verbose_name='name')),
+                ('is_joined', models.BooleanField(default=False)),
+            ],
+            options={
+                'verbose_name': '\uae30\uc0ac \uac00\uc785\uc2e0\uccad\uc790',
+                'verbose_name_plural': '\uae30\uc0ac \uac00\uc785\uc2e0\uccad\uc790',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
             name='Passenger',
             fields=[
                 ('email', models.EmailField(unique=True, max_length=75, verbose_name='email address')),

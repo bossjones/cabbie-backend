@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminTextareaWidget
 
-from cabbie.apps.account.models import User, Driver, Passenger
+from cabbie.apps.account.models import User, Driver, Passenger, DriverReservation
 
 class StaffAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone', 'is_superuser', 'date_joined')
@@ -74,6 +74,28 @@ class PassengerAdmin(admin.ModelAdmin):
     fields = ('phone', 'password', 'name', 'email')
     ordering = ('-date_joined',)
 
+class DriverReservationAdminForm(forms.ModelForm):
+    class Meta:
+        model = DriverReservation
+        widgets = {
+            'is_joined':forms.CheckboxInput()
+        }
+
+class DriverReservationAdmin(admin.ModelAdmin):
+    form = DriverReservationAdminForm
+
+    list_display = ('phone', 'name', 'is_joined', 'created_at')
+    fields = ('phone', 'name')
+    ordering = ('-created_at',)
+
+    actions = ('join',)
+    
+    def join(self, request, queryset):
+        for driver in queryset.all():
+            driver.join()
+
+
 admin.site.register(User, StaffAdmin)
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Passenger, PassengerAdmin)
+admin.site.register(DriverReservation, DriverReservationAdmin)

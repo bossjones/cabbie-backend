@@ -12,7 +12,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.account.models import User, Passenger, Driver
+from cabbie.apps.account.models import User, Passenger, Driver, DriverReservation
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
 from cabbie.apps.account.session import (
@@ -204,3 +204,12 @@ class PhoneVerifyCheckView(GenericAPIView):
             return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
         else:
             return self.render()
+
+class DriverReserveView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], name=request.DATA['name'])
+        return self.render()
+
+
