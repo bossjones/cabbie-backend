@@ -23,13 +23,10 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
 
 
 class UserSerializer(AbstractSerializer):
-    remain_days_for_promotion = serializers.CharField(
-        source='get_remain_days_for_promotion', read_only=True)
-
     class Meta:
         model = User
-        fields = ('id', 'phone', 'password', 'name', 'point', 'date_joined',
-                  'remain_days_for_promotion', 'recommend_code')
+        fields = ('id', 'phone', 'password', 'name', 'point', 
+                'date_joined', 'recommend_code')
         read_only_fields = ('point', 'date_joined', 'recommend_code')
         write_only_fields = ('password',)
 

@@ -12,6 +12,7 @@ from cabbie.common.models import IncrementMixin, AbstractTimestampModel
 
 class DriverBill(AbstractTimestampModel):
     driver = models.ForeignKey(Driver, related_name='bills')
+    target_month = models.CharField(max_length=6, help_text=u'e.g. 201409')
     amount = models.PositiveIntegerField()
 
     class Meta(AbstractTimestampModel.Meta):

@@ -1,5 +1,7 @@
 # encoding: utf8
+import datetime, time
 
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
@@ -61,6 +63,18 @@ class Ride(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'여정'
         verbose_name_plural = u'여정'
+
+    @property
+    def is_non_peak_day(self):
+        return self.created_at.weekday() in settings.NON_PEAK_DAYS
+
+    @property
+    def is_peak_hour(self):
+        return self.created_at.time().hour in settings.PEAK_HOUR
+
+    def is_rebate(self):
+        rebate_until = datetime.datetime.fromtimestamp(time.strptime(settings.DRIVER_REBATE_UNTIL, '%Y%m'))
+        return created_at.datetime() < rebate_until
 
     def rate(self, rating, ratings_by_category, comment):
         if self.state not in (self.BOARDED, self.COMPLETED):

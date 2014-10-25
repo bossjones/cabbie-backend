@@ -67,12 +67,6 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                 return role
         return None
 
-    @property
-    def get_remain_days_for_promotion(self):
-        return (self.date_joined
-                + datetime.timedelta(days=settings.PROMOTION_DAYS)
-                - timezone.now()).days
-
     def get_full_name(self):
         return self.name
 
@@ -98,11 +92,6 @@ class Passenger(User):
     class Meta(User.Meta):
         verbose_name = u'승객'
         verbose_name_plural = u'승객'
-
-    @property
-    def is_promotion_applicable(self):
-        return ((timezone.now() - self.date_joined).days
-                <= settings.PROMOTION_DAYS)
 
 
 class Driver(NullableImageMixin, User):

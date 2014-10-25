@@ -336,21 +336,25 @@ ALLOWED_DEBUG_PHONE = ['01026254319']
 CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
 
-PROMOTION_DAYS = 90
+DRIVER_REBATE_UNTIL = '201506'
+
+NON_PEAK_DAYS = [0, 1, 2, 3]   # Mon, Tue, Wed, Thu
+
+PEAK_HOUR = [11, 0, 1]
 
 POINTS_BY_TYPE = {
     'recommend_p2p': 1000,
     'recommend_d2p': 1000,
-    'recommend_d2d': 3000,
+    'recommend_d2d': 5000,
     'recommended_d2p': 0,
     'recommended_p2p': 1000,
     'recommended_d2d': 1000,
-    'mileage': 100,
-    'mileage_double_ride': 200,
-    'mileage_promotion': 500,
+    'mileage': 100,                 # For passenger
+    'mileage_non_peak_day': 500,    # For passenger
+    'rebate': 2000                  # For driver
 }
 
-CALL_FEE = 500
+CALL_FEE = 0 
 
 
 # Local settings

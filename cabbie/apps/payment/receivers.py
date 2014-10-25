@@ -37,10 +37,11 @@ def on_post_ride_board(sender, ride, **kwargs):
     passenger = ride.passenger
     note = u''
 
-    # Basic mileage
-    if passenger.is_promotion_applicable:
-        amount = settings.POINTS_BY_TYPE['mileage_promotion']
-        note = u'프로모션 마일리지 적용'
+    # Peak day mileage
+    if ride.is_non_peak_day:
+        amount = settings.POINTS_BY_TYPE['mileage_non_peak_day']
+        note = u'논피크요일 마일리지 적용'
+    # Non-peak day mileage 
     else:
         amount = settings.POINTS_BY_TYPE['mileage']
 
@@ -52,20 +53,23 @@ def on_post_ride_board(sender, ride, **kwargs):
         note=note,
     )
 
-    # Bonus mileage
-    qs = passenger.rides
-    qs = qs.filter(state=ride.COMPLETED)
-    qs = qs.filter(created_at__startswith=ride.created_at.date())
-
-    if qs.count() == 2:
+    # For driver
+    
+    # Rebate for peak time
+    if ride.is_peak_hour and ride.is_rebate:
+        driver = ride.driver
+        amount = settings.POINTS_BY_TYPE['rebate']
+        note = u'피크시간 지원금'
+     
         Transaction.objects.create(
-            user=passenger,
+            user=driver,
             ride=ride,
-            transaction_type=Transaction.MILEAGE,
-            amount=settings.POINTS_BY_TYPE['mileage_double_ride'],
-            note=u'보너스 마일리지 (1일 2회 이상 탑승)',
+            transaction_type=Transaction.GRANT,
+            amount=amount,
+            note=note,
         )
 
+   
 
 post_create.connect(on_post_create_recommend, sender=Recommend,
                     dispatch_uid='from_payment')
