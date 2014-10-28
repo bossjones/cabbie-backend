@@ -14,6 +14,15 @@ urlpatterns = patterns('')
 # -----
 
 admin.site.login_form = AdminAuthenticationForm
+
+admin.site.unregister(import_('django.contrib.auth.models.Group'))
+admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
+admin.site.unregister(import_('djcelery.models.CrontabSchedule'))
+admin.site.unregister(import_('djcelery.models.IntervalSchedule'))
+admin.site.unregister(import_('djcelery.models.PeriodicTask'))
+admin.site.unregister(import_('djcelery.models.TaskState'))
+admin.site.unregister(import_('djcelery.models.WorkerState'))
+
 admin.autodiscover()
 urlpatterns += patterns('',
     (r'^admin/', include(admin.site.urls)),
@@ -67,10 +76,10 @@ urlpatterns += patterns('',
         import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
 
     url(r'^api/appversion/android/driver',
-        import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()), 
+        import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()),
 
     url(r'^api/drivers/reserve',
-        import_('cabbie.apps.account.views.DriverReserveView').as_view()), 
+        import_('cabbie.apps.account.views.DriverReserveView').as_view()),
 
     url(r'^api/', include(router.urls)),
 )
