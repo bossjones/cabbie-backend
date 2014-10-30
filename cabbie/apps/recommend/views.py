@@ -45,7 +45,7 @@ class RecommendQueryView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            user = User.objects.get(recommend_code=request.GET['code'])
+            user = User.objects.get(phone=request.GET['code'])
         except User.DoesNotExist:
             return self.render_error(u'유효하지 않은 코드입니다')
         
