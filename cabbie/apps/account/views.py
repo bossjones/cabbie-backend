@@ -220,6 +220,32 @@ class PhoneVerifyCheckView(GenericAPIView):
         else:
             return self.render()
 
+class UserQueryView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+        phone = request.GET.get('phone', None)
+        
+        if phone:
+            try: 
+                user = User.objects.get(phone=phone)
+            except User.DoesNotExist:
+                return self.render()
+            else:
+                return self.render_error(u'이미 등록된 휴대폰 번호입니다. 로그인 후 사용해 주세요.')
+
+        email = request.GET.get('email', None)
+
+        if email:
+            try:
+                passenger = Passenger.objects.get(email=email)
+            except Passenger.DoesNotExist:
+                return self.render()
+            else:
+                return self.render_error(u'이미 등록된 이메일입니다. 다른 이메일을 입력해 주세요.')
+
+        return self.render_error('phone 또는 email을 입력해 주세요.') 
+            
 class DriverReserveView(APIView):
     permission_classes = (AllowAny,)
 

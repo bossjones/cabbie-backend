@@ -56,6 +56,9 @@ urlpatterns += patterns('',
     url(r'^api/phone/verify/check/?$',
         import_('cabbie.apps.account.views.PhoneVerifyCheckView').as_view()),
 
+    url(r'^api/user/query',
+        import_('cabbie.apps.account.views.UserQueryView').as_view()),
+
     url(r'^api/geo/poi/around',
         import_('cabbie.apps.drive.views.GeoPOIAroundView').as_view()),
     url(r'^api/geo/poi',
