@@ -140,6 +140,21 @@ class DriverAcceptView(APIView):
         if driver.get_login_key() != request.DATA['login_key']:
             return self.render_error('Invalid login key')
 
+        # recommendation
+        recommenders = request.DATA.get('recommenders', [])
+
+        recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders 
+        recommenders = map(int, recommenders)
+
+        for recommender_id in recommenders:
+            recommender = User.objects.get(id=recommender_id).concrete
+            if not recommender:
+                continue
+            Recommend.objects.create(
+                recommender=recommender,
+                recommendee=user,
+            )
+
         driver.is_accepted = True
         driver.save()
 
