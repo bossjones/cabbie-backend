@@ -10,16 +10,42 @@ import cabbie.common.models
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('account', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
+            name='DriverRideStat',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uac31\uc2e0\uc2dc\uac04', editable=False, db_index=True)),
+                ('year', models.PositiveIntegerField()),
+                ('month', models.PositiveIntegerField()),
+                ('week', models.PositiveIntegerField()),
+                ('state', models.CharField(max_length=100)),
+                ('count', models.PositiveIntegerField(default=0)),
+                ('driver', models.ForeignKey(verbose_name='\uae30\uc0ac', to='account.Driver')),
+            ],
+            options={
+                'ordering': [b'-created_at'],
+                'abstract': False,
+                'verbose_name': '\uae30\uc0ac \uc5c5\ubb34\ud1b5\uacc4',
+                'verbose_name_plural': '\uae30\uc0ac \uc5c5\ubb34\ud1b5\uacc4',
+            },
+            bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
+        ),
+        migrations.AlterUniqueTogether(
+            name='driverridestat',
+            unique_together=set([(b'driver', b'year', b'month', b'week', b'state')]),
+        ),
+        migrations.CreateModel(
             name='LocationDataAccess',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uac31\uc2e0\uc2dc\uac04', editable=False, db_index=True)),
                 ('user', models.ForeignKey(verbose_name='\uc811\uadfc\ud55c \uc0ac\uc6a9\uc790', to=settings.AUTH_USER_MODEL)),
             ],
             options={
@@ -34,8 +60,8 @@ class Migration(migrations.Migration):
             name='LocationDataNotice',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uac31\uc2e0\uc2dc\uac04', editable=False, db_index=True)),
                 ('purpose', models.CharField(max_length=100, verbose_name='\ubaa9\uc801')),
                 ('noticer', models.ForeignKey(verbose_name='\ucde8\uae09\uc790', to=settings.AUTH_USER_MODEL)),
                 ('requester', models.ForeignKey(verbose_name='\uc694\uccad\uc790', to=settings.AUTH_USER_MODEL)),
@@ -52,11 +78,11 @@ class Migration(migrations.Migration):
             name='LocationDataProvide',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
-                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, db_index=True)),
+                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
+                ('updated_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uac31\uc2e0\uc2dc\uac04', editable=False, db_index=True)),
                 ('provider_type', models.CharField(max_length=20, verbose_name='\ucde8\ub4dd\uacbd\ub85c')),
                 ('service', models.CharField(max_length=20, verbose_name='\uc81c\uacf5\uc11c\ube44\uc2a4')),
-                ('providee', models.ForeignKey(verbose_name='\uc81c\uacf5\ubc1b\uc740\uc790', blank=True, to=settings.AUTH_USER_MODEL)),
+                ('providee', models.ForeignKey(verbose_name='\uc81c\uacf5\ubc1b\uc740\uc790', blank=True, to=settings.AUTH_USER_MODEL, null=True)),
                 ('provider', models.ForeignKey(verbose_name='\uc81c\uacf5\ud55c\uc790', to=settings.AUTH_USER_MODEL)),
             ],
             options={

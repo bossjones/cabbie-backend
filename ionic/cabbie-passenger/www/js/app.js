@@ -7,6 +7,8 @@ angular.module('cabbie-passenger', ['ionic', 'ngResource', 'ngCookies', 'google-
 .constant('authRequired', true)
 .constant('apiHost', 'http://localhost:8000')
 .constant('locationHost', 'localhost:8080')
+//.constant('apiHost', 'http://bktaxi.com')
+//.constant('locationHost', 'bktaxi.com:8080')
 .constant('locationTrackInterval', 1000)
 
 .config(['$httpProvider', function ($httpProvider) {

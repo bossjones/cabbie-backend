@@ -26,6 +26,7 @@ class DriverBot(Bot):
     update_charge_type_interval = 1
     move_interval = 0.5
     board_delay = 5
+    gentle_delay = 1
     distance_error_bound = 25
 
     reject_reason_dice = Dice(
@@ -80,11 +81,11 @@ class DriverBot(Bot):
         self.info('Requested from {0}'.format(passenger))
 
         if self._reject_dice.roll():
-            self._reject()
+            delay(self.gentle_delay, self._reject)
         else:
             self._source = source
             self._destination = destination
-            self._approve()
+            delay(self.gentle_delay, self._approve)
 
     def handle_driver_canceled(self):
         self.info('Canceled')

@@ -1,3 +1,5 @@
+# encoding: utf8
+
 import cStringIO
 import os
 from urlparse import urlparse
@@ -98,10 +100,10 @@ class StatusMixin(models.Model):
 
 
 class TimestampMixin(models.Model):
-    created_at = models.DateTimeField(default=timezone.now, db_index=True,
-                                      editable=False)
-    updated_at = models.DateTimeField(default=timezone.now, db_index=True,
-                                      editable=False)
+    created_at = models.DateTimeField(u'생성시간', default=timezone.now,
+                                      db_index=True, editable=False)
+    updated_at = models.DateTimeField(u'갱신시간', default=timezone.now,
+                                      db_index=True, editable=False)
 
     class Meta:
         abstract = True

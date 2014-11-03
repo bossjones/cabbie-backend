@@ -1,8 +1,8 @@
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
 
 from cabbie.apps.payment.models import Transaction, DriverBill
-from cabbie.apps.payment.serializers import TransactionSerializer, DriverBillSerializer
+from cabbie.apps.payment.serializers import (
+    TransactionSerializer, DriverBillSerializer)
 
 
 # REST
@@ -27,12 +27,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
         elif user.has_role('driver'):
             user = user.get_role('driver')
 
-        qs = self.queryset.filter(
-            user_content_type=ContentType.objects.get_for_model(
-                user.__class__),
-            user_object_id=user.id,
-        )
+        qs = self.queryset.filter(user=user)
         return qs
+
 
 class DriverBillViewSet(viewsets.ModelViewSet):
     queryset = (DriverBill.objects
@@ -42,4 +39,3 @@ class DriverBillViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(driver=self.request.user)
-        

@@ -29,8 +29,8 @@ class Recommend(AbstractTimestampModel):
     recommendee_object_id = models.PositiveIntegerField()
     recommendee = GenericForeignKey('recommendee_content_type',
                                     'recommendee_object_id')
-    recommend_type = models.CharField(max_length=100, db_index=True,
-                                      choices=RECOMMEND_TYPES)
+    recommend_type = models.CharField(u'추천 종류', max_length=100,
+                                      db_index=True, choices=RECOMMEND_TYPES)
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'추천'

@@ -6,13 +6,15 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField
-from cabbie.common.models import ActiveMixin, NullableImageMixin, TimestampMixin
+from cabbie.common.models import (ActiveMixin, NullableImageMixin,
+                                  AbstractTimestampModel)
 from cabbie.utils.crypt import encrypt
 from cabbie.utils.rand import random_string
 from cabbie.utils.validator import validate_phone
@@ -31,16 +33,26 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     REQUIRED_FIELDS = []      # required by Django
     CODE_LEN = 6
 
-    phone = models.CharField(_('phone'), max_length=11, unique=True,
+    phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
-    name = models.CharField(_('name'), max_length=30)
-    is_staff = models.BooleanField(_('staff status'), default=False)
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    name = models.CharField(u'이름', max_length=30)
+    is_staff = models.BooleanField(u'관리자', default=False)
+    date_joined = models.DateTimeField(u'가입시기', default=timezone.now)
 
-    point = models.PositiveIntegerField(default=0)
-    recommend_code = models.CharField(max_length=10, unique=True,
+    point = models.PositiveIntegerField(u'포인트', default=0)
+    recommend_code = models.CharField(u'추천코드', max_length=10, unique=True,
                                       default=_issue_new_code)
-    is_bot = models.BooleanField(default=False)
+    is_bot = models.BooleanField(u'bot 여부', default=False)
+    last_active_at = models.DateTimeField(u'마지막 활동', default=timezone.now)
+    bank_account = models.CharField(u'계좌정보', max_length=100)
+
+    # Count
+    current_month_board_count = models.PositiveIntegerField(u'당월 콜횟수',
+                                                            default=0)
+    previous_month_board_count = models.PositiveIntegerField(u'전월 콜횟수',
+                                                             default=0)
+    board_count = models.PositiveIntegerField(u'총 콜횟수', default=0)
+    ride_count = models.PositiveIntegerField(u'총 배차횟수', default=0)
 
     objects = UserManager()
 
@@ -84,14 +96,23 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
 
 class Passenger(User):
-    email = models.EmailField(_('email address'), unique=True)
-    ride_count = models.PositiveIntegerField(_('ride count'), default=0)
+    email = models.EmailField(u'이메일', unique=True)
 
     objects = PassengerManager()
 
     class Meta(User.Meta):
         verbose_name = u'승객'
         verbose_name_plural = u'승객'
+
+    @property
+    def is_promotion_applicable(self):
+        return ((timezone.now() - self.date_joined).days
+                <= settings.PROMOTION_DAYS)
+
+    def dropout(self, dropout_type, note=None):
+        PassengerDropout.objects.create(
+            user_id=self.id, dropout_type=dropout_type, note=note or '')
+        self.delete()
 
 
 class Driver(NullableImageMixin, User):
@@ -103,38 +124,42 @@ class Driver(NullableImageMixin, User):
         (TAXI_LUXURY, u'모범'),
     )
 
-    verification_code = models.CharField(max_length=10)
-    is_verified = models.BooleanField(default=False)
-    is_accepted = models.BooleanField(default=False)
-    is_freezed = models.BooleanField(default=False)
+    # Authentication
+    verification_code = models.CharField(u'인증코드', max_length=10)
+    is_verified = models.BooleanField(u'인증여부', default=False)
+    is_accepted = models.BooleanField(u'승인여부', default=False)
+    is_freezed = models.BooleanField(u'사용제한', default=False)
+    freeze_note = models.CharField(u'사용제한 비고', max_length=1000,
+                                   blank=True)
 
-    license_number = models.CharField(_('license number'), max_length=100,
+    # Meta
+    license_number = models.CharField(u'자격증번호', max_length=100,
                                       unique=True)
-    car_number = models.CharField(_('car number'), max_length=20, unique=True)
-    car_model = models.CharField(_('car model'), max_length=50)
-    company = models.CharField(_('company'), max_length=50)
-    bank_account = models.CharField(_('bank account'), max_length=100)
-    max_capacity = models.PositiveIntegerField(_('max capacity'), default=4)
-    taxi_type = models.CharField(max_length=10, choices=TAXI_TYPES)
-    taxi_service = SeparatedField(max_length=1000, separator=',', blank=True)
-    about = models.CharField(max_length=140, blank=True)
+    car_number = models.CharField(u'차량번호', max_length=20, unique=True)
+    car_model = models.CharField(u'차량모델', max_length=50)
+    company = models.CharField(u'회사', max_length=50)
+    max_capacity = models.PositiveIntegerField(u'탑승인원수', default=4)
+    taxi_type = models.CharField(u'택시종류', max_length=10,
+                                 choices=TAXI_TYPES)
+    taxi_service = SeparatedField(u'서비스', max_length=1000, separator=',',
+                                  blank=True,
+                                  help_text=u'콤마(,)로 구분하여 여러 개의 '
+                                            u'서비스를 입력할 수 있습니다.')
+    about = models.CharField(u'소개', max_length=140, blank=True)
+    deposit = models.IntegerField(u'예치금', default=0)
+    is_super = models.BooleanField(u'우수기사', default=False)
+    is_dormant = models.BooleanField(u'휴면기사', default=False)
 
-    total_rating = models.PositiveIntegerField(_('total rating'), default=0)
-
-    rated_count = models.PositiveIntegerField(_('rated count'), default=0)
-    ride_count = models.PositiveIntegerField(_('ride count'), default=0)
-    deposit = models.IntegerField(_('deposit'), default=0)
+    # Rating
+    total_rating = models.PositiveIntegerField(u'총평점', default=0)
+    rated_count = models.PositiveIntegerField(u'평가횟수', default=0)
+    rating = models.FloatField(u'평점', default=0.0)
 
     objects = DriverManager()
 
     class Meta(NullableImageMixin.Meta, User.Meta):
         verbose_name = u'기사'
         verbose_name_plural = u'기사'
-
-    @property
-    def rating(self):
-        return (float(self.total_rating) / self.rated_count
-                if self.rated_count > 0 else None)
 
     def get_default_image_url(self, image_type):
         return ''
@@ -146,13 +171,24 @@ class Driver(NullableImageMixin, User):
         send_verification_code(self.phone, self.verification_code)
 
     def freeze(self, is_freezed=True):
-        if self.is_freezed:
+        if self.is_freezed == is_freezed:
             return
         self.is_freezed = is_freezed
         self.save(update_fields=['is_freezed'])
 
     def unfreeze(self):
         self.freeze(False)
+
+    def rate(self, rating):
+        self.rated_count = F('rated_count') + 1
+        self.total_rating = F('total_rating') + rating
+        self.rating = float(self.total_rating) / self.rated_count
+        self.save(update_fields=['rated_count', 'total_rating', 'rating'])
+
+    def dropout(self, dropout_type, note=None):
+        DriverDropout.objects.create(
+            user_id=self.id, dropout_type=dropout_type, note=note or '')
+        self.delete()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -164,11 +200,12 @@ class Driver(NullableImageMixin, User):
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
 
-class DriverReservation(TimestampMixin):
-    phone = models.CharField(_('phone'), max_length=11, unique=True,
+
+class DriverReservation(AbstractTimestampModel):
+    phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
-    name = models.CharField(_('name'), max_length=30)
-    is_joined = models.BooleanField(default=False)
+    name = models.CharField(u'이름', max_length=30)
+    is_joined = models.BooleanField(u'가입여부', default=False)
 
     class Meta:
         verbose_name = u'기사 가입신청자'
@@ -179,6 +216,41 @@ class DriverReservation(TimestampMixin):
             return
         self.is_joined = is_joined
         self.save(update_fields=['is_joined'])
+
+
+class Dropout(AbstractTimestampModel):
+    user_id = models.PositiveIntegerField()
+    note = models.CharField(u'비고', max_length=1000, blank=True)
+
+
+class PassengerDropout(Dropout):
+    ADMIN, REQUEST = 'admin', 'request'
+    DROPOUT_TYPES = (
+        (ADMIN, u'운영자 수동'),
+        (REQUEST, u'탈퇴 요청'),
+    )
+
+    dropout_type = models.CharField(u'탈퇴사유', max_length=10,
+                                    choices=DROPOUT_TYPES)
+
+    class Meta(Dropout.Meta):
+        verbose_name = u'승객 탈퇴자'
+        verbose_name_plural = u'승객 탈퇴자'
+
+
+class DriverDropout(Dropout):
+    ADMIN, REQUEST = 'admin', 'request'
+    DROPOUT_TYPES = (
+        (ADMIN, u'운영자 수동'),
+        (REQUEST, u'탈퇴 요청'),
+    )
+
+    dropout_type = models.CharField(u'탈퇴사유', max_length=10,
+                                    choices=DROPOUT_TYPES)
+
+    class Meta(Dropout.Meta):
+        verbose_name = u'기사 탈퇴자'
+        verbose_name_plural = u'기사 탈퇴자'
 
 
 from cabbie.apps.account.receivers import *

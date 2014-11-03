@@ -1,0 +1,1 @@
+[백기사] {{ return_.amount|number }}원이 환급처리되었습니다.

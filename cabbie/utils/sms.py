@@ -48,7 +48,7 @@ def send_sms_raw(phone, msg, subject=None, from_phone=None, from_name=None,
         return
 
     if settings.DEBUG and phone not in settings.ALLOWED_DEBUG_PHONE:
-        logger.warn('No recipients to send sms due to debug setting')
+        logger.warn(u'No recipients to send sms due to debug setting')
         return
 
     if not settings.DEBUG and async:
@@ -71,9 +71,8 @@ def send_sms(template, phone, context=None, *args, **kwargs):
     try:
         rendered = render_to_string(template, sms_context).strip()
     except TemplateError as e:
-        logger.error('Failed to render "{0}" sms for {1}: {2}'.format(
+        logger.error(u'Failed to render "{0}" sms for {1}: {2}'.format(
             template, phone, e))
         raise SMSException(e)
     else:
         send_sms_raw(phone, rendered, *args, **kwargs)
-

@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class SeparatedField(models.TextField):
     __metaclass__ = models.SubfieldBase
 
-    def __init__(self, separator, *args, **kwargs):
-        self._separator = separator
+    def __init__(self, *args, **kwargs):
+        self._separator = kwargs.pop('separator')
         super(SeparatedField, self).__init__(*args, **kwargs)
 
     def deconstruct(self):

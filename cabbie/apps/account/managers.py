@@ -26,6 +26,7 @@ class UserManager(BaseUserManager):
         user.save(update_fields=['is_staff', 'is_superuser'], using=self._db)
         return user
 
+
 UserManager = UserManager.from_queryset(UserQuerySet)
 PassengerManager = UserManager
 DriverManager = UserManager
