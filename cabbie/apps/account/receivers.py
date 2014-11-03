@@ -16,13 +16,7 @@ def on_post_create_user(sender, instance, **kwargs):
 def on_post_create_driver_bill(sender, instance, **kwargs):
     driver = instance.driver
     driver.deposit += instance.amount
-    driver.save()
-
-
-def on_post_create_transaction(sender, instance, **kwargs):
-    user = instance.user
-    user.point += instance.amount
-    user.save()
+    driver.save(update_fields=['deposit'])
 
 
 def on_post_ride_board(sender, ride, **kwargs):
@@ -47,8 +41,6 @@ post_create.connect(on_post_create_user, sender=Passenger,
 post_create.connect(on_post_create_user, sender=Driver,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver_bill, sender=DriverBill,
-                    dispatch_uid='from_account')
-post_create.connect(on_post_create_transaction, sender=Transaction,
                     dispatch_uid='from_account')
 post_ride_board.connect(on_post_ride_board,
                         dispatch_uid='from_account')

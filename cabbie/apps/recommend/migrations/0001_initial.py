@@ -31,6 +31,6 @@ class Migration(migrations.Migration):
                 'verbose_name': '\ucd94\ucc9c',
                 'verbose_name_plural': '\ucd94\ucc9c',
             },
-            bases=(cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
+            bases=(cabbie.common.models.IncrementMixin, cabbie.common.models.JSONMixin, cabbie.common.models.UpdateMixin, models.Model),
         ),
     ]

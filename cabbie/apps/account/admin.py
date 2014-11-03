@@ -50,7 +50,7 @@ class DriverAdmin(AbstractAdmin):
     form = DriverForm
     ordering = ('-date_joined',)
     list_display = ('phone', 'name', 'taxi_type', 'car_number', 'company',
-                    'point', 'rating', 'current_month_board_count',
+                    'garage', 'point', 'rating', 'current_month_board_count',
                     'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verified', 'is_accepted',
                     'is_freezed', 'is_super', 'is_dormant', 'date_joined',
@@ -59,17 +59,19 @@ class DriverAdmin(AbstractAdmin):
         (None, {
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'car_model',
-                'company', 'bank_account', 'max_capacity', 'taxi_type',
-                'taxi_service', 'about', 'image',
+                'company', 'garage', 'bank_account', 'max_capacity',
+                'taxi_type', 'taxi_service', 'about', 'image',
             ),
         }),
         ('읽기전용', {
             'fields': (
                 'recommend_code', 'point', 'rating',
                 'current_month_board_count', 'previous_month_board_count',
-                'board_count', 'verification_code', 'is_verified',
-                'is_accepted', 'is_freezed', 'is_super', 'is_dormant',
-                'date_joined', 'last_active_at',
+                'board_count', 'passenger_recommend_count',
+                'driver_recommend_count', 'recommended_count',
+                'verification_code', 'is_verified', 'is_accepted',
+                'is_freezed', 'is_super', 'is_dormant', 'date_joined',
+                'last_active_at',
             ),
         }),
     )
@@ -78,9 +80,11 @@ class DriverAdmin(AbstractAdmin):
     )
     readonly_fields = (
         'recommend_code', 'point', 'rating', 'current_month_board_count',
-        'previous_month_board_count', 'board_count', 'verification_code',
-        'is_verified', 'is_accepted', 'is_freezed', 'is_super', 'is_dormant',
-        'date_joined', 'last_active_at',
+        'previous_month_board_count', 'board_count',
+        'passenger_recommend_count', 'driver_recommend_count',
+        'recommended_count', 'verification_code', 'is_verified', 'is_accepted',
+        'is_freezed', 'is_super', 'is_dormant', 'date_joined',
+        'last_active_at',
     )
     list_filter = (
         'taxi_type',
@@ -167,7 +171,8 @@ class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('phone', 'email', 'name', 'point',
                     'current_month_board_count', 'previous_month_board_count',
-                    'board_count', 'date_joined', 'link_to_rides')
+                    'board_count', 'passenger_recommend_count',
+                    'recommended_count', 'date_joined', 'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
@@ -178,6 +183,7 @@ class PassengerAdmin(AbstractAdmin):
             'fields': (
                 'recommend_code', 'point', 'current_month_board_count',
                 'previous_month_board_count', 'board_count',
+                'passenger_recommend_count', 'recommended_count'
             ),
         }),
     )
@@ -187,6 +193,7 @@ class PassengerAdmin(AbstractAdmin):
     readonly_fields = (
         'recommend_code', 'point', 'current_month_board_count',
         'previous_month_board_count', 'board_count',
+        'passenger_recommend_count', 'recommended_count'
     )
     list_filter = (
         'date_joined',

@@ -44,7 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                                       default=_issue_new_code)
     is_bot = models.BooleanField(u'bot 여부', default=False)
     last_active_at = models.DateTimeField(u'마지막 활동', default=timezone.now)
-    bank_account = models.CharField(u'계좌정보', max_length=100)
+    bank_account = models.CharField(u'계좌정보', max_length=100, blank=True)
 
     # Count
     current_month_board_count = models.PositiveIntegerField(u'당월 콜횟수',
@@ -53,6 +53,11 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                                                              default=0)
     board_count = models.PositiveIntegerField(u'총 콜횟수', default=0)
     ride_count = models.PositiveIntegerField(u'총 배차횟수', default=0)
+    driver_recommend_count = models.PositiveIntegerField(u'추천횟수 (기사)',
+                                                         default=0)
+    passenger_recommend_count = models.PositiveIntegerField(u'추천횟수 (승객)',
+                                                            default=0)
+    recommended_count = models.PositiveIntegerField(u'피추천횟수', default=0)
 
     objects = UserManager()
 
@@ -139,6 +144,7 @@ class Driver(NullableImageMixin, User):
     car_model = models.CharField(u'차량모델', max_length=50)
     company = models.CharField(u'회사', max_length=50)
     max_capacity = models.PositiveIntegerField(u'탑승인원수', default=4)
+    garage = models.CharField(u'차고지', max_length=100, blank=True)
     taxi_type = models.CharField(u'택시종류', max_length=10,
                                  choices=TAXI_TYPES)
     taxi_service = SeparatedField(u'서비스', max_length=1000, separator=',',

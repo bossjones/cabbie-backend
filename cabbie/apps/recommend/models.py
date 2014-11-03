@@ -5,10 +5,11 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.common.models import AbstractTimestampModel
+from cabbie.common.models import IncrementMixin, AbstractTimestampModel
+from cabbie.utils.name import camel_to_underscore
 
 
-class Recommend(AbstractTimestampModel):
+class Recommend(IncrementMixin, AbstractTimestampModel):
     PASSENGER_TO_PASSENGER, DRIVER_TO_DRIVER, DRIVER_TO_PASSENGER = (
         'p2p', 'd2d', 'd2p')
 
@@ -35,6 +36,15 @@ class Recommend(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'추천'
         verbose_name_plural = u'추천'
+
+    def get_incrementer(self, reverse=False):
+        incrementer = super(Recommend, self).get_incrementer(reverse)
+        role = camel_to_underscore(self.recommender.__class__.__name__)
+        incrementer.add(self.recommender.__class__, self.recommender.id,
+                        '{0}_recommend_count'.format(role))
+        incrementer.add(self.recommendee.__class__, self.recommendee.id,
+                        'recommended_count')
+        return incrementer
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
