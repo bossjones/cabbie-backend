@@ -59,7 +59,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
 
             recommenders = request.DATA.get('recommenders', [])
 
-            recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders 
+            recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders
             recommenders = map(int, recommenders)
 
             for recommender_id in recommenders:
@@ -72,7 +72,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                 )
 
             headers = self.get_success_headers(serializer.data)
-            
+
             return Response(serializer.data, status=status.HTTP_201_CREATED,
                             headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

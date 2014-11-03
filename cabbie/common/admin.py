@@ -1,0 +1,19 @@
+from django.contrib import admin
+from import_export.admin import ExportMixin
+
+
+class AbstractAdmin(ExportMixin, admin.ModelAdmin):
+    deletable = False
+    addable = True
+
+    def get_actions(self, request):
+        actions = super(AbstractAdmin, self).get_actions(request)
+        if not self.deletable and 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        return self.deletable
+
+    def has_add_permission(self, request, obj=None):
+        return self.addable

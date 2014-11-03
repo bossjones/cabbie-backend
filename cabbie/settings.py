@@ -81,6 +81,7 @@ INSTALLED_APPS = (
     'suit',
     'django.contrib.admin',
     'django.contrib.admindocs',
+    'import_export',
 
     # Project apps
     'cabbie.apps.account',
@@ -89,8 +90,8 @@ INSTALLED_APPS = (
     'cabbie.apps.recommend',
     'cabbie.apps.stats',
     'cabbie.apps.appversion',
+    'cabbie.apps.notification',
 
-    #'cabbie.apps.notification',
     #'cabbie.apps.track',
 )
 
@@ -234,7 +235,24 @@ CELERY_IMPORTS = (
     'cabbie.utils.email',
     'cabbie.utils.push',
 )
-CELERYBEAT_SCHEDULE = {}
+CELERYBEAT_SCHEDULE = {
+    'dormant_driver': {
+        'task': 'cabbie.apps.account.tasks.DormantDriverDailyTask',
+        'schedule': crontab(minute=1, hour=0),
+    },
+    'super_driver': {
+        'task': 'cabbie.apps.account.tasks.SuperDriverMonthlyTask',
+        'schedule': crontab(minute=5, hour=0, day_of_month=1),
+    },
+    'compute_hotspot': {
+        'task': 'cabbie.apps.drive.tasks.ComputeHotspotDailyTask',
+        'schedule': crontab(minute=2, hour=0),
+    },
+    'coupon': {
+        'task': 'cabbie.apps.stats.tasks.CouponMonthlyTask',
+        'schedule': crontab(minute=45, hour=0, day_of_month=1),
+    },
+}
 
 
 # REST
@@ -349,8 +367,18 @@ POINTS_BY_TYPE = {
     'mileage_double_ride': 200,
     'mileage_promotion': 500,
 }
+COUPON_THRESHOLDS = (
+    (100, 100000),    # (board_count, amount)
+    (50, 50000),
+    (10, 10000),
+)
 
 CALL_FEE = 500
+
+DORMANT_DRIVER_DAYS = 14
+SUPER_DRIVER_THRESHOLD = 10
+
+HOTSPOT_COUNT = 100
 
 
 # Local settings

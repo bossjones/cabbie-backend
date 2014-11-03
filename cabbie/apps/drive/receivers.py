@@ -8,6 +8,7 @@ from cabbie.apps.drive.signals import post_ride_complete
 from cabbie.utils.push import send_push_notification
 from cabbie.utils import json
 
+
 def on_post_ride_complete(sender, ride, **kwargs):
     # For passenger, send push notification for rating
     passenger = ride.passenger
@@ -20,7 +21,7 @@ def on_post_ride_complete(sender, ride, **kwargs):
     ride_serializer = RideSerializer(ride)
     ride = json.loads(json.dumps(ride_serializer.data))
 
-    message = { 
+    message = {
         'alert': settings.MESSAGE_RIDE_COMPLETE_ALERT,
         'title': settings.MESSAGE_RIDE_COMPLETE_TITLE,
         'data': {
@@ -28,8 +29,7 @@ def on_post_ride_complete(sender, ride, **kwargs):
             'ride': ride
         }
     }
-   
     send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
 
-post_ride_complete.connect(on_post_ride_complete,
-                        dispatch_uid='from_drive')
+
+post_ride_complete.connect(on_post_ride_complete, dispatch_uid='from_drive')

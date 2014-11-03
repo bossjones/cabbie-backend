@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.models import F
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
 from cabbie.apps.account.models import Passenger, Driver
@@ -27,14 +28,18 @@ def on_post_create_transaction(sender, instance, **kwargs):
 def on_post_ride_board(sender, ride, **kwargs):
     # For passenger, increase ride count
     passenger = ride.passenger
-    passenger.ride_count = F('ride_count') + 1
-    passenger.save(update_fields=['ride_count'])
+    passenger.board_count = F('board_count') + 1
+    passenger.current_month_board_count = F('current_month_board_count') + 1
+    passenger.last_active_at = timezone.now()
+    passenger.save(update_fields=['board_count', 'last_active_at'])
 
     # For driver, increase ride count, deduct call fee
     driver = ride.driver
-    driver.ride_count = F('ride_count') + 1
+    driver.board_count = F('board_count') + 1
+    driver.current_month_board_count = F('current_month_board_count') + 1
+    driver.last_active_at = timezone.now()
     driver.deposit = F('deposit') - settings.CALL_FEE
-    driver.save(update_fields=['ride_count', 'deposit'])
+    driver.save(update_fields=['board_count', 'last_active_at', 'deposit'])
 
 
 post_create.connect(on_post_create_user, sender=Passenger,
