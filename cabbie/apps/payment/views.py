@@ -1,8 +1,8 @@
 from rest_framework import viewsets
 
-from cabbie.apps.payment.models import Transaction, DriverBill
+from cabbie.apps.payment.models import Transaction, DriverBill, DriverCoupon
 from cabbie.apps.payment.serializers import (
-    TransactionSerializer, DriverBillSerializer)
+    TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
 
 
 # REST
@@ -35,6 +35,16 @@ class DriverBillViewSet(viewsets.ModelViewSet):
     queryset = (DriverBill.objects
                 .prefetch_related('driver').all())
     serializer_class = DriverBillSerializer
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        return self.queryset.filter(driver=self.request.user)
+
+
+class DriverCouponViewSet(viewsets.ModelViewSet):
+    queryset = (DriverCoupon.objects
+                .prefetch_related('driver').all())
+    serializer_class = DriverCouponSerializer
     ordering = ('-created_at',)
 
     def get_queryset(self):

@@ -36,6 +36,10 @@ router = routers.DefaultRouter(trailing_slash=False)
 
 router.register(r'passengers',
                 import_('cabbie.apps.account.views.PassengerViewSet'))
+router.register(r'drivers/bills',
+                import_('cabbie.apps.payment.views.DriverBillViewSet'))
+router.register(r'drivers/coupon',
+                import_('cabbie.apps.payment.views.DriverCouponViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',
@@ -46,8 +50,6 @@ router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
-router.register(r'driver/bills',
-                import_('cabbie.apps.payment.views.DriverBillViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',

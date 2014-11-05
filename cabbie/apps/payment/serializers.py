@@ -1,5 +1,5 @@
 from cabbie.apps.drive.serializers import RideSerializer
-from cabbie.apps.payment.models import Transaction, DriverBill
+from cabbie.apps.payment.models import Transaction, DriverBill, DriverCoupon
 from cabbie.apps.recommend.serializers import RecommendSerializer
 from cabbie.common.serializers import AbstractSerializer
 
@@ -17,3 +17,12 @@ class DriverBillSerializer(AbstractSerializer):
     class Meta:
         model = DriverBill
         fields = ('id', 'amount', 'created_at')
+
+class DriverCouponSerializer(AbstractSerializer):
+    class Meta:
+        model = DriverCoupon
+        fields = ('id', 'coupon_type', 'amount', 'created_at', 
+                  'is_processed', 'processed_at')       
+
+    
+ 
