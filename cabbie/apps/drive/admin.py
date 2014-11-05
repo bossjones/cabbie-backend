@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 
 from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
-from cabbie.common.admin import AbstractAdmin
+from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 
 

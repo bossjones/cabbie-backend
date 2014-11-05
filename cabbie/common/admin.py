@@ -1,3 +1,4 @@
+from daterange_filter.filter import DateRangeFilter as BaseDateRangeFilter
 from django.contrib import admin
 from import_export.admin import ExportMixin
 
@@ -17,3 +18,7 @@ class AbstractAdmin(ExportMixin, admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return self.addable
+
+
+class DateRangeFilter(BaseDateRangeFilter):
+    template = 'admin/daterange_filter.html'

@@ -7,7 +7,7 @@ from django.contrib.admin.widgets import AdminTextareaWidget
 from cabbie.apps.account.models import (
     User, Driver, Passenger, DriverReservation, PassengerDropout,
     DriverDropout)
-from cabbie.common.admin import AbstractAdmin
+from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
 class StaffAdmin(AbstractAdmin):
@@ -93,7 +93,7 @@ class DriverAdmin(AbstractAdmin):
         'is_freezed',
         'is_super',
         'is_dormant',
-        'date_joined',
+        ('date_joined', DateRangeFilter),
     )
 
     actions = (
@@ -196,7 +196,7 @@ class PassengerAdmin(AbstractAdmin):
         'passenger_recommend_count', 'recommended_count'
     )
     list_filter = (
-        'date_joined',
+        ('date_joined', DateRangeFilter),
     )
     actions = (
         'dropout',

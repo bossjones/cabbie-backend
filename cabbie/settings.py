@@ -82,6 +82,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     'import_export',
+    'daterange_filter',
 
     # Project apps
     'cabbie.apps.account',
@@ -379,7 +380,7 @@ COUPON_THRESHOLDS = (
     (10, 10000),
 )
 
-CALL_FEE = 0 
+CALL_FEE = 0
 
 DORMANT_DRIVER_DAYS = 14
 SUPER_DRIVER_THRESHOLD = 10

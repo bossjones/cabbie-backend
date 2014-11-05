@@ -1,0 +1,42 @@
+{% load i18n admin_static %}
+
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/widgets.css" %}" />
+<style>
+    .calendarbox, .clockbox {
+        /* Make sure the calendar widget popover displays in front of the sidebar */
+        z-index: 1100;
+        margin-left: -251px;
+    }
+    .datetimeshortcuts a {
+        /* Make text for "Today" a bit smaller so it appears on one line. */
+        font-size: 8pt;
+    }
+    .search-filters {
+    }
+    .daterange-filter {
+      display: inline-block;
+    }
+    .daterange-filter .daterange-filter-header {
+      margin: 5px 10px 0 10px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .daterange-filter .delimeter {
+      color: #ccc;
+      font-size: 10px;
+      vertical-align: middle;
+      margin-left: 5px;
+      display: inline-block;
+    }
+    .daterange-filter p {
+      display: inline-block;
+      margin: 0;
+      vertical-align: middle;
+    }
+</style>
+<div class="daterange-filter">
+  <span class="delimeter">|</span>
+  <span class="daterange-filter-header">{% blocktrans with filter_title=title %}{{ filter_title }}{% endblocktrans %}</span>
+  {{ spec.form.media }}
+  {{ spec.form.as_p }}
+</div>
