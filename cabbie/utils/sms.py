@@ -9,6 +9,7 @@ from djcelery import celery
 from jinja2.exceptions import TemplateError
 import requests
 
+from cabbie.utils import json
 
 # Thread-specific context
 # -----------------------
@@ -40,8 +41,31 @@ logger = logging.getLogger(__name__)
 def _send_sms_raw(phone, msg, subject=None, from_phone=None, from_name=None):
     logger.info(u'Sending sms to {phone}: {msg}'.format(phone=phone, msg=msg))
 
-    # FIXME: Implement
+    url = 'http://api.openapi.io/ppurio/1/message/sms/kokookko'
 
+    params = {}
+    params['send_phone'] = from_phone if from_phone else settings.SMS_FROM
+    params['dest_phone'] = phone
+    params['msg_body'] = msg
+
+    headers = {
+        'x-waple-authorization': settings.SMS_API_KEY
+    } 
+
+    try:
+        r = requests.post(url, headers=headers, params=params) 
+    except Exception as e:
+        logger.error(u'Failed to send sms to {phone} with message {msg}: {error}'.format(phone=phone, msg=msg, error=e))
+        raise SMSException(e)
+    else:
+        try:
+            as_json = json.loads(r.text)
+        except Exception as e:
+            logger.error('Failed to send sms to {phone} with json parsing error: {error}'.format(phone=phone, error=e))
+        else:
+            if as_json['result_code']  != '200':
+                logger.error(u'Failed to send sms to {phone} with result code {code}'.format(phone=phone, code=as_json['result_code']))
+            
 def send_sms_raw(phone, msg, subject=None, from_phone=None, from_name=None,
              async=True):
     if not getattr(_local, 'sms_enabled', True):
