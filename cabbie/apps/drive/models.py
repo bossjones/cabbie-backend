@@ -30,12 +30,26 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         (COMPLETED, _('completed')),
     )
 
+    IMMEDIATE, TIMEOUT, AFTER, WAITING, UNSHOWN = \
+    'immediate', 'timeout', 'after', 'waiting', 'unshown'
+
+    REASONS = (
+        (IMMEDIATE, _(u'즉시거절')),
+        (TIMEOUT, _(u'수락시간초과')),
+        (AFTER, _(u'수락후 거절')),
+        (WAITING, _(u'대기중 거절')),
+        (UNSHOWN, _(u'승객이 나타나지 않음')),
+    )
+
     passenger = models.ForeignKey(Passenger, related_name='rides',
                                   verbose_name=u'승객')
     driver = models.ForeignKey(Driver, blank=True, null=True,
                                related_name='rides', verbose_name=u'기사')
 
     state = models.CharField(u'상태', max_length=100, choices=STATES)
+
+    # Reject reason
+    reason = models.CharField(u'거절이유', max_length=20, choices=REASONS)
 
     # Ride detail
     source = JSONField(u'출발지')
@@ -111,7 +125,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         self.driver.rate(self.rating)
 
     def transit(self, **data):
-        for field in ('state', 'driver_id', 'charge_type', 'summary'):
+        for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
