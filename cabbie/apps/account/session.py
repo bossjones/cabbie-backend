@@ -14,7 +14,7 @@ class InvalidCode(Exception)     : pass
 
 
 class PhoneVerificationSessionManager(LoggableMixin, SingletonMixin):
-    timeout = 10 * MINUTE
+    timeout = 3 * MINUTE
 
     def create(self, phone):
         private = issue_verification_code()
