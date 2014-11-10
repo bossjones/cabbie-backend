@@ -46,10 +46,14 @@ router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
 router.register(r'favorites',
                 import_('cabbie.apps.drive.views.FavoriteViewSet'))
+router.register(r'hotspots',
+                import_('cabbie.apps.drive.views.HotspotViewSet'))
 router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
+router.register(r'drivers/stats',
+                import_('cabbie.apps.stats.views.DriverRideStatViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',

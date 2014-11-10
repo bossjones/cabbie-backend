@@ -1,6 +1,6 @@
 from cabbie.apps.account.serializers import (
     DriverSerializer, PassengerSerializer)
-from cabbie.apps.drive.models import Ride, Favorite
+from cabbie.apps.drive.models import Ride, Favorite, Hotspot
 from cabbie.common.serializers import AbstractSerializer, JSONField, PointField
 
 
@@ -25,3 +25,12 @@ class FavoriteSerializer(AbstractSerializer):
     class Meta:
         model = Favorite
         fields = ('id', 'name', 'location', 'address', 'poi', 'created_at')
+
+
+class HotspotSerializer(AbstractSerializer):
+    location = PointField(source='location')
+
+    class Meta:
+        model = Hotspot
+        fields = ('id', 'location', 'address', 'poi', 'ride_count', 'weight',
+                  'is_promotion')

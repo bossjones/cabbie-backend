@@ -5,8 +5,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from cabbie.apps.drive.models import Ride, Favorite
-from cabbie.apps.drive.serializers import RideSerializer, FavoriteSerializer
+from cabbie.apps.drive.models import Ride, Favorite, Hotspot
+from cabbie.apps.drive.serializers import (
+    RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
@@ -59,6 +60,13 @@ class FavoriteViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return self.queryset.filter(passenger=self.request.user)
+
+
+class HotspotViewSet(APIMixin, viewsets.ModelViewSet):
+    queryset = Hotspot.objects.all().order_by('-weight')
+    serializer_class = HotspotSerializer
+    filter_fields = ('created_at', 'updated_at', 'is_promotion')
+    ordering = ('-weight',)
 
 
 class GeoPOIView(APIView):
