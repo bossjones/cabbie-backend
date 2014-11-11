@@ -186,8 +186,8 @@ class Driver(NullableImageMixin, User):
         self.freeze(False)
 
     def rate(self, rating):
-        self.rated_count = F('rated_count') + 1
-        self.total_rating = F('total_rating') + rating
+        self.rated_count += 1
+        self.total_rating += rating
         self.rating = float(self.total_rating) / self.rated_count
         self.save(update_fields=['rated_count', 'total_rating', 'rating'])
 

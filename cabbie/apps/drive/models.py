@@ -111,12 +111,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         return created_at.datetime() < rebate_until
 
     def rate(self, rating, ratings_by_category, comment):
-        if self.state not in (self.BOARDED, self.COMPLETED):
-            raise Exception(u'콜 완료 후 평가가 가능합니다')
-
-        if self.rating is not None:
-            raise Exception(u'이미 평가된 상태입니다')
-
         self.rating = rating
         self.ratings_by_category = ratings_by_category
         self.comment = comment
