@@ -185,10 +185,15 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def rate(self, rating):
-        self.rated_count += 1
-        self.total_rating += rating
-        self.rating = float(self.total_rating) / self.rated_count
+    def rate(self, rating, update=False, old_rating=None):
+        if update:
+            self.total_rating = self.total_rating - old_rating + rating
+            self.rating = float(self.total_rating) / self.rated_count
+        else:
+            self.rated_count += 1
+            self.total_rating += rating
+            self.rating = float(self.total_rating) / self.rated_count
+
         self.save(update_fields=['rated_count', 'total_rating', 'rating'])
 
     def dropout(self, dropout_type, note=None):

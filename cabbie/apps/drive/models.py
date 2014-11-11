@@ -111,12 +111,15 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         return created_at.datetime() < rebate_until
 
     def rate(self, rating, ratings_by_category, comment):
+        update = bool(self.rating)
+        old_rating = self.rating
+
         self.rating = rating
         self.ratings_by_category = ratings_by_category
         self.comment = comment
         self.save(update_fields=['rating', 'ratings_by_category', 'comment'])
 
-        self.driver.rate(self.rating)
+        self.driver.rate(self.rating, update, old_rating)
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
