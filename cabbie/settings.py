@@ -367,7 +367,7 @@ POINTS_BY_TYPE = {
     'recommend_p2d': 1000,
     'recommend_d2p': 1000,
     'recommend_d2d': 5000,
-    'recommended_d2p': 0,
+    'recommended_d2p': 1000,
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
