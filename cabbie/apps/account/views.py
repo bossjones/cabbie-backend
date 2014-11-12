@@ -12,7 +12,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.account.models import User, Passenger, Driver, DriverReservation
+from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout, DriverDropout, DriverReservation
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
 from cabbie.apps.account.session import (
@@ -160,7 +160,16 @@ class DriverAcceptView(APIView):
 
         return self.render()
 
+class UserDropoutView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user.concrete
+        if isinstance(user, Passenger):
+            user.dropout(PassengerDropout.REQUEST)
+        elif isinstance(user, Driver):
+            user.dropout(DriverDropout.REQUEST)
 
+        return self.render()
+            
 class DriverPhotoUploadView(APIView):
     parser_classes = (MultiPartParser,)
 

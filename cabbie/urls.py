@@ -73,7 +73,8 @@ urlpatterns += patterns('',
 
     url(r'^api/user/query',
         import_('cabbie.apps.account.views.UserQueryView').as_view()),
-
+    url(r'^api/user/dropout',
+        import_('cabbie.apps.account.views.UserDropoutView').as_view()),
     url(r'^api/geo/poi/around',
         import_('cabbie.apps.drive.views.GeoPOIAroundView').as_view()),
     url(r'^api/geo/poi',
