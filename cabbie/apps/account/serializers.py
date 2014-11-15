@@ -48,6 +48,6 @@ class DriverSerializer(UserSerializer):
         fields = UserSerializer.Meta.fields + (
             'license_number', 'car_number', 'car_model', 'company',
             'max_capacity', 'taxi_type', 'taxi_service', 'about',
-            'rated_count', 'ride_count', 'image_urls')
+            'rating', 'rated_count', 'ride_count', 'image_urls')
         read_only_fields = UserSerializer.Meta.read_only_fields \
-                           + ('rated_count', 'ride_count')
+                           + ('rating', 'rated_count', 'ride_count')
