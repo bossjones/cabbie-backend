@@ -15,7 +15,7 @@ class RideSerializer(AbstractSerializer):
     class Meta:
         model = Ride
         fields = ('id', 'passenger', 'driver', 'state', 'reason', 'source',
-                  'destination', 'summary', 'rating', 'ratings_by_category',
+                  'destination', 'charge_type', 'summary', 'rating', 'ratings_by_category',
                   'comment', 'created_at', 'updated_at')
 
 

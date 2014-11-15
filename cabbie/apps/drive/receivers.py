@@ -14,19 +14,11 @@ def on_post_ride_complete(sender, ride, **kwargs):
     passenger = ride.passenger
 
     # point
-    from cabbie.apps.payment.models import Transaction
-    point = Transaction.objects.filter(ride__id=ride.id).aggregate(point=Sum('amount'))['point']
-
-    from cabbie.apps.drive.serializers import RideSerializer
-    ride_serializer = RideSerializer(ride)
-    ride = json.loads(json.dumps(ride_serializer.data))
-
     message = {
         'alert': settings.MESSAGE_RIDE_COMPLETE_ALERT,
         'title': settings.MESSAGE_RIDE_COMPLETE_TITLE,
         'data': {
-            'point': point,
-            'ride': ride
+            'ride_id': ride.id
         }
     }
     send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
