@@ -217,8 +217,11 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
             'journey': journey,
         })
 
-    def notify_passenger_complete(self, summary):
-        self.send('passenger_completed', {'summary': summary})
+    def notify_passenger_complete(self, summary, ride_id):
+        self.send('passenger_completed', {
+            'ride_id': ride_id,
+            'summary': summary
+        })
 
     def notify_passenger_disconnect(self):
         self.send('passenger_disconnected')

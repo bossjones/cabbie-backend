@@ -121,7 +121,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._boarded_location = self._driver_location
 
     def complete(self, summary):
-        self.passenger_session.notify_passenger_complete(summary)
+        self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
         self._reset_driver()
 
@@ -213,7 +213,6 @@ class RideProxy(LoggableMixin, PubsubMixin):
             url = self.update_path.format(pk=self._ride_id)
             while self._update_queue:
                 yield fetch(url, self._update_queue.pop(0))
-
 
 class RideProxyManager(LoggableMixin, SingletonMixin):
     def __init__(self):

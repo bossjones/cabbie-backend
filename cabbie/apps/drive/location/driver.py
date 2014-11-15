@@ -164,6 +164,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
             id_ for id_ in ids
             if not charge_type
                or int(self._driver_charge_types[id_]) <= int(charge_type)]
+
         return ids[:count]
 
     def on_driver_session_closed(self, user_id, old_session):
