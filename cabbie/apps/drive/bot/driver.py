@@ -201,7 +201,7 @@ class DriverBot(Bot):
             return
 
         if self._charge_type is None or self._charge_type_change_dice.roll():
-            self._charge_type = random.choice(['0', '1000', '2000'])
+            self._charge_type = random.choice([0, 1000, 2000])
             self.debug('Changing charge type to `{0}`'.format(
                 self._charge_type))
 

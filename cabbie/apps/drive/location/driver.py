@@ -163,7 +163,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         ids = [
             id_ for id_ in ids
             if not charge_type
-               or int(self._driver_charge_types[id_]) <= int(charge_type)]
+               or self._driver_charge_types[id_] <= charge_type]
 
         return ids[:count]
 

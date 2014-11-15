@@ -57,7 +57,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     destination = JSONField(u'도착지', default='{}')
     destination_location = models.PointField(u'도착지 좌표', blank=True,
                                              null=True)
-    charge_type = models.CharField(u'콜비', max_length=100, blank=True)
+    charge_type = models.PositiveIntegerField(u'콜비', blank=True)
     summary = JSONField(u'요약', default='{}')
 
     # Rating
