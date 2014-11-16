@@ -54,7 +54,8 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     @property
     def passenger(self):
-        return ModelManager().get_passenger(self._passenger_id)
+        return (ModelManager().get_passenger(self._passenger_id)
+                if self._passenger_id else None)
 
     @property
     def driver_session(self):
@@ -80,6 +81,15 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._driver_id = None
         self.publish('driver_resetted', self, old_driver_id)
 
+    def _reset_passenger(self):
+        self.debug('Resetting passenger')
+        old_passenger_id = self._passenger_id
+        if self.passenger_session:
+            self.passenger_session.ride_proxy = None
+        self._passenger_id = None
+        self.publish('passenger_resetted', self, old_passenger_id)
+
+
     # State methods
     # -------------
 
@@ -96,6 +106,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.driver_session.notify_driver_cancel()
         self._transition_to(Ride.CANCELED)
         self._reset_driver()
+        self._reset_passenger()
 
     def approve(self):
         self.passenger_session.notify_passenger_approve()
@@ -108,6 +119,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.notify_passenger_reject(reason)
         self._transition_to(Ride.REJECTED, reason=reason)
         self._reset_driver()
+        self._reset_passenger()
 
     def arrive(self):
         self.passenger_session.notify_passenger_arrive()
@@ -124,6 +136,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
         self._reset_driver()
+        self._reset_passenger()
 
     def update_driver_location(self, location):
         self._driver_location = location
@@ -229,6 +242,7 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         proxy = RideProxy(passenger_id, source, destination)
         proxy.subscribe('driver_set', self.on_ride_proxy_driver_set)
         proxy.subscribe('driver_resetted', self.on_ride_proxy_driver_resetted)
+        proxy.subscribe('passenger_resetted', self.on_ride_proxy_passenger_resetted)
         proxy.subscribe('finished', self.on_ride_proxy_finished)
         self._proxies_by_passenger[passenger_id] = proxy
         return proxy
@@ -238,6 +252,9 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
 
     def on_ride_proxy_driver_resetted(self, ride_proxy, old_driver_id):
         self._proxies_by_driver.pop(old_driver_id, None)
+
+    def on_ride_proxy_passenger_resetted(self, ride_proxy, old_passenger_id):
+        self._proxies_by_passenger.pop(old_passenger_id, None)
 
     def on_ride_proxy_finished(self, ride_proxy):
         driver = ride_proxy.driver
