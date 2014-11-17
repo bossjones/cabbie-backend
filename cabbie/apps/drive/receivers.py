@@ -17,6 +17,7 @@ def on_post_ride_complete(sender, ride, **kwargs):
     message = {
         'alert': settings.MESSAGE_RIDE_COMPLETE_ALERT,
         'title': settings.MESSAGE_RIDE_COMPLETE_TITLE,
+        'push_type': 'ride_completed', 
         'data': {
             'ride_id': ride.id
         }
