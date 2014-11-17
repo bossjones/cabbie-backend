@@ -169,12 +169,6 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
         # Fetch the last driver info before deactivating
         driver_location = DriverManager().get_driver_location(driver_id)
-
-        # Check if driver location is valid
-        if not driver_location:
-            self.notify_passenger_reject('late')     
-            return
-
         driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
 
         # Change the states of drivers and passengers accordingly
