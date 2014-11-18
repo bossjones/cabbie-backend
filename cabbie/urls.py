@@ -40,6 +40,8 @@ router.register(r'drivers/bills',
                 import_('cabbie.apps.payment.views.DriverBillViewSet'))
 router.register(r'drivers/coupon',
                 import_('cabbie.apps.payment.views.DriverCouponViewSet'))
+router.register(r'drivers/stats',
+                import_('cabbie.apps.stats.views.DriverRideStatViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',
@@ -52,8 +54,6 @@ router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
-router.register(r'drivers/stats',
-                import_('cabbie.apps.stats.views.DriverRideStatViewSet'))
 
 urlpatterns += patterns('',
     url(r'^api/passengers/signup',
