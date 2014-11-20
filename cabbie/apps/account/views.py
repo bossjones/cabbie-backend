@@ -16,7 +16,7 @@ from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
 from cabbie.apps.account.session import (
-    PhoneVerificationSessionManager, InvalidCode, InvalidSession)
+    PhoneVerificationSessionManager, PasswordResetSessionManager, InvalidCode, InvalidSession)
 from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
@@ -200,7 +200,7 @@ class PhoneVerifyIssueView(GenericAPIView):
         phone = re.sub(r'[^\d]', '', phone)
         if not is_valid_phone(phone):
             return self.render_error(
-                u'정상적인 휴대폰 번호가 아닙니다 (숫자만 입력해주세요)')
+                u'정상적인 휴대폰 번호가 아닙니다 (숫자만 입력해 주세요)')
 
         try:
             code = PhoneVerificationSessionManager().create(
@@ -229,6 +229,48 @@ class PhoneVerifyCheckView(GenericAPIView):
         else:
             return self.render()
 
+class PasswordResetActivateView(GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # reset password
+            phone = request.DATA['phone']
+            phone = re.sub(r'[^\d]', '', phone)
+            user = User.objects.get(phone=phone)             
+
+            # create session
+            PasswordResetSessionManager().create(request.DATA['phone'])
+
+        except Exception as e:
+            return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
+        else:
+            return self.render()
+
+class PasswordResetView(GenericAPIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # reset password
+            phone = request.DATA['phone']
+            phone = re.sub(r'[^\d]', '', phone)
+            user = User.objects.get(phone=phone)             
+            
+            user.set_password(request.DATA['new_password'])
+            user.save()
+
+            # clear session
+            PasswordResetSessionManager().reset(request.DATA['phone'])
+
+        except InvalidSession:
+            return self.render_error(
+                u'비밀번호 재설정 세션이 만료되었습니다. 처음부터 다시 시작해주세요.')
+        except Exception as e:
+            return self.render_error(u'오류가 발생했습니다: {0}'.format(e))
+        else:
+            return self.render()
+
 class UserQueryView(APIView):
     permission_classes = (AllowAny,)
 
@@ -252,6 +294,17 @@ class UserQueryView(APIView):
                 return self.render()
             else:
                 return self.render_error(u'이미 등록된 이메일입니다. 다른 이메일을 입력해 주세요.')
+
+        existing_phone = request.GET.get('existing_phone', None)
+
+        if existing_phone:
+            try: 
+                user = User.objects.get(phone=existing_phone)
+            except User.DoesNotExist:
+                return self.render_error(u'가입되지 않은 휴대폰 번호입니다.')
+            else:
+                return self.render()
+
 
         return self.render_error('phone 또는 email을 입력해 주세요.') 
             

@@ -52,3 +52,29 @@ class PhoneVerificationSessionManager(LoggableMixin, SingletonMixin):
     def _get(self, key):
         return cache.get(key)
 
+class PasswordResetSessionManager(LoggableMixin, SingletonMixin):
+    timeout = 60 * MINUTE
+
+    def create(self, phone):
+        self._set(self._get_cache_key(phone), {})
+
+    def reset(self, phone):
+        cache_key = self._get_cache_key(phone)
+        entry = self._get(cache_key)
+
+        if entry is None:
+            raise InvalidSession
+
+        self._delete(cache_key)
+
+    def _get_cache_key(self, phone):
+        return 'password_reset_session.{0}'.format(phone)
+
+    def _set(self, key, data):
+        cache.set(key, data, self.timeout)
+
+    def _get(self, key):
+        return cache.get(key)
+
+    def _delete(self, key):
+        return cache.delete(key)
