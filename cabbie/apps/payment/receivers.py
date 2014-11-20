@@ -66,9 +66,9 @@ def on_post_ride_board(sender, ride, **kwargs):
     note = u''
 
     # Peak day mileage
-    if ride.is_non_peak_day:
-        amount = settings.POINTS_BY_TYPE['mileage_non_peak_day']
-        note = u'논피크요일 마일리지 적용'
+    if ride.is_passenger_non_peak_hour():
+        amount = settings.POINTS_BY_TYPE['mileage_non_peak_hour']
+        note = u'논피크시간'
     # Non-peak day mileage 
     else:
         amount = settings.POINTS_BY_TYPE['mileage']
@@ -82,9 +82,9 @@ def on_post_ride_board(sender, ride, **kwargs):
     )
 
     # For driver
-    
-    # Rebate for peak time
-    if ride.is_peak_hour and ride.is_rebate:
+
+    # Driver rebate
+    if ride.is_driver_rebatable():
         driver = ride.driver
         amount = settings.POINTS_BY_TYPE['rebate']
         note = u'피크시간 지원금'

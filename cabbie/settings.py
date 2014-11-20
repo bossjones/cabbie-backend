@@ -357,11 +357,13 @@ SMS_FROM = '027202036'
 CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
 
+# For passenger promotion mileage
+PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]
+
+# For driver
+DRIVER_REBATE_HOUR = [23, 0, 1]
+DRIVER_REBATE_WEEKDAY = [5, 6]      # Fri, Sat
 DRIVER_REBATE_UNTIL = '201506'
-
-NON_PEAK_DAYS = [0, 1, 2, 3]   # Mon, Tue, Wed, Thu
-
-PEAK_HOUR = [11, 0, 1]
 
 POINTS_BY_TYPE = {
     'recommend_p2p': 1000,
@@ -373,7 +375,7 @@ POINTS_BY_TYPE = {
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
     'mileage': 100,                 # For passenger
-    'mileage_non_peak_day': 500,    # For passenger
+    'mileage_non_peak_hour': 500,    # For passenger
     'rebate': 2000                  # For driver
 }
 COUPON_THRESHOLDS = (

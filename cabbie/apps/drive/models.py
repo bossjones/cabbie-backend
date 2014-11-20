@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
+from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.signals import post_ride_board, post_ride_complete
@@ -99,16 +100,27 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         return incrementer
 
     @property
-    def is_non_peak_day(self):
-        return self.created_at.weekday() in settings.NON_PEAK_DAYS
+    def _created_at_in_local_time(self):
+        return timezone.get_current_timezone().normalize(self.created_at)
 
-    @property
-    def is_peak_hour(self):
-        return self.created_at.time().hour in settings.PEAK_HOUR
+    def is_passenger_non_peak_hour(self):
+        return self._created_at_in_local_time.hour in settings.PASSENGER_NON_PEAK_HOUR
 
-    def is_rebate(self):
-        rebate_until = datetime.datetime.fromtimestamp(time.strptime(settings.DRIVER_REBATE_UNTIL, '%Y%m'))
-        return created_at.datetime() < rebate_until
+    def is_driver_rebate_hour(self):
+        return self._created_at_in_local_time.hour in settings.DRIVER_REBATE_HOUR
+
+    def is_driver_rebate_weekday(self):
+        return self._created_at_in_local_time.weekday() in settings.DRIVER_REBATE_WEEKDAY
+
+    def is_driver_rebate_period(self):
+        rebate_until_time = time.mktime(time.strptime(settings.DRIVER_REBATE_UNTIL, '%Y%m'))
+        rebate_until = datetime.datetime.fromtimestamp(rebate_until_time)
+        rebate_until = rebate_until.replace(tzinfo=timezone.get_current_timezone())
+        rebate_until = timezone.get_current_timezone().normalize(rebate_until)
+        return self._created_at_in_local_time < rebate_until
+
+    def is_driver_rebatable(self):
+        return self.is_driver_rebate_hour() and self.is_driver_rebate_weekday() and self.is_driver_rebate_period()
 
     def rate(self, rating, ratings_by_category, comment):
         update = bool(self.rating)
