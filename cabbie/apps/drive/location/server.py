@@ -164,7 +164,7 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.info('Unwatched')
         WatchManager().unwatch(self._user_id)
 
-    def handle_passenger_request(self, driver_id, source, destination):
+    def handle_passenger_request(self, driver_id, charge_type, source, destination):
         self.info('Requested')
 
         # Fetch the last driver info before deactivating
@@ -176,6 +176,11 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
             return
 
         driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
+
+        # Check if driver charge type is still valid
+        if charge_type != driver_charge_type:
+            self.notify_passenger_reject('charge_type mismatch')
+            return
 
         # Change the states of drivers and passengers accordingly
         WatchManager().unwatch(self._user_id)
