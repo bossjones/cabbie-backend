@@ -52,8 +52,13 @@ def _send_sms_raw(phone, msg, subject=None, from_phone=None, from_name=None):
         'x-waple-authorization': settings.SMS_API_KEY
     } 
 
+    from cabbie.utils.sms_python_client.http_client import HttpClient
+    client = HttpClient()
+
+    contentType = "application/x-www-form-urlencoded";
+
     try:
-        r = requests.post(url, headers=headers, params=params) 
+        r = client.sendRequest("POST", url, params, settings.SMS_API_KEY, contentType)
     except Exception as e:
         logger.error(u'Failed to send sms to {phone} with message {msg}: {error}'.format(phone=phone, msg=msg, error=e))
         raise SMSException(e)
