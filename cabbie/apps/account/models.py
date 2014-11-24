@@ -119,6 +119,9 @@ class Passenger(User):
             user_id=self.id, dropout_type=dropout_type, note=note or '')
         self.delete()
 
+    @property
+    def latest_ride_state(self):
+        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -200,6 +203,10 @@ class Driver(NullableImageMixin, User):
         DriverDropout.objects.create(
             user_id=self.id, dropout_type=dropout_type, note=note or '')
         self.delete()
+
+    @property
+    def latest_ride_state(self):
+        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

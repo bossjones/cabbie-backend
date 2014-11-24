@@ -64,7 +64,7 @@ def _send_sms_raw(phone, msg, subject=None, from_phone=None, from_name=None):
         raise SMSException(e)
     else:
         try:
-            as_json = json.loads(r.text)
+            as_json = json.loads(r.body)
         except Exception as e:
             logger.error('Failed to send sms to {phone} with json parsing error: {error}'.format(phone=phone, error=e))
         else:
