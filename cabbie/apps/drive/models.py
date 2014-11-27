@@ -62,7 +62,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     summary = JSONField(u'요약', default='{}')
 
     # Rating
-    rating = models.PositiveIntegerField(u'평점', blank=True, null=True)
     ratings_by_category = JSONField(u'상세평점', default='{}')
     comment = models.CharField(u'코멘트', max_length=100, blank=True)
 
@@ -103,16 +102,23 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
 
-    def rate(self, rating, ratings_by_category, comment):
-        update = bool(self.rating)
-        old_rating = self.rating
+    def rate(self, ratings_by_category, comment):
+        old_ratings_by_category = self.ratings_by_category
 
-        self.rating = rating
         self.ratings_by_category = ratings_by_category
         self.comment = comment
-        self.save(update_fields=['rating', 'ratings_by_category', 'comment'])
+        self.save(update_fields=['ratings_by_category', 'comment'])
 
-        self.driver.rate(self.rating, update, old_rating)
+        self.driver.rate(self.ratings_by_category, old_ratings_by_category)
+
+    @property
+    def rating(self):
+        total_rating = 0
+
+        for key, value in self.ratings_by_category.iteritems():
+            total_rating += value
+
+        return 0.0 if len(self.ratings_by_category) == 0 else float(total_rating) / len(self.ratings_by_category)
 
         if not update:
             post_ride_rated.send(sender=self.__class__, ride=self)

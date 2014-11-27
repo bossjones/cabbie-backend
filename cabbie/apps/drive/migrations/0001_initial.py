@@ -70,7 +70,6 @@ class Migration(migrations.Migration):
                 ('destination_location', django.contrib.gis.db.models.fields.PointField(srid=4326, null=True, verbose_name='\ub3c4\ucc29\uc9c0 \uc88c\ud45c', blank=True)),
                 ('charge_type', models.PositiveIntegerField(verbose_name='\ucf5c\ube44', blank=True)),
                 ('summary', cabbie.common.fields.JSONField(default=b'{}', verbose_name='\uc694\uc57d')),
-                ('rating', models.PositiveIntegerField(null=True, verbose_name='\ud3c9\uc810', blank=True)),
                 ('ratings_by_category', cabbie.common.fields.JSONField(default=b'{}', verbose_name='\uc0c1\uc138\ud3c9\uc810')),
                 ('comment', models.CharField(max_length=100, verbose_name='\ucf54\uba58\ud2b8', blank=True)),
                 ('driver', models.ForeignKey(verbose_name='\uae30\uc0ac', blank=True, to='account.Driver', null=True)),

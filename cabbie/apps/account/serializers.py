@@ -45,6 +45,8 @@ class DriverSerializer(UserSerializer):
     image_urls = serializers.CharField(source='get_image_urls', read_only=True)
     taxi_service = SeparatedField(source='taxi_service')
     latest_ride_state = serializers.CharField(source='latest_ride_state', read_only=True) 
+    rating = serializers.Field(source='rating')
+    rated_count = serializers.Field(source='rated_count')
 
     class Meta(UserSerializer.Meta):
         model = Driver
@@ -53,4 +55,4 @@ class DriverSerializer(UserSerializer):
             'max_capacity', 'taxi_type', 'taxi_service', 'about',
             'rating', 'rated_count', 'ride_count', 'image_urls', 'latest_ride_state')
         read_only_fields = UserSerializer.Meta.read_only_fields \
-                           + ('rating', 'rated_count', 'ride_count')
+                           + ('ride_count',)

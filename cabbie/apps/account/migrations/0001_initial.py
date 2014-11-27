@@ -78,9 +78,7 @@ class Migration(migrations.Migration):
                 ('deposit', models.IntegerField(default=0, verbose_name='\uc608\uce58\uae08')),
                 ('is_super', models.BooleanField(default=False, verbose_name='\uc6b0\uc218\uae30\uc0ac')),
                 ('is_dormant', models.BooleanField(default=False, verbose_name='\ud734\uba74\uae30\uc0ac')),
-                ('total_rating', models.PositiveIntegerField(default=0, verbose_name='\ucd1d\ud3c9\uc810')),
-                ('rated_count', models.PositiveIntegerField(default=0, verbose_name='\ud3c9\uac00\ud69f\uc218')),
-                ('rating', models.FloatField(default=0.0, verbose_name='\ud3c9\uc810')),
+                ('total_ratings_by_category', cabbie.common.fields.JSONField(default=b'{}', verbose_name='\ucd1d\uc0c1\uc138\ud3c9\uc810')),
                 ('user_ptr', models.OneToOneField(auto_created=True, primary_key=True, serialize=False, to=settings.AUTH_USER_MODEL)),
             ],
             options={
