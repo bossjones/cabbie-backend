@@ -49,6 +49,7 @@ class DriverBotFactory(BotFactory):
         'taxi_type',
         'taxi_service',
         'about',
+        'rating',
     )
 
     def create_bot(self):
@@ -152,6 +153,9 @@ class DriverBotFactory(BotFactory):
         elif mode == 'two':
             return u'저는 로봇택시입니다.\n그렇지만 운행은 합니다.'
 
+    def _generate_rating(self, driver):
+        return random.uniform(0, 5)
+        
 
 class PassengerBotFactory(BotFactory):
     fields_to_generate = (
