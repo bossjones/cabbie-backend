@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_board, post_ride_complete
+from cabbie.apps.drive.signals import post_ride_board, post_ride_complete, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
@@ -103,25 +103,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
 
-    def is_passenger_non_peak_hour(self):
-        return self._created_at_in_local_time.hour in settings.PASSENGER_NON_PEAK_HOUR
-
-    def is_driver_rebate_hour(self):
-        return self._created_at_in_local_time.hour in settings.DRIVER_REBATE_HOUR
-
-    def is_driver_rebate_weekday(self):
-        return self._created_at_in_local_time.weekday() in settings.DRIVER_REBATE_WEEKDAY
-
-    def is_driver_rebate_period(self):
-        rebate_until_time = time.mktime(time.strptime(settings.DRIVER_REBATE_UNTIL, '%Y%m'))
-        rebate_until = datetime.datetime.fromtimestamp(rebate_until_time)
-        rebate_until = rebate_until.replace(tzinfo=timezone.get_current_timezone())
-        rebate_until = timezone.get_current_timezone().normalize(rebate_until)
-        return self._created_at_in_local_time < rebate_until
-
-    def is_driver_rebatable(self):
-        return self.is_driver_rebate_hour() and self.is_driver_rebate_weekday() and self.is_driver_rebate_period()
-
     def rate(self, rating, ratings_by_category, comment):
         update = bool(self.rating)
         old_rating = self.rating
@@ -132,6 +113,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         self.save(update_fields=['rating', 'ratings_by_category', 'comment'])
 
         self.driver.rate(self.rating, update, old_rating)
+
+        if not update:
+            post_ride_rated.send(sender=self.__class__, ride=self)
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):

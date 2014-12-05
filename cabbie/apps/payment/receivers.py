@@ -3,7 +3,7 @@
 from django.conf import settings
 
 from cabbie.apps.recommend.models import Recommend
-from cabbie.apps.drive.signals import post_ride_board
+from cabbie.apps.drive.signals import post_ride_rated
 from cabbie.apps.payment.models import Transaction
 from cabbie.apps.payment.signals import return_processed, coupon_processed
 from cabbie.common.signals import post_create
@@ -60,18 +60,12 @@ def on_coupon_processed(sender, coupon, **kwargs):
              {'coupon': coupon})
 
 
-def on_post_ride_board(sender, ride, **kwargs):
+def on_post_ride_rated(sender, ride, **kwargs):
     # For passenger
     passenger = ride.passenger
     note = u''
 
-    # Peak day mileage
-    if ride.is_passenger_non_peak_hour():
-        amount = settings.POINTS_BY_TYPE['mileage_non_peak_hour']
-        note = u'논피크시간'
-    # Non-peak day mileage 
-    else:
-        amount = settings.POINTS_BY_TYPE['mileage']
+    amount = settings.POINTS_BY_TYPE['mileage']
 
     Transaction.objects.create(
         user=passenger,
@@ -81,28 +75,10 @@ def on_post_ride_board(sender, ride, **kwargs):
         note=note,
     )
 
-    # For driver
-
-    # Driver rebate
-    if ride.is_driver_rebatable():
-        driver = ride.driver
-        amount = settings.POINTS_BY_TYPE['rebate']
-        note = u'피크시간 지원금'
-     
-        Transaction.objects.create(
-            user=driver,
-            ride=ride,
-            transaction_type=Transaction.GRANT,
-            amount=amount,
-            note=note,
-        )
-
-   
-
 post_create.connect(on_post_create_recommend, sender=Recommend,
                     dispatch_uid='from_payment')
 post_create.connect(on_post_create_transaction, sender=Transaction,
                     dispatch_uid='from_payment')
-post_ride_board.connect(on_post_ride_board, dispatch_uid='from_payment')
+post_ride_rated.connect(on_post_ride_rated, dispatch_uid='from_payment')
 return_processed.connect(on_return_processed, dispatch_uid='from_payment')
 coupon_processed.connect(on_coupon_processed, dispatch_uid='from_payment')
