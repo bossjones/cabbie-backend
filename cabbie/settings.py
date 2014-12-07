@@ -342,7 +342,7 @@ from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
 
 MESSAGE_RIDE_COMPLETE_TITLE = u'목적지 도착!'
-MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가해 주세요. (10초소요)'
+MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가하시면 마일리지를 적립해 드립니다. (10초소요)'
 
 # SMS
 # ---
@@ -357,7 +357,7 @@ SMS_FROM = '027202036'
 CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
 
-# For passenger promotion mileage
+# Non peak hour
 PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]
 
 # For driver
@@ -375,7 +375,6 @@ POINTS_BY_TYPE = {
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
     'mileage': 100,                 # For passenger
-    'mileage_non_peak_hour': 500,    # For passenger
     'rebate': 2000                  # For driver
 }
 COUPON_THRESHOLDS = (

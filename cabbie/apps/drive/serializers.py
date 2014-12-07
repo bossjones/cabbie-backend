@@ -1,3 +1,5 @@
+from rest_framework import serializers
+
 from cabbie.apps.account.serializers import (
     DriverSerializer, PassengerSerializer)
 from cabbie.apps.drive.models import Ride, Favorite, Hotspot
@@ -11,6 +13,7 @@ class RideSerializer(AbstractSerializer):
     destination = JSONField(source='destination')
     summary = JSONField(source='summary')
     ratings_by_category = JSONField(source='ratings_by_category')
+    rating = serializers.Field(source='rating')
 
     class Meta:
         model = Ride

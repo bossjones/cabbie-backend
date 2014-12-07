@@ -12,7 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
-from cabbie.common.fields import SeparatedField
+from cabbie.common.fields import SeparatedField, JSONField
 from cabbie.common.models import (ActiveMixin, NullableImageMixin,
                                   AbstractTimestampModel)
 from cabbie.utils.crypt import encrypt
@@ -119,6 +119,9 @@ class Passenger(User):
             user_id=self.id, dropout_type=dropout_type, note=note or '')
         self.delete()
 
+    @property
+    def latest_ride_state(self):
+        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -157,9 +160,7 @@ class Driver(NullableImageMixin, User):
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
     # Rating
-    total_rating = models.PositiveIntegerField(u'총평점', default=0)
-    rated_count = models.PositiveIntegerField(u'평가횟수', default=0)
-    rating = models.FloatField(u'평점', default=0.0)
+    total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
     objects = DriverManager()
 
@@ -185,21 +186,55 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def rate(self, rating, update=False, old_rating=None):
-        if update:
-            self.total_rating = self.total_rating - old_rating + rating
-            self.rating = float(self.total_rating) / self.rated_count
-        else:
-            self.rated_count += 1
-            self.total_rating += rating
-            self.rating = float(self.total_rating) / self.rated_count
+    def rate(self, ratings_by_category, old_ratings_by_category):
+        # update rating
+        self.update_rating(ratings_by_category, old_ratings_by_category)
+                        
+        self.save(update_fields=['total_ratings_by_category'])
 
-        self.save(update_fields=['rated_count', 'total_rating', 'rating'])
+    def update_rating(self, ratings_by_category, old_ratings_by_category):
+        for key, value in ratings_by_category.iteritems():
+            if self.total_ratings_by_category.get(key):
+                self.total_ratings_by_category[key][0] += value
+                self.total_ratings_by_category[key][1] += 1
+            else:
+                self.total_ratings_by_category[key] = [value, 1]
+
+        if old_ratings_by_category:
+            for key, value in old_ratings_by_category.iteritems():
+                if self.total_ratings_by_category.get(key):
+                    self.total_ratings_by_category[key][0] -= value
+                    self.total_ratings_by_category[key][1] -= 1
+
+    @property
+    def rating(self):
+        total_rating = 0
+        total_count = 0
+
+        for key, value in self.total_ratings_by_category.iteritems():
+            total_rating += value[0]
+            total_count += value[1]
+
+        return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
+
+    @property
+    def rated_count(self):
+        max_count = 0
+        
+        for key, value in self.total_ratings_by_category.iteritems():
+            if value[1] > max_count: 
+                max_count = value[1]
+
+        return max_count  
 
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(
             user_id=self.id, dropout_type=dropout_type, note=note or '')
         self.delete()
+
+    @property
+    def latest_ride_state(self):
+        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
