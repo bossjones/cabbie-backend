@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db.models import F
 from django.utils import timezone
@@ -7,10 +8,15 @@ from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
 from cabbie.common.signals import post_create
+from cabbie.utils.email import send_email
 
 
 def on_post_create_user(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
+
+    # send email to passenger
+    if sender is Passenger:
+        send_email('mail/passenger_signup.txt', instance.email, {'subject': '{name}님 환영합니다'.format(name=instance.name), 'message': '백기사에 가입해 주셔서 감사합니다.'})
 
 
 def on_post_create_driver_bill(sender, instance, **kwargs):

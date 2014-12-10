@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'storages',
+    'django_ses',
 
     # Admin
     'suit',
@@ -189,10 +190,11 @@ ALLOWED_HOSTS = ['.{0}'.format(HOST)]
 # Email
 # -----
 
-CONTACT_EMAIL = 'Cabbie <contact@{host}>'.format(host=HOST)
-ALLOWED_DEBUG_EMAIL = ['mjipeo@gmail.com']
+CONTACT_EMAIL = '백기사 <support@{host}>'.format(host=HOST)
+ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com']
 EMAIL_DELIMITER = '=====CABBIE====='
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django_ses.SESBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
 EMAIL_HOST_USER = 'AKIAJD3WYLRGE5C2HKVA'
 EMAIL_HOST_PASSWORD = 'Ala4bqSfpgYFFHi966Ys4eUINKH058fZ85nZYqLKC3yt'

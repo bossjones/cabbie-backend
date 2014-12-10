@@ -13,6 +13,7 @@ from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
+from cabbie.utils.email import send_email
 
 
 class Ride(IncrementMixin, AbstractTimestampModel):
@@ -110,6 +111,10 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         self.save(update_fields=['ratings_by_category', 'comment'])
 
         self.driver.rate(self.ratings_by_category, old_ratings_by_category)
+
+        if not old_ratings_by_category:
+            send_email('mail/passenger_rating_point.txt', self.passenger.email, 
+                {'subject': '탑승평가 포인트 적립', 'message': '백기사를 이용해주셔서 감사합니다. 탑승평가에 대한 포인트를 적립하여 드립니다.'})
 
     @property
     def rating(self):

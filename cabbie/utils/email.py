@@ -8,6 +8,9 @@ from django.core.mail import EmailMessage
 from djcelery import celery
 from jinja2.exceptions import TemplateError
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 # Thread-specific context
 # -----------------------
