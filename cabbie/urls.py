@@ -40,8 +40,12 @@ router.register(r'drivers/bills',
                 import_('cabbie.apps.payment.views.DriverBillViewSet'))
 router.register(r'drivers/coupon',
                 import_('cabbie.apps.payment.views.DriverCouponViewSet'))
-router.register(r'drivers/stats',
-                import_('cabbie.apps.stats.views.DriverRideStatViewSet'))
+router.register(r'drivers/stats/month',
+                import_('cabbie.apps.stats.views.DriverRideStatMonthViewSet'))
+router.register(r'drivers/stats/week',
+                import_('cabbie.apps.stats.views.DriverRideStatWeekViewSet'))
+router.register(r'drivers/stats/day',
+                import_('cabbie.apps.stats.views.DriverRideStatDayViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',

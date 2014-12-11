@@ -3,18 +3,38 @@
 from django.contrib import admin
 
 from cabbie.apps.stats.models import (
-    DriverRideStat, LocationDataAccess, LocationDataProvide,
+    DriverRideStatMonth, DriverRideStatWeek, DriverRideStatDay, 
+    LocationDataAccess, LocationDataProvide,
     LocationDataNotice)
 from cabbie.common.admin import AbstractAdmin
 
 
-class DriverRideStatAdmin(AbstractAdmin):
+class DriverRideStatMonthAdmin(AbstractAdmin):
     addable = False
     deletable = False
     ordering = ('-updated_at',)
-    list_display = ('driver', 'year', 'month', 'week', 'state', 'count',
+    list_display = ('driver', 'year', 'month', 'state', 'count', 'rating',
                     'updated_at', 'created_at')
     list_filter = ('updated_at', 'created_at')
+
+
+class DriverRideStatWeekAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
+    ordering = ('-updated_at',)
+    list_display = ('driver', 'year', 'month', 'week', 'state', 'count', 'rating',
+                    'updated_at', 'created_at')
+    list_filter = ('updated_at', 'created_at')
+
+class DriverRideStatDayAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
+    ordering = ('-updated_at',)
+    list_display = ('driver', 'year', 'month', 'week', 'day', 'state', 'count', 'rating',
+                    'updated_at', 'created_at')
+    list_filter = ('updated_at', 'created_at')
+
+
 
 
 class LocationDataAccessAdmin(AbstractAdmin):
@@ -54,7 +74,9 @@ class LocationDataNoticeAdmin(AbstractAdmin):
     updated_at_.short_description = u'고지시간'
 
 
-admin.site.register(DriverRideStat, DriverRideStatAdmin)
+admin.site.register(DriverRideStatMonth, DriverRideStatMonthAdmin)
+admin.site.register(DriverRideStatWeek, DriverRideStatWeekAdmin)
+admin.site.register(DriverRideStatDay, DriverRideStatDayAdmin)
 admin.site.register(LocationDataAccess, LocationDataAccessAdmin)
 admin.site.register(LocationDataProvide, LocationDataProvideAdmin)
 admin.site.register(LocationDataNotice, LocationDataNoticeAdmin)
