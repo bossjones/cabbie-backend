@@ -113,6 +113,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         self.driver.rate(self.ratings_by_category, old_ratings_by_category)
 
         if not old_ratings_by_category:
+            post_ride_rated.send(sender=self.__class__, ride=self)
+
             send_email('mail/passenger_rating_point.txt', self.passenger.email, 
                 {'subject': '탑승평가 포인트 적립', 'message': '백기사를 이용해주셔서 감사합니다. 탑승평가에 대한 포인트를 적립하여 드립니다.'})
 
@@ -124,9 +126,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             total_rating += value
 
         return 0.0 if len(self.ratings_by_category) == 0 else float(total_rating) / len(self.ratings_by_category)
-
-        if not update:
-            post_ride_rated.send(sender=self.__class__, ride=self)
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
