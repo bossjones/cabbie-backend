@@ -61,6 +61,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
 
     state = models.CharField(u'상태', max_length=100, choices=STATES)
 
+    # Additional message
+    additional_message = JSONField(u'추가메세지', default='{}')
+
     # Reject reason
     reason = models.CharField(u'거절이유', max_length=20, choices=REASONS)
 

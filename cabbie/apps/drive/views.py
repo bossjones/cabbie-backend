@@ -167,7 +167,8 @@ class InternalRideCreateView(InternalView):
             source_location=Point(*source['location']),
             destination=destination,
             destination_location=Point(*destination['location']),
-            charge_type=data['charge_type']
+            charge_type=data['charge_type'],
+            additional_message=data['additional_message'],
         )
 
         ride.histories.create(
