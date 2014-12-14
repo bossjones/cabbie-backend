@@ -7,6 +7,7 @@ from cabbie.apps.account.models import Passenger, Driver, User
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.rand import weighted_choice, weighted_boolean, random_string
+from cabbie.utils import json
 
 
 class BotFactory(LoggableMixin, SingletonMixin):
@@ -49,7 +50,7 @@ class DriverBotFactory(BotFactory):
         'taxi_type',
         'taxi_service',
         'about',
-        'rating',
+        'total_ratings_by_category',
     )
 
     def create_bot(self):
@@ -153,8 +154,13 @@ class DriverBotFactory(BotFactory):
         elif mode == 'two':
             return u'저는 로봇택시입니다.\n그렇지만 운행은 합니다.'
 
-    def _generate_rating(self, driver):
-        return random.uniform(0, 5)
+    def _generate_total_ratings_by_category(self, driver):
+        data = {
+            'kindness': [random.randint(100, 500), 100],
+            'cleanliness': [random.randint(100, 500), 100],
+            'security': [random.randint(100, 500), 100],
+        }
+        return json.dumps(data)
         
 
 class PassengerBotFactory(BotFactory):
