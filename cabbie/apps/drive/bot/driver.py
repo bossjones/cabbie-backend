@@ -213,6 +213,9 @@ class DriverBot(Bot):
 
         if (self._activated and self._state in (
                 self.INITIALIZED, self.APPROVED, self.BOARDED)):
+
+            self.info('Updating location')
+
             self.send('driver_update_location', {
                 'charge_type': self._charge_type,
                 'location': self._location,
