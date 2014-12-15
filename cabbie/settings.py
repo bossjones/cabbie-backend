@@ -186,6 +186,11 @@ VERSION = 1
 HOST = 'bktaxi.com'
 ALLOWED_HOSTS = ['.{0}'.format(HOST)]
 
+# Web
+# ---
+
+WEB_SERVER_HOST = HOST
+WEB_SERVER_PORT = 80
 
 # Email
 # -----

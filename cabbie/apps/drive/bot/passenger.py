@@ -1,12 +1,17 @@
 # encoding: utf-8
 
 import random
+import requests
+from urlparse import urljoin
 
 from django.conf import settings
+from rest_framework.authtoken.models import Token
 
 from cabbie.apps.drive.bot.base import Bot
 from cabbie.utils.ioloop import delay
+from cabbie.utils.geo import move, distance
 from cabbie.utils.rand import random_float
+from cabbie.utils import json
 
 
 class PassengerBot(Bot):
@@ -22,6 +27,8 @@ class PassengerBot(Bot):
     role = 'passenger'
     request_delay = 1
     rewatch_delay = 5
+
+    web_base_url = 'http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT)
 
     def __init__(self, instance):
         super(PassengerBot, self).__init__(instance)
@@ -47,9 +54,11 @@ class PassengerBot(Bot):
         self._watch()
 
     def handle_passenger_assigned(self, assignment):
-        if assignment:
 
-            self._candidates = assignment['candidates']
+        self._candidates = assignment['candidates'] if assignment else None
+
+        if self._candidates and len(self._candidates) > 0:
+
             self._best = assignment['best']
             
             self.info('Assigned {0} drivers'.format(len(self._candidates)))
@@ -59,6 +68,7 @@ class PassengerBot(Bot):
             return
        
         self.info('Assigned nothing') 
+        self.candidates = None
 
 
     def handle_passenger_approved(self):
@@ -84,15 +94,38 @@ class PassengerBot(Bot):
         self._state = self.BOARDED
 
     def handle_passenger_progress(self, location, estimate):
-        self.info('Updating driver progress')
+        self.info('Updating driver progress {0}m remains'.format(distance(location, self._source['location'])))
 
     def handle_passenger_journey(self, location, journey):
-        self.info('Updating driver journey')
+        self.info('Updating driver journey {0}m remains'.format(distance(location, self._destination['location'])))
 
     def handle_passenger_completed(self, ride_id, summary):
         self.info('Completed ride {0}'.format(ride_id))
 
         self._state = self.INITIALIZED
+
+        # update rating
+        rate_url = '/api/rides/{0}/rate'.format(ride_id)
+        url = urljoin(self.web_base_url, rate_url)
+
+        payload = {
+            'ratings_by_category': json.dumps({
+                'kindness': random.randint(0, 5),
+                'cleanliness': random.randint(0, 5),
+                'security': random.randint(0, 5),
+            }),
+            'comment': '',
+        }
+
+        token = Token.objects.get(user=self._instance)
+        headers = {
+            'Authorization': 'Token {0}'.format(token),
+        }
+
+        try:
+            r = requests.put(url, data=payload, headers=headers)
+        except Exception as e:
+            self.error('Failed to rate: {0}'.format(e))
 
     def handle_passenger_disconnected(self):
         self.info('Disconnected')
@@ -145,7 +178,6 @@ class PassengerBot(Bot):
             'destination': self._destination,
         }
 
-        print data
         self.send('passenger_request', data)
 
     def _cancel(self):
