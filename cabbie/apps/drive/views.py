@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Q
 from django.contrib.gis.geos import Point
 from django.http import Http404
 from rest_framework import status, viewsets
@@ -34,6 +35,12 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
             qs = qs.filter(passenger=user)
         elif user.has_role('driver'):
             qs = qs.filter(driver=user)
+
+        # state : boarded OR completed
+        # FIXME: 
+        valid = self.request.QUERY_PARAMS.get('valid', None)
+        if valid:
+            qs = qs.filter(Q(state='boarded') | Q(state='completed'))
 
         return qs
 
