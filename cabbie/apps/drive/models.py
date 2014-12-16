@@ -114,6 +114,13 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
 
+    # property state_kor
+    def _state_kor(self):
+        return Ride.STATE_EXPRESSION[self.state]
+    _state_kor.short_description = u'상태'
+    state_kor = property(_state_kor)
+
+
     def rate(self, ratings_by_category, comment):
         old_ratings_by_category = self.ratings_by_category
 
