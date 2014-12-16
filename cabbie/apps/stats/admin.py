@@ -18,6 +18,12 @@ class DriverRideStatMonthAdmin(AbstractAdmin):
                     'updated_at', 'created_at')
     list_filter = ('driver', 'year', 'month', 'state')
 
+    search_fields = (
+        'driver__phone',
+        'driver__name',
+    )
+
+
 class DriverRideStatWeekAdmin(AbstractAdmin):
     addable = False
     deletable = False
@@ -25,6 +31,12 @@ class DriverRideStatWeekAdmin(AbstractAdmin):
     list_display = ('driver', 'year', 'month', 'week', 'state_kor', 'count', 'rating',
                     'updated_at', 'created_at')
     list_filter = ('driver', 'year', 'month', 'week', 'state')
+
+    search_fields = (
+        'driver__phone',
+        'driver__name',
+    )
+
 
 class DriverRideStatDayAdmin(AbstractAdmin):
     addable = False
@@ -34,7 +46,10 @@ class DriverRideStatDayAdmin(AbstractAdmin):
                     'updated_at', 'created_at')
     list_filter = ('driver', 'year', 'month', 'week', 'day', 'state')
 
-
+    search_fields = (
+        'driver__phone',
+        'driver__name',
+    )
 
 
 class LocationDataAccessAdmin(AbstractAdmin):
