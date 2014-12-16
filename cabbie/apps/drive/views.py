@@ -12,6 +12,7 @@ from cabbie.apps.drive.serializers import (
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
+from cabbie.utils.date import week_of_month
 
 
 # REST
@@ -41,6 +42,11 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
         valid = self.request.QUERY_PARAMS.get('valid', None)
         if valid:
             qs = qs.filter(Q(state='boarded') | Q(state='completed'))
+
+        # month
+        month = self.request.QUERY_PARAMS.get('month', None)
+        if month:
+            qs = qs.filter(created_at__month=month)
 
         return qs
 
