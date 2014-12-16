@@ -1,6 +1,7 @@
 # encoding: utf8
 
 from django.contrib import admin
+from django import forms
 
 from cabbie.apps.stats.models import (
     DriverRideStatMonth, DriverRideStatWeek, DriverRideStatDay, 
@@ -12,27 +13,26 @@ from cabbie.common.admin import AbstractAdmin
 class DriverRideStatMonthAdmin(AbstractAdmin):
     addable = False
     deletable = False
-    ordering = ('-updated_at',)
-    list_display = ('driver', 'year', 'month', 'state', 'count', 'rating',
+    ordering = ('-driver', '-year', '-month', 'state')
+    list_display = ('driver', 'year', 'month', 'state_kor', 'count', 'rating',
                     'updated_at', 'created_at')
-    list_filter = ('updated_at', 'created_at')
-
+    list_filter = ('driver', 'year', 'month', 'state')
 
 class DriverRideStatWeekAdmin(AbstractAdmin):
     addable = False
     deletable = False
-    ordering = ('-updated_at',)
-    list_display = ('driver', 'year', 'month', 'week', 'state', 'count', 'rating',
+    ordering = ('-driver', '-year', '-month', '-week', 'state')
+    list_display = ('driver', 'year', 'month', 'week', 'state_kor', 'count', 'rating',
                     'updated_at', 'created_at')
-    list_filter = ('updated_at', 'created_at')
+    list_filter = ('driver', 'year', 'month', 'week', 'state')
 
 class DriverRideStatDayAdmin(AbstractAdmin):
     addable = False
     deletable = False
-    ordering = ('-updated_at',)
-    list_display = ('driver', 'year', 'month', 'week', 'day', 'state', 'count', 'rating',
+    ordering = ('-driver', '-year', '-month', '-week', '-day', 'state')
+    list_display = ('driver', 'year', 'month', 'week', 'day', 'state_kor', 'count', 'rating',
                     'updated_at', 'created_at')
-    list_filter = ('updated_at', 'created_at')
+    list_filter = ('driver', 'year', 'month', 'week', 'day', 'state')
 
 
 

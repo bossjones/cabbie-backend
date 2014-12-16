@@ -32,6 +32,17 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         (COMPLETED, _('completed')),
     )
 
+    STATE_EXPRESSION = { 
+        REQUESTED: u'요청',
+        APPROVED: u'승인',
+        REJECTED: u'기사거절',
+        CANCELED: u'승객취소',
+        DISCONNECTED: u'연결끊김',
+        ARRIVED: u'픽업도착',
+        BOARDED: u'탑승',
+        COMPLETED: u'운행완료',
+    }
+
     IMMEDIATE, TIMEOUT, AFTER, WAITING, UNSHOWN = \
     'immediate', 'timeout', 'after', 'waiting', 'unshown'
 

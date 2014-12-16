@@ -3,6 +3,7 @@
 from django.db import models
 
 from cabbie.apps.account.models import User, Driver
+from cabbie.apps.drive.models import Ride
 from cabbie.apps.stats.managers import DriverRideStatMonthManager, DriverRideStatWeekManager, DriverRideStatDayManager
 from cabbie.common.models import AbstractTimestampModel
 from cabbie.common.fields import JSONField
@@ -12,6 +13,13 @@ class AbstractRideStatModel(AbstractTimestampModel):
     count = models.PositiveIntegerField(u'횟수', default=0)
     ratings = JSONField(u'탑승 평점', default='{}') 
 
+    # property state_kor
+    def _state_kor(self):
+        return Ride.STATE_EXPRESSION[self.state]
+    _state_kor.short_description = u'상태'
+    state_kor = property(_state_kor)
+
+    # property rating
     def _rating(self):
         value = 0
         count = 0
@@ -22,7 +30,6 @@ class AbstractRideStatModel(AbstractTimestampModel):
 
         return 0.0 if count == 0 else float(value)/count
     _rating.short_description = u'평점'
-
     rating = property(_rating)
 
     class Meta(AbstractTimestampModel.Meta):
