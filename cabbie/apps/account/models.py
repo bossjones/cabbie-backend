@@ -68,11 +68,11 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     def __unicode__(self):
         if self.is_staff:
-            return u'{name} 관리자'.format(name=self.name)
+            return u'{name} 관리자 ({phone})'.format(name=self.name, phone=self.phone)
         elif self.get_role('passenger'):
-            return u'{name} 승객'.format(name=self.name)
+            return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
         elif self.get_role('driver'):
-            return u'{name} 기사'.format(name=self.name)
+            return u'{name} 기사 ({phone})'.format(name=self.name, phone=self.phone)
         return u'{class_}({phone})'.format(class_=self.__class__.__name__,
                                            phone=self.phone)
 
