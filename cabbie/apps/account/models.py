@@ -218,6 +218,15 @@ class Driver(NullableImageMixin, User):
         return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
 
     @property
+    def ratings_by_category(self):
+        ret = dict()
+
+        for k, v in self.total_ratings_by_category.iteritems():
+            ret[k] = float(v[0]) / v[1]
+
+        return ret
+
+    @property
     def rated_count(self):
         max_count = 0
         
