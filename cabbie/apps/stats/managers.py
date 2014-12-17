@@ -13,7 +13,7 @@ class DriverRideStatMonthManager(models.Manager):
                                       Ride.BOARDED):
             return
 
-        date = ride_history.ride.created_at.date()
+        date = ride_history.ride.created_at_future.date()
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
             state=ride_history.state)
@@ -24,7 +24,7 @@ class DriverRideStatMonthManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        date = ride.created_at_future.date()
         stat, created = self.get_or_create(
             driver=ride.driver, year=date.year, month=date.month,
             state=Ride.BOARDED)
@@ -41,7 +41,7 @@ class DriverRideStatWeekManager(models.Manager):
                                       Ride.BOARDED):
             return
 
-        date = ride_history.ride.created_at.date()
+        date = ride_history.ride.created_at_future.date()
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
@@ -53,7 +53,7 @@ class DriverRideStatWeekManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        date = ride.created_at_future.date()
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride.driver, year=date.year, month=date.month,
@@ -71,7 +71,7 @@ class DriverRideStatDayManager(models.Manager):
                                       Ride.BOARDED):
             return
 
-        date = ride_history.ride.created_at.date()
+        date = ride_history.ride.created_at_future.date()
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
@@ -83,7 +83,7 @@ class DriverRideStatDayManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        date = ride.created_at_future.date()
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride.driver, year=date.year, month=date.month,

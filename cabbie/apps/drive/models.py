@@ -10,13 +10,13 @@ from django.utils import timezone
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.signals import post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
-from cabbie.common.models import AbstractTimestampModel, IncrementMixin
+from cabbie.common.models import AbstractTimestampModel, AbstractFutureTimestampModel, IncrementMixin
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
 
-class Ride(IncrementMixin, AbstractTimestampModel):
+class Ride(IncrementMixin, AbstractFutureTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
         COMPLETED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
@@ -162,6 +162,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
                            if 'driver_location' in data else None)
 
         self.histories.create(
+            created_at=self.created_at,
+            updated_at=self.updated_at,
             driver=self.driver,
             state=self.state,
             passenger_location=passenger_location,

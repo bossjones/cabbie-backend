@@ -62,6 +62,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
                 ('updated_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='\uac31\uc2e0\uc2dc\uac04', editable=False, db_index=True)),
+                ('created_at_future', models.DateTimeField(default=cabbie.common.models.random_time, verbose_name='\uc0dd\uc131\uc2dc\uac04', editable=False, db_index=True)),
                 ('state', models.CharField(max_length=100, verbose_name='\uc0c1\ud0dc', choices=[(b'requested', 'requested'), (b'approved', 'approved'), (b'rejected', 'rejected'), (b'canceled', 'canceled'), (b'disconnected', 'disconnected'), (b'arrived', 'arrived'), (b'boarded', 'boarded'), (b'completed', 'completed')])),
                 ('reason', models.CharField(max_length=20, verbose_name='\uac70\uc808\uc774\uc720', choices=[(b'immediate', '\uc989\uc2dc\uac70\uc808'), (b'timeout', '\uc218\ub77d\uc2dc\uac04\ucd08\uacfc'), (b'after', '\uc218\ub77d\ud6c4 \uac70\uc808'), (b'waiting', '\ub300\uae30\uc911 \uac70\uc808'), (b'unshown', '\uc2b9\uac1d\uc774 \ub098\ud0c0\ub098\uc9c0 \uc54a\uc74c')])),
                 ('source', cabbie.common.fields.JSONField(verbose_name='\ucd9c\ubc1c\uc9c0')),
