@@ -127,6 +127,9 @@ class PassengerBot(Bot):
         except Exception as e:
             self.error('Failed to rate: {0}'.format(e))
 
+        # rewatch
+        delay(self.rewatch_delay, self._watch)
+
     def handle_passenger_disconnected(self):
         self.info('Disconnected')
 
