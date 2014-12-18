@@ -15,13 +15,33 @@ urlpatterns = patterns('')
 
 admin.site.login_form = AdminAuthenticationForm
 
+# unregister django group admin
 admin.site.unregister(import_('django.contrib.auth.models.Group'))
+
+# unregister authtoken admin
 admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
+
+# unregister django celery admin
 admin.site.unregister(import_('djcelery.models.CrontabSchedule'))
 admin.site.unregister(import_('djcelery.models.IntervalSchedule'))
 admin.site.unregister(import_('djcelery.models.PeriodicTask'))
 admin.site.unregister(import_('djcelery.models.TaskState'))
 admin.site.unregister(import_('djcelery.models.WorkerState'))
+
+# unregister django ses admin
+admin.site.unregister(import_('django_ses.models.SESStat'))
+
+# unregister payment admin
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverBill'))
+admin.site.unregister(import_('cabbie.apps.payment.models.Transaction'))
+admin.site.unregister(import_('cabbie.apps.payment.models.PassengerReturn'))
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverReturn'))
+
+# unregister recommend admin
+admin.site.unregister(import_('cabbie.apps.recommend.models.Recommend'))
+
+# unregister hotspot admin
+admin.site.unregister(import_('cabbie.apps.drive.models.Hotspot'))
 
 admin.autodiscover()
 urlpatterns += patterns('',
