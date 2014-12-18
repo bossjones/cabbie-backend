@@ -93,6 +93,7 @@ INSTALLED_APPS = (
     'cabbie.apps.stats',
     'cabbie.apps.appversion',
     'cabbie.apps.notification',
+    'cabbie.apps.policy',
 
     #'cabbie.apps.track',
 )

@@ -13,6 +13,8 @@ def rating_round_off(obj):
 rating_round_off.short_description = u'평점'
 
 class RideAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
     list_filter = ('driver', 'passenger', 'state', 'updated_at', 'created_at')
     search_fields = (
         '=id',
@@ -34,11 +36,21 @@ class RideAdmin(AbstractAdmin):
 
 
 class RideHistoryAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
+    search_fields = (
+        '=ride__id',
+        'driver__name',
+        '^driver__phone',
+    )
+    list_filter = ('driver', 'state',)
     list_display = ('id', 'ride', 'driver', 'state', 'passenger_location',
                     'driver_location', 'created_at')
 
 
 class FavoriteAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
     list_filter = ('created_at',)
     list_display = ('id', 'passenger', 'name', 'location', 'address', 'poi',
                     'created_at')
