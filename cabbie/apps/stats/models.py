@@ -1,4 +1,5 @@
 # encoding: utf8
+import operator
 
 from django.db import models
 
@@ -21,8 +22,13 @@ class AbstractRideStatModel(AbstractTimestampModel):
 
     # property rating
     def _rating(self):
+        value = 0
+        count = 0
+
         for category in ['kindness', 'cleanliness', 'security']:
-            value, count = self._ratings_by_category(category)
+            v, c = self._ratings_by_category(category)
+            value += v
+            count += c
 
         return 0.0 if count == 0 else float(value)/count
 

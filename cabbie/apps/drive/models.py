@@ -161,11 +161,14 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
     @property
     def rating(self):
         total_rating = 0
+        count = 0
 
         for key, value in self.ratings_by_category.iteritems():
             total_rating += value
+            if value > 0:
+                count += 1
 
-        return 0.0 if len(self.ratings_by_category) == 0 else float(total_rating) / len(self.ratings_by_category)
+        return 0.0 if count == 0 else float(total_rating) / count 
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
