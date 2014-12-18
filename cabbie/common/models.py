@@ -123,6 +123,15 @@ class TimestampMixin(models.Model):
         super(TimestampMixin, self).save(
             force_insert, force_update, using, update_fields)
 
+def random_time():
+    return datetime.now() + timedelta(days=random.randint(0, 60)) 
+
+class FutureTimestampMixin(TimestampMixin):
+    created_at_future = models.DateTimeField(u'생성시간', default=random_time,
+                                      db_index=True, editable=False)
+    class Meta(TimestampMixin.Meta):
+        abstract = True
+        ordering = ['-created_at_future']
 
 class SlugMixin(models.Model):
     SLUG_SOURCE_FIELD_NAME = 'name'
@@ -401,6 +410,11 @@ class AbstractPositionImage(StrictImageMixin, AbstractModel):
 class AbstractTimestampModel(TimestampMixin, AbstractModel):
     class Meta(TimestampMixin.Meta, AbstractModel.Meta):
         abstract = True
+
+class AbstractFutureTimestampModel(FutureTimestampMixin, AbstractModel):
+    class Meta(TimestampMixin.Meta, AbstractModel.Meta):
+        abstract = True
+
 
 
 from cabbie.common.receivers import *
