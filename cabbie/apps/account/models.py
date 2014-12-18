@@ -186,30 +186,32 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def rate(self, ratings_by_category, old_ratings_by_category):
-        # update rating
-        self.update_rating(ratings_by_category, old_ratings_by_category)
-                        
+    def _generate_rating(self):
+        _dict = {
+            'kindness': [0, 0],
+            'cleanliness': [0, 0],
+            'security': [0, 0],
+        }
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+            for category in _dict.keys(): 
+                v, c = stat._ratings_by_category(category)
+                _dict[category][0] += v
+                _dict[category][1] += c
+            
+        return _dict 
+
+    def _update_rating(self):
+        self.total_ratings_by_category = self._generate_rating()
         self.save(update_fields=['total_ratings_by_category'])
-
-    def update_rating(self, ratings_by_category, old_ratings_by_category):
-        for key, value in ratings_by_category.iteritems():
-            if self.total_ratings_by_category.get(key):
-                self.total_ratings_by_category[key][0] += value
-                self.total_ratings_by_category[key][1] += 1
-            else:
-                self.total_ratings_by_category[key] = [value, 1]
-
-        if old_ratings_by_category:
-            for key, value in old_ratings_by_category.iteritems():
-                if self.total_ratings_by_category.get(key):
-                    self.total_ratings_by_category[key][0] -= value
-                    self.total_ratings_by_category[key][1] -= 1
 
     def _ratings_by_category(self, category):
         return self.total_ratings_by_category.get(category, [None, None])
 
-    # property : rating
+    # property : rating (total)
     def _rating(self):
         total_rating = 0
         total_count = 0

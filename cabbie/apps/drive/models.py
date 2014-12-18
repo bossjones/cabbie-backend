@@ -120,6 +120,21 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
     _state_kor.short_description = u'상태'
     state_kor = property(_state_kor)
 
+    # property rating
+    def _rating(self):
+        total_rating = 0
+        count = 0
+
+        for key, value in self.ratings_by_category.iteritems():
+            total_rating += value
+            if value > 0:
+                count += 1
+
+        return 0.0 if count == 0 else float(total_rating) / count 
+    _rating.short_description = u'평점'
+    rating = property(_rating)
+
+
     # category rating
     def _rating_kindness(self):
         return self.ratings_by_category.get('kindness', None)
@@ -146,8 +161,6 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
         self.comment = comment
         self.save(update_fields=['ratings_by_category', 'comment'])
 
-        self.driver.rate(self.ratings_by_category, old_ratings_by_category)
-
         # mileage
         if not old_ratings_by_category:
             post_ride_first_rated.send(sender=self.__class__, ride=self)
@@ -158,17 +171,6 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
         # stat
         post_ride_rated.send(sender=self.__class__, ride=self)
 
-    @property
-    def rating(self):
-        total_rating = 0
-        count = 0
-
-        for key, value in self.ratings_by_category.iteritems():
-            total_rating += value
-            if value > 0:
-                count += 1
-
-        return 0.0 if count == 0 else float(total_rating) / count 
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):

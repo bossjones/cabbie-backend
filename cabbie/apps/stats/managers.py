@@ -32,6 +32,9 @@ class DriverRideStatMonthManager(models.Manager):
         stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
         stat.save(update_fields=['ratings'])
 
+        # update rating in driver account, only done from month stat
+        ride.driver._update_rating()
+
 class DriverRideStatWeekManager(models.Manager):
     def sync_count(self, ride_history):
         if not ride_history.driver:
