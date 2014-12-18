@@ -206,16 +206,56 @@ class Driver(NullableImageMixin, User):
                     self.total_ratings_by_category[key][0] -= value
                     self.total_ratings_by_category[key][1] -= 1
 
-    @property
-    def rating(self):
+    def _ratings_by_category(self, category):
+        return self.total_ratings_by_category.get(category, [None, None])
+
+    # property : rating
+    def _rating(self):
         total_rating = 0
         total_count = 0
 
-        for key, value in self.total_ratings_by_category.iteritems():
-            total_rating += value[0]
-            total_count += value[1]
+        for category in ['kindness', 'cleanliness', 'security']:
+            value, count = self._ratings_by_category(category)
+
+            if value and count:
+                total_rating += value
+                total_count += count 
 
         return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
+
+    _rating.short_description = u'종합평점'
+    rating = property(_rating)
+
+    # property : rating kindness
+    def _rating_kindness(self):
+        value, count = self._ratings_by_category('kindness')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_kindness.short_description = u'친절'
+    rating_kindness = property(_rating_kindness)
+
+    # property : rating cleanliness
+    def _rating_cleanliness(self):
+        value, count = self._ratings_by_category('cleanliness')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_cleanliness.short_description = u'청결'
+    rating_cleanliness = property(_rating_cleanliness)
+
+    # property : rating security
+    def _rating_security(self):
+        value, count = self._ratings_by_category('security')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_security.short_description = u'안전'
+    rating_security = property(_rating_security)
+
 
     @property
     def ratings_by_category(self):
