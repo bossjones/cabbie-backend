@@ -10,13 +10,13 @@ from django.utils import timezone
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.signals import post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
-from cabbie.common.models import AbstractTimestampModel, AbstractFutureTimestampModel, IncrementMixin
+from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
 
-class Ride(IncrementMixin, AbstractFutureTimestampModel):
+class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
         COMPLETED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
