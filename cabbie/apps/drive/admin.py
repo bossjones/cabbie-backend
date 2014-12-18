@@ -9,7 +9,7 @@ from cabbie.common.widgets import PointWidget
 
 
 class RideAdmin(AbstractAdmin):
-    list_filter = ('state', 'updated_at', 'created_at')
+    list_filter = ('driver', 'passenger', 'state', 'updated_at', 'created_at')
     search_fields = (
         '=id',
         'passenger__name',
@@ -19,9 +19,9 @@ class RideAdmin(AbstractAdmin):
         '^driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'passenger', 'driver', 'state_kor', 'source_address',
+    list_display = ('id', 'driver', 'passenger', 'state_kor', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
-                    'rating', 'comment', 'updated_at', 'created_at')
+                    'rating', 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
     readonly_fields = (
         'passenger', 'driver', 'state_kor', 'source', 'source_location',
         'destination', 'destination_location', 'rating', 'ratings_by_category',
