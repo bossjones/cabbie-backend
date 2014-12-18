@@ -186,36 +186,78 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def rate(self, ratings_by_category, old_ratings_by_category):
-        # update rating
-        self.update_rating(ratings_by_category, old_ratings_by_category)
-                        
+    def _generate_rating(self):
+        _dict = {
+            'kindness': [0, 0],
+            'cleanliness': [0, 0],
+            'security': [0, 0],
+        }
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+            for category in _dict.keys(): 
+                v, c = stat._ratings_by_category(category)
+                _dict[category][0] += v
+                _dict[category][1] += c
+            
+        return _dict 
+
+    def _update_rating(self):
+        self.total_ratings_by_category = self._generate_rating()
         self.save(update_fields=['total_ratings_by_category'])
 
-    def update_rating(self, ratings_by_category, old_ratings_by_category):
-        for key, value in ratings_by_category.iteritems():
-            if self.total_ratings_by_category.get(key):
-                self.total_ratings_by_category[key][0] += value
-                self.total_ratings_by_category[key][1] += 1
-            else:
-                self.total_ratings_by_category[key] = [value, 1]
+    def _ratings_by_category(self, category):
+        return self.total_ratings_by_category.get(category, [None, None])
 
-        if old_ratings_by_category:
-            for key, value in old_ratings_by_category.iteritems():
-                if self.total_ratings_by_category.get(key):
-                    self.total_ratings_by_category[key][0] -= value
-                    self.total_ratings_by_category[key][1] -= 1
-
-    @property
-    def rating(self):
+    # property : rating (total)
+    def _rating(self):
         total_rating = 0
         total_count = 0
 
-        for key, value in self.total_ratings_by_category.iteritems():
-            total_rating += value[0]
-            total_count += value[1]
+        for category in ['kindness', 'cleanliness', 'security']:
+            value, count = self._ratings_by_category(category)
+
+            if value and count:
+                total_rating += value
+                total_count += count 
 
         return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
+
+    _rating.short_description = u'종합평점'
+    rating = property(_rating)
+
+    # property : rating kindness
+    def _rating_kindness(self):
+        value, count = self._ratings_by_category('kindness')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_kindness.short_description = u'친절'
+    rating_kindness = property(_rating_kindness)
+
+    # property : rating cleanliness
+    def _rating_cleanliness(self):
+        value, count = self._ratings_by_category('cleanliness')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_cleanliness.short_description = u'청결'
+    rating_cleanliness = property(_rating_cleanliness)
+
+    # property : rating security
+    def _rating_security(self):
+        value, count = self._ratings_by_category('security')
+        rating = 0.0 if value is None and count is None else float(value) / count
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_security.short_description = u'안전'
+    rating_security = property(_rating_security)
+
 
     @property
     def ratings_by_category(self):

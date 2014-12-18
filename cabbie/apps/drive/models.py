@@ -120,6 +120,39 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
     _state_kor.short_description = u'상태'
     state_kor = property(_state_kor)
 
+    # property rating
+    def _rating(self):
+        total_rating = 0
+        count = 0
+
+        for key, value in self.ratings_by_category.iteritems():
+            total_rating += value
+            if value > 0:
+                count += 1
+
+        return 0.0 if count == 0 else float(total_rating) / count 
+    _rating.short_description = u'평점'
+    rating = property(_rating)
+
+
+    # category rating
+    def _rating_kindness(self):
+        return self.ratings_by_category.get('kindness', None)
+    _rating_kindness.short_description = u'친절'
+    rating_kindness = property(_rating_kindness)
+
+    def _rating_cleanliness(self):
+        return self.ratings_by_category.get('cleanliness', None)
+    _rating_cleanliness.short_description = u'청결'
+    rating_cleanliness = property(_rating_cleanliness)
+
+    def _rating_security(self):
+        return self.ratings_by_category.get('security', None)
+    _rating_security.short_description = u'안전'
+    rating_security = property(_rating_security)
+
+
+
 
     def rate(self, ratings_by_category, comment):
         old_ratings_by_category = self.ratings_by_category
@@ -127,8 +160,6 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
         self.ratings_by_category = ratings_by_category
         self.comment = comment
         self.save(update_fields=['ratings_by_category', 'comment'])
-
-        self.driver.rate(self.ratings_by_category, old_ratings_by_category)
 
         # mileage
         if not old_ratings_by_category:
@@ -140,14 +171,6 @@ class Ride(IncrementMixin, AbstractFutureTimestampModel):
         # stat
         post_ride_rated.send(sender=self.__class__, ride=self)
 
-    @property
-    def rating(self):
-        total_rating = 0
-
-        for key, value in self.ratings_by_category.iteritems():
-            total_rating += value
-
-        return 0.0 if len(self.ratings_by_category) == 0 else float(total_rating) / len(self.ratings_by_category)
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):

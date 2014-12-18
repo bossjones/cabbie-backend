@@ -10,6 +10,11 @@ from cabbie.apps.account.models import (
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
+def rating_round_off(obj):
+    return "%.3f" % (obj.rating)
+rating_round_off.short_description = u'평점'
+
+
 class StaffAdmin(AbstractAdmin):
     list_display = ('id', 'phone', 'name', 'is_superuser', 'date_joined')
     list_filter = (
@@ -50,8 +55,8 @@ class DriverAdmin(AbstractAdmin):
     form = DriverForm
     ordering = ('-date_joined',)
     list_display = ('phone', 'name', 'taxi_type', 'car_number', 'company',
-                    'garage', 'point', 'rating', 'current_month_board_count',
-                    'previous_month_board_count', 'board_count',
+                    'garage', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
+                    'current_month_board_count', 'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verified', 'is_accepted',
                     'is_freezed', 'is_super', 'is_dormant', 'date_joined',
                     'link_to_rides')
@@ -65,7 +70,7 @@ class DriverAdmin(AbstractAdmin):
         }),
         ('읽기전용', {
             'fields': (
-                'recommend_code', 'point', 'rating',
+                'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
                 'current_month_board_count', 'previous_month_board_count',
                 'board_count', 'passenger_recommend_count',
                 'driver_recommend_count', 'recommended_count',
@@ -79,7 +84,7 @@ class DriverAdmin(AbstractAdmin):
         '^phone', 'name', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', 'rating', 'current_month_board_count',
+        'recommend_code', 'point', rating_round_off, 'current_month_board_count',
         'previous_month_board_count', 'board_count',
         'passenger_recommend_count', 'driver_recommend_count',
         'recommended_count', 'verification_code', 'is_verified', 'is_accepted',

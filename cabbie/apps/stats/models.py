@@ -1,4 +1,5 @@
 # encoding: utf8
+import operator
 
 from django.db import models
 
@@ -24,13 +25,62 @@ class AbstractRideStatModel(AbstractTimestampModel):
         value = 0
         count = 0
 
-        for rating in self.ratings.itervalues():
-            value += sum(rating.itervalues())
-            count += len(rating)
+        for category in ['kindness', 'cleanliness', 'security']:
+            v, c = self._ratings_by_category(category)
+            value += v
+            count += c
 
         return 0.0 if count == 0 else float(value)/count
+
     _rating.short_description = u'평점'
     rating = property(_rating)
+
+    def _ratings_by_category(self, category):
+        value = 0
+        count = 0
+
+        for rating in self.ratings.itervalues():
+            point = rating.get(category, None)
+            if point:
+                value += point
+                count += 1
+        
+        return (value, count)
+
+    # kindness
+    def _rating_value_kindness(self):
+        return self._ratings_by_category('kindness')[0]
+    _rating_value_kindness.short_description = u'친절 총점' 
+    rating_value_kindness = property(_rating_value_kindness)
+
+    def _rating_count_kindness(self):
+        return self._ratings_by_category('kindness')[1]
+    _rating_count_kindness.short_description = u'친절 총수' 
+    rating_count_kindness = property(_rating_count_kindness)
+
+    # cleanliness
+    def _rating_value_cleanliness(self):
+        return self._ratings_by_category('cleanliness')[0]
+    _rating_value_cleanliness.short_description = u'청결 총점' 
+    rating_value_cleanliness = property(_rating_value_cleanliness)
+
+    def _rating_count_cleanliness(self):
+        return self._ratings_by_category('cleanliness')[1]
+    _rating_count_cleanliness.short_description = u'청결 평가수' 
+    rating_count_cleanliness = property(_rating_count_cleanliness)
+ 
+    # security 
+    def _rating_value_security(self):
+        return self._ratings_by_category('security')[0]
+    _rating_value_security.short_description = u'안전 총점' 
+    rating_value_security = property(_rating_value_security)
+
+    def _rating_count_security(self):
+        return self._ratings_by_category('security')[1]
+    _rating_count_security.short_description = u'안전 총수' 
+    rating_count_security = property(_rating_count_security)
+
+               
 
     class Meta(AbstractTimestampModel.Meta):
         abstract = True

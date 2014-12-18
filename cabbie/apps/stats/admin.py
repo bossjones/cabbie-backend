@@ -10,12 +10,21 @@ from cabbie.apps.stats.models import (
 from cabbie.common.admin import AbstractAdmin
 
 
+
+def rating_round_off(obj):
+    return "%.3f" % (obj.rating)
+rating_round_off.short_description = u'평점'
+
 class DriverRideStatMonthAdmin(AbstractAdmin):
     addable = False
     deletable = False
     ordering = ('-driver', '-year', '-month', 'state')
-    list_display = ('driver', 'year', 'month', 'state_kor', 'count', 'rating',
-                    'updated_at', 'created_at')
+    list_display = ('driver', 'year', 'month', 'state_kor', 
+                    'count', rating_round_off, 
+                    'rating_value_kindness', 'rating_count_kindness',
+                    'rating_value_cleanliness', 'rating_count_cleanliness',
+                    'rating_value_security', 'rating_count_security',
+                    )
     list_filter = ('driver', 'year', 'month', 'state')
 
     search_fields = (
@@ -28,8 +37,12 @@ class DriverRideStatWeekAdmin(AbstractAdmin):
     addable = False
     deletable = False
     ordering = ('-driver', '-year', '-month', '-week', 'state')
-    list_display = ('driver', 'year', 'month', 'week', 'state_kor', 'count', 'rating',
-                    'updated_at', 'created_at')
+    list_display = ('driver', 'year', 'month', 'week', 'state_kor', 
+                    'count', rating_round_off,
+                    'rating_value_kindness', 'rating_count_kindness',
+                    'rating_value_cleanliness', 'rating_count_cleanliness',
+                    'rating_value_security', 'rating_count_security',
+                    )
     list_filter = ('driver', 'year', 'month', 'week', 'state')
 
     search_fields = (
@@ -42,8 +55,12 @@ class DriverRideStatDayAdmin(AbstractAdmin):
     addable = False
     deletable = False
     ordering = ('-driver', '-year', '-month', '-week', '-day', 'state')
-    list_display = ('driver', 'year', 'month', 'week', 'day', 'state_kor', 'count', 'rating',
-                    'updated_at', 'created_at')
+    list_display = ('driver', 'year', 'month', 'week', 'day', 'state_kor', 
+                    'count', rating_round_off,
+                    'rating_value_kindness', 'rating_count_kindness',
+                    'rating_value_cleanliness', 'rating_count_cleanliness',
+                    'rating_value_security', 'rating_count_security',
+                    )
     list_filter = ('driver', 'year', 'month', 'week', 'day', 'state')
 
     search_fields = (
