@@ -180,7 +180,7 @@ class PassengerBot(Bot):
             'charge_type': self._charge_type,
             'source': self._source,
             'destination': self._destination,
-            'additional_message': self._random_additional_message()
+            'additional_message': { 'types': self._random_additional_message(), 'comment': 'good' }
         }
 
         self.send('passenger_request', data)
