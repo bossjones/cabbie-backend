@@ -50,6 +50,7 @@ class DriverBot(Bot):
         self._target_location = None
         self._source = None
         self._destination = None
+        self._additional_message = None
 
         self._charge_type = None
         self._direction = None
@@ -77,7 +78,7 @@ class DriverBot(Bot):
         self._update_location()
         self._move()
 
-    def handle_driver_requested(self, source, destination, passenger):
+    def handle_driver_requested(self, source, destination, passenger, additional_message):
         self.info('Requested from {0}'.format(passenger))
 
         if self._reject_dice.roll():
@@ -85,6 +86,7 @@ class DriverBot(Bot):
         else:
             self._source = source
             self._destination = destination
+            self._additional_message = additional_message
             delay(self.gentle_delay, self._approve)
 
     def handle_driver_canceled(self):
