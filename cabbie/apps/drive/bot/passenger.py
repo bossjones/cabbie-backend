@@ -27,6 +27,7 @@ class PassengerBot(Bot):
     role = 'passenger'
     request_delay = 1
     rewatch_delay = 5
+    additional_message_types = ['kid', 'pregnant', 'luggage', 'emergency']
 
     web_base_url = 'http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT)
 
@@ -179,6 +180,7 @@ class PassengerBot(Bot):
             'charge_type': self._charge_type,
             'source': self._source,
             'destination': self._destination,
+            'additional_message': self._random_additional_message()
         }
 
         self.send('passenger_request', data)
@@ -191,3 +193,13 @@ class PassengerBot(Bot):
     def _select_driver(self):
         return random.choice(self._candidates)['driver']['id']
 
+
+    def _random_additional_message(self):
+        _list = self.additional_message_types
+        random.shuffle(_list)
+      
+        pick = random.randint(0, len(_list)) 
+        
+        return [_list[i] for i in range(pick)]
+        
+        
