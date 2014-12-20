@@ -40,7 +40,8 @@ admin.site.unregister(import_('cabbie.apps.payment.models.DriverReturn'))
 # unregister recommend admin
 admin.site.unregister(import_('cabbie.apps.recommend.models.Recommend'))
 
-# unregister hotspot admin
+# unregister hotspot, favorite admin
+admin.site.unregister(import_('cabbie.apps.drive.models.Favorite'))
 admin.site.unregister(import_('cabbie.apps.drive.models.Hotspot'))
 
 admin.autodiscover()
