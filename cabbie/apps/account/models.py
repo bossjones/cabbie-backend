@@ -231,7 +231,8 @@ class Driver(NullableImageMixin, User):
     # property : rating kindness
     def _rating_kindness(self):
         value, count = self._ratings_by_category('kindness')
-        rating = 0.0 if value is None and count is None else float(value) / count
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
 
         return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
     
@@ -241,7 +242,8 @@ class Driver(NullableImageMixin, User):
     # property : rating cleanliness
     def _rating_cleanliness(self):
         value, count = self._ratings_by_category('cleanliness')
-        rating = 0.0 if value is None and count is None else float(value) / count
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
 
         return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
     
@@ -251,7 +253,8 @@ class Driver(NullableImageMixin, User):
     # property : rating security
     def _rating_security(self):
         value, count = self._ratings_by_category('security')
-        rating = 0.0 if value is None and count is None else float(value) / count
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
 
         return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
     
