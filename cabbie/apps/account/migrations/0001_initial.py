@@ -97,6 +97,10 @@ class Migration(migrations.Migration):
                 ('phone', models.CharField(unique=True, max_length=11, verbose_name='\uc804\ud654\ubc88\ud638', validators=[cabbie.utils.validator.PhoneValidator()])),
                 ('name', models.CharField(max_length=30, verbose_name='\uc774\ub984')),
                 ('is_joined', models.BooleanField(default=False, verbose_name='\uac00\uc785\uc5ec\ubd80')),
+                ('image', models.ImageField(height_field=b'image_height', width_field=b'image_width', null=True, upload_to=cabbie.common.models._upload_to, blank=True)),
+                ('image_key', models.CharField(max_length=100, blank=True)),
+                ('image_width', models.IntegerField(null=True, blank=True)),
+                ('image_height', models.IntegerField(null=True, blank=True)),
             ],
             options={
                 'verbose_name': '\uae30\uc0ac \uac00\uc785\uc2e0\uccad\uc790',

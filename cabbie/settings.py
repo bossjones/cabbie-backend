@@ -340,6 +340,9 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIAIMHVSY5T3QSORJSA')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
 AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
+#AWS_LOCATION = 'ap-northeast-1'
+#from boto.s3.connection import OrdinaryCallingFormat
+#AWS_S3_CALLING_FORMAT = OrdinaryCallingFormat() 
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
 # Push (Parse)

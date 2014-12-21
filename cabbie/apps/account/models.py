@@ -301,7 +301,9 @@ class Driver(NullableImageMixin, User):
             force_insert, force_update, using, update_fields)
 
 
-class DriverReservation(AbstractTimestampModel):
+class DriverReservation(NullableImageMixin, AbstractTimestampModel):
+    IMAGE_TYPES = ('original',)
+
     phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
     name = models.CharField(u'이름', max_length=30)

@@ -313,6 +313,31 @@ class DriverReserveView(APIView):
 
     def post(self, request, *args, **kwargs):
         driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], name=request.DATA['name'])
-        return self.render()
+        return self.render({
+            'reservation_id': driver.id
+        })
 
+class DriverReserveUploadCertificateView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, reservation_id, *args, **kwargs):
+
+        file_obj = request.FILES['upload_file']
+        file_name = request.DATA['filename']
+
+        import mimetypes
+        content_type, encoding = mimetypes.guess_type(file_name)
+        file_obj.content_type = content_type
+        file_obj._name = file_name
+
+        print reservation_id
+
+        driver = DriverReservation.objects.get(id=reservation_id)
+        driver.image = file_obj
+        driver.save()
+
+        return self.render({
+            'uploaded_url': driver.url
+        })
 
