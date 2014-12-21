@@ -10,7 +10,7 @@ from cabbie.common.admin import AbstractAdmin
 
 
 def rating_round_off(obj):
-    return "%.3f" % (obj.rating)
+    return '%.3f' % (round(obj.rating, 3))
 rating_round_off.short_description = u'평점'
 
 class DriverRideStatMonthAdmin(AbstractAdmin):
