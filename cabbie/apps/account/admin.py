@@ -65,7 +65,7 @@ class DriverAdmin(AbstractAdmin):
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'car_model',
                 'company', 'garage', 'bank_account', 'max_capacity',
-                'taxi_type', 'taxi_service', 'about', 'image',
+                'taxi_type', 'about', 'image',
             ),
         }),
         ('읽기전용', {

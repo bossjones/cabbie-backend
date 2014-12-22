@@ -48,7 +48,6 @@ class DriverBotFactory(BotFactory):
         'bank_account',
         'max_capacity',
         'taxi_type',
-        'taxi_service',
         'about',
     )
 
