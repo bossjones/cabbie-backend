@@ -84,10 +84,11 @@ class DriverAdmin(AbstractAdmin):
         '^phone', 'name', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', rating_round_off, 'current_month_board_count',
-        'previous_month_board_count', 'board_count',
-        'passenger_recommend_count', 'driver_recommend_count',
-        'recommended_count', 'verification_code', 'is_verified', 'is_accepted',
+        'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
+        'current_month_board_count', 'previous_month_board_count', 
+        'board_count', 'passenger_recommend_count', 
+        'driver_recommend_count', 'recommended_count', 
+        'verification_code', 'is_verified', 'is_accepted',
         'is_freezed', 'is_super', 'is_dormant', 'date_joined',
         'last_active_at',
     )
