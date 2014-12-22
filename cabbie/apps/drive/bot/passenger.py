@@ -192,7 +192,7 @@ class PassengerBot(Bot):
             'charge_type': self._charge_type,
             'source': self._source,
             'destination': self._destination,
-            'additional_message': { 'types': self._random_additional_message(), 'comment': 'good' }
+            'additional_message': { 'types': self._random_additional_message(), 'comment': '' }
         }
 
         self.send('passenger_request', data)
