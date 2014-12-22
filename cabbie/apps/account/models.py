@@ -171,8 +171,9 @@ class Driver(NullableImageMixin, User):
     def get_default_image_url(self, image_type):
         return ''
 
-    def get_login_key(self):
-        return encrypt(self.verification_code)
+    @staticmethod
+    def get_login_key():
+        return encrypt('02-720-2036')
 
     def send_verification_code(self):
         send_verification_code(self.phone, self.verification_code)
@@ -299,7 +300,7 @@ class Driver(NullableImageMixin, User):
             self.verification_code = issue_verification_code()
             if update_fields is not None:
                 update_fields.append('verification_code')
-        self.set_password(self.get_login_key())
+        self.set_password(Driver.get_login_key())
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
 

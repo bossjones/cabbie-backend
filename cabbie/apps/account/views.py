@@ -101,6 +101,20 @@ class ObtainAuthToken(BaseObtainAuthToken):
             return Response({'token':token.key, 'id':token.user.id})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class DriverAuthView(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+    
+    def post(self, request):
+        # add password for all drivers
+        if request.DATA.get('password', None):
+            return Response({'error': 'password is not allowed parameter'}, status=status.HTTP_400_BAD_REQUEST)
+    
+        request.DATA['password'] = Driver.get_login_key()
+        return super(DriverAuthView, self).post(request)
+
+class PassengerAuthView(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+    
 
 class PassengerViewSet(PassengerMixin, AbstractUserViewSet):        pass
 class DriverViewSet(DriverMixin, AbstractUserViewSet):              pass
@@ -122,7 +136,7 @@ class DriverVerifyView(APIView):
         driver.save()
 
         return self.render({
-            'login_key': driver.get_login_key(),
+            'login_key': Driver.get_login_key(),
             'driver': DriverSerializer(driver).data
         })
 
@@ -137,8 +151,6 @@ class DriverAcceptView(APIView):
             return self.render_error(unicode(e))
         if not driver.is_verified:
             return self.render_error('Must be verified first')
-        if driver.get_login_key() != request.DATA['login_key']:
-            return self.render_error('Invalid login key')
 
         # recommendation
         recommenders = request.DATA.get('recommenders', [])

@@ -112,8 +112,11 @@ urlpatterns += patterns('',
     url(r'^api/geo/reverse',
         import_('cabbie.apps.drive.views.GeoReverseView').as_view()),
 
-    url(r'^api/auth',
-        import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
+    url(r'^api/auth/driver',
+        import_('cabbie.apps.account.views.DriverAuthView').as_view()),
+
+    url(r'^api/auth/passenger',
+        import_('cabbie.apps.account.views.PassengerAuthView').as_view()),
 
     url(r'^api/appversion/android/driver',
         import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()),
