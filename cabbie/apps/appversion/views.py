@@ -22,7 +22,7 @@ class AndroidDriverView(AbstractAndroidApplicationVersionView):
                 'latest': AndroidDriverSerializer(ordered[0]).data
             })
         else:
-            return self.render()
+            return self.render_error(u'No android driver app version found')
 
 class AndroidPassengerView(AbstractAndroidApplicationVersionView):
 
@@ -34,5 +34,5 @@ class AndroidPassengerView(AbstractAndroidApplicationVersionView):
                 'latest': AndroidPassengerSerializer(ordered[0]).data
             })
         else:
-            return self.render()
+            return self.render_error(u'No android passenger app version found')
 
