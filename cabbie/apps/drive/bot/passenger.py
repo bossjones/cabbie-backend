@@ -28,6 +28,12 @@ class PassengerBot(Bot):
     request_delay = 1
     rewatch_delay = 5
     additional_message_types = ['kid', 'pregnant', 'luggage', 'emergency']
+    place_choices = [
+        ('르메이에르 종로타운', '서울시 종로구 종로1가 24'),
+        ('선릉역 8번출구', '서울시 강남구 역삼동'),
+        ('강남역 지오다노', '서울시 강남구 역삼동 821-1'),
+        ('서울역', '서울시 용산구 청파로 378')
+    ]
 
     web_base_url = 'http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT)
 
@@ -151,6 +157,9 @@ class PassengerBot(Bot):
         ]
         self._source = {}
         self._source['location'] = pickup_location
+        poi, address = random.choice(self.place_choices)
+        self._source['poi'] = poi 
+        self._source['address'] = address
 
         self.send('passenger_watch', {
             'location': self._source['location'],
@@ -174,6 +183,9 @@ class PassengerBot(Bot):
         ]
         self._destination = {}
         self._destination['location'] = destination_location
+        poi, address = random.choice(self.place_choices)
+        self._destination['poi'] = poi
+        self._destination['address'] = address
 
         data = {
             'driver_id': self._select_driver(), 
