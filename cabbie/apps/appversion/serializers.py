@@ -1,8 +1,15 @@
-from cabbie.apps.appversion.models import AndroidDriver
+from cabbie.apps.appversion.models import AndroidDriver, AndroidPassenger
 from cabbie.common.serializers import AbstractSerializer
 
 
-class AndroidDriverSerializer(AbstractSerializer):
+class AbstractAndroidApplicationVersionSerializer(AbstractSerializer):
     class Meta:
-        model = AndroidDriver 
         fields = ('version_code', 'version_name', 'is_update_required')
+
+class AndroidDriverSerializer(AbstractAndroidApplicationVersionSerializer):
+    class Meta(AbstractAndroidApplicationVersionSerializer.Meta):
+        model = AndroidDriver
+
+class AndroidPassengerSerializer(AbstractAndroidApplicationVersionSerializer):
+    class Meta(AbstractAndroidApplicationVersionSerializer.Meta):
+        model = AndroidPassenger

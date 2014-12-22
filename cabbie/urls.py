@@ -118,6 +118,9 @@ urlpatterns += patterns('',
     url(r'^api/appversion/android/driver',
         import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()),
 
+    url(r'^api/appversion/android/passenger',
+        import_('cabbie.apps.appversion.views.AndroidPassengerView').as_view()),
+
     url(r'^api/drivers/reserve/(?P<reservation_id>[0-9]+)/upload_certificate',
         import_('cabbie.apps.account.views.DriverReserveUploadCertificateView').as_view()),
 
