@@ -267,7 +267,10 @@ class Driver(NullableImageMixin, User):
         ret = dict()
 
         for k, v in self.total_ratings_by_category.iteritems():
-            ret[k] = float(v[0]) / v[1]
+            if v[0] > 0 and v[1] > 0:
+                ret[k] = float(v[0]) / v[1]
+            else:
+                ret[k] = 0.0
 
         return ret
 
