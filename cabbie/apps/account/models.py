@@ -223,7 +223,7 @@ class Driver(NullableImageMixin, User):
                 total_rating += value
                 total_count += count 
 
-        return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
+        return 0.0 if total_rating == 0 and total_count == 0 else float(total_rating) / total_count 
 
     _rating.short_description = u'종합평점'
     rating = property(_rating)
