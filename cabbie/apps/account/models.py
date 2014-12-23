@@ -135,6 +135,7 @@ class Driver(NullableImageMixin, User):
     # Authentication
     verification_code = models.CharField(u'인증코드', max_length=10)
     is_verified = models.BooleanField(u'인증여부', default=False)
+    is_verification_code_notified = models.BooleanField(u'인증코드 공지여부', default=False)
     is_accepted = models.BooleanField(u'승인여부', default=False)
     is_freezed = models.BooleanField(u'사용제한', default=False)
     freeze_note = models.CharField(u'사용제한 비고', max_length=1000,

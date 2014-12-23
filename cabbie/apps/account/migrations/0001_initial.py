@@ -63,6 +63,7 @@ class Migration(migrations.Migration):
                 ('image_height', models.IntegerField(null=True, blank=True)),
                 ('verification_code', models.CharField(max_length=10, verbose_name='\uc778\uc99d\ucf54\ub4dc')),
                 ('is_verified', models.BooleanField(default=False, verbose_name='\uc778\uc99d\uc5ec\ubd80')),
+                ('is_verification_code_notified', models.BooleanField(default=False, verbose_name='\uc778\uc99d\ucf54\ub4dc \uacf5\uc9c0\uc5ec\ubd80')),
                 ('is_accepted', models.BooleanField(default=False, verbose_name='\uc2b9\uc778\uc5ec\ubd80')),
                 ('is_freezed', models.BooleanField(default=False, verbose_name='\uc0ac\uc6a9\uc81c\ud55c')),
                 ('freeze_note', models.CharField(max_length=1000, verbose_name='\uc0ac\uc6a9\uc81c\ud55c \ube44\uace0', blank=True)),

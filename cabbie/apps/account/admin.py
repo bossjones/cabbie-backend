@@ -57,7 +57,7 @@ class DriverAdmin(AbstractAdmin):
     list_display = ('phone', 'name', 'taxi_type', 'car_number', 'company',
                     'garage', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'current_month_board_count', 'previous_month_board_count', 'board_count',
-                    'verification_code', 'is_verified', 'is_accepted',
+                    'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_freezed', 'is_super', 'is_dormant', 'date_joined',
                     'link_to_rides')
     fieldsets = (
@@ -115,6 +115,8 @@ class DriverAdmin(AbstractAdmin):
         drivers = list(queryset.all())
         for driver in drivers:
             driver.send_verification_code()
+            driver.is_verification_code_notified = True
+            driver.save(update_fields=['is_verification_code_notified'])
         msg = u'{0}명의 기사에게 인증코드가 전송되었습니다.'.format(
             len(drivers))
         self.message_user(request, msg)
