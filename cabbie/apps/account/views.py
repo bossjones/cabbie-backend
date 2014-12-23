@@ -108,7 +108,8 @@ class DriverAuthView(ObtainAuthToken):
         # add password for all drivers
         if request.DATA.get('password', None):
             return Response({'error': 'password is not allowed parameter'}, status=status.HTTP_400_BAD_REQUEST)
-    
+        
+        request.DATA = request.DATA.copy()
         request.DATA['password'] = Driver.get_login_key()
         return super(DriverAuthView, self).post(request)
 
