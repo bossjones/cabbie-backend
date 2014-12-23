@@ -109,9 +109,16 @@ class DriverAuthView(ObtainAuthToken):
         if request.DATA.get('password', None):
             return Response({'error': 'password is not allowed parameter'}, status=status.HTTP_400_BAD_REQUEST)
         
-        request.DATA = request.DATA.copy()
-        request.DATA['password'] = Driver.get_login_key()
-        return super(DriverAuthView, self).post(request)
+        _credential = dict()
+        _credential['password'] = Driver.get_login_key()
+        _credential['username'] = request.DATA['username'] 
+       
+        serializer = self.serializer_class(data=_credential)
+        if serializer.is_valid():
+            token, created = Token.objects.get_or_create(user=serializer.object['user'])
+            return Response({'token':token.key, 'id':token.user.id})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PassengerAuthView(ObtainAuthToken):
     serializer_class = AuthTokenSerializer
