@@ -120,8 +120,14 @@ class Passenger(User):
         self.delete()
 
     @property
-    def latest_ride_state(self):
-        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
+    def latest_ride(self):
+        if self.rides.count() > 0:
+            latest = self.rides.latest('created_at')
+            return { 
+                'id': latest.id, 
+                'state': latest.state 
+            }
+        return None
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -292,8 +298,15 @@ class Driver(NullableImageMixin, User):
         self.delete()
 
     @property
-    def latest_ride_state(self):
-        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
+    def latest_ride(self):
+        if self.rides.count() > 0:
+            latest = self.rides.latest('created_at')
+            return { 
+                'id': latest.id, 
+                'state': latest.state 
+            }
+        return None
+
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
