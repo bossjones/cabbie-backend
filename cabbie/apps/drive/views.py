@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from cabbie.apps.drive.models import Ride, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RideSerializer, FavoriteSerializer, HotspotSerializer)
+from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
@@ -38,15 +39,27 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
             qs = qs.filter(driver=user)
 
         # state : boarded OR completed
-        # FIXME: 
         valid = self.request.QUERY_PARAMS.get('valid', None)
         if valid:
             qs = qs.filter(Q(state='boarded') | Q(state='completed'))
+
+        # year 
+        year = self.request.QUERY_PARAMS.get('year', None)
+        if year:
+            qs = qs.filter(created_at__year=year)
 
         # month
         month = self.request.QUERY_PARAMS.get('month', None)
         if month:
             qs = qs.filter(created_at__month=month)
+
+        # week
+        week = self.request.QUERY_PARAMS.get('week', None)
+        if week:
+            ride_ids = []
+            for stat_week in DriverRideStatWeek.objects.filter(year=year, month=month, week=week).all(): 
+                ride_ids.extend(stat_week.ratings.keys())
+            qs = qs.filter(id__in=ride_ids)
 
         return qs
 
