@@ -18,9 +18,9 @@ from cabbie.utils.email import send_email
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
-        COMPLETED = \
+        COMPLETED, RATED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
-        'arrived', 'boarded', 'completed'
+        'arrived', 'boarded', 'completed', 'rated'
     STATES = (
         (REQUESTED, _('requested')),
         (APPROVED, _('approved')),
@@ -30,6 +30,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         (ARRIVED, _('arrived')),
         (BOARDED, _('boarded')),
         (COMPLETED, _('completed')),
+        (RATED, _('rated')),
     )
 
     STATE_EXPRESSION = { 
@@ -41,6 +42,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         ARRIVED: u'픽업도착',
         BOARDED: u'탑승',
         COMPLETED: u'운행완료',
+        RATED: u'평가완료',
     }
 
     IMMEDIATE, TIMEOUT, AFTER, WAITING, UNSHOWN = \
@@ -162,7 +164,14 @@ class Ride(IncrementMixin, AbstractTimestampModel):
 
         self.ratings_by_category = ratings_by_category
         self.comment = comment
-        self.save(update_fields=['ratings_by_category', 'comment'])
+        update_fields = ['ratings_by_category', 'comment']
+
+        # state 
+        if self.state != self.RATED:
+            self.state = self.RATED
+            update_fields.extend('state')
+
+        self.save(update_fields=update_fields)
 
         # mileage
         if not old_ratings_by_category:
