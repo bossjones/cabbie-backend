@@ -5,7 +5,7 @@ from rest_framework import routers
 
 from cabbie.common.forms import AdminAuthenticationForm
 from cabbie.utils.importlib import import_class as import_
-
+from cabbie.apps.index.views import index
 
 urlpatterns = patterns('')
 
@@ -49,6 +49,11 @@ urlpatterns += patterns('',
     (r'^admin/', include(admin.site.urls)),
 )
 
+# For ELB Health Check
+# ----
+urlpatterns += patterns('',
+    (r'^index/', index),
+)
 
 # REST
 # ----
