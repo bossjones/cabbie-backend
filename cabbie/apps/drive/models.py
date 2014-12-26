@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
+from cabbie.apps.drive.signals import post_ride_board, post_ride_complete, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
@@ -163,13 +163,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         self.ratings_by_category = ratings_by_category
         self.comment = comment
         self.save(update_fields=['ratings_by_category', 'comment'])
-
-        # mileage
-        if not old_ratings_by_category:
-            post_ride_first_rated.send(sender=self.__class__, ride=self)
-
-            send_email('mail/passenger_rating_point.txt', self.passenger.email, 
-                {'subject': '탑승평가 포인트 적립', 'message': '백기사를 이용해주셔서 감사합니다. 탑승평가에 대한 포인트를 적립하여 드립니다.'})
 
         # stat
         post_ride_rated.send(sender=self.__class__, ride=self)
