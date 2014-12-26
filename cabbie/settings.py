@@ -183,7 +183,7 @@ APPEND_SLASH = False
 
 VERSION = 1
 HOST = 'bktaxi.com'
-ALLOWED_HOSTS = ['.{0}'.format(HOST)]
+ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
