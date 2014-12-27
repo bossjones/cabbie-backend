@@ -11,8 +11,7 @@ from cabbie.utils import json
 
 @gen.coroutine
 def fetch(path, data=None):
-    host = 'localhost:8000' if settings.DEBUG else settings.HOST
-    url = urlparse.urljoin('http://{0}'.format(host), path)
+    url = urlparse.urljoin('http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT), path)
 
     body = json.dumps(data or {})
     headers = {'SECRET': settings.SECRET_KEY}
