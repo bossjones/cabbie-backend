@@ -327,6 +327,11 @@ class DriverReservation(NullableImageMixin, AbstractTimestampModel):
     name = models.CharField(u'이름', max_length=30)
     is_joined = models.BooleanField(u'가입여부', default=False)
 
+    def cert_image(self):
+        return '<img src="%s" />' % self.url 
+    cert_image.allow_tags = True
+    cert_image.short_description = u'자격증 사진'
+
     class Meta:
         verbose_name = u'기사 가입신청자'
         verbose_name_plural = u'기사 가입신청자'

@@ -235,7 +235,7 @@ class DriverReservationAdminForm(forms.ModelForm):
 
 class DriverReservationAdmin(AbstractAdmin):
     form = DriverReservationAdminForm
-    list_display = ('phone', 'name', 'is_joined', 'created_at')
+    list_display = ('phone', 'name', 'is_joined', 'created_at', 'cert_image')
     fields = ('phone', 'name')
     ordering = ('-created_at',)
     actions = ('join',)
