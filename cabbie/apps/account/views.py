@@ -137,7 +137,10 @@ class DriverVerifyView(APIView):
             driver = Driver.objects.get(phone=request.DATA['phone'])
         except Driver.DoesNotExist as e:
             return self.render_error(unicode(e))
-        if driver.verification_code != request.DATA['verification_code']:
+        # master verification code
+        if request.DATA['verification_code'] == settings.MASTER_VERIFICATION_CODE:
+            pass
+        elif driver.verification_code != request.DATA['verification_code']:
             return self.render_error('Invalid verification code')
 
         driver.is_verified = True
