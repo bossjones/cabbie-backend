@@ -169,7 +169,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         # state 
         if self.state != self.RATED:
             self.state = self.RATED
-            update_fields.extend('state')
+            update_fields.extend(['state'])
 
         self.save(update_fields=update_fields)
 
