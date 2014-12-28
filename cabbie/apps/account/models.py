@@ -328,7 +328,7 @@ class DriverReservation(NullableImageMixin, AbstractTimestampModel):
     is_joined = models.BooleanField(u'가입여부', default=False)
 
     def cert_image(self):
-        return '<img src="%s" />' % self.url 
+        return '<a href="%s" target="_blank"><img src="%s" /></a>' % (self.url, self.url)
     cert_image.allow_tags = True
     cert_image.short_description = u'자격증 사진'
 
