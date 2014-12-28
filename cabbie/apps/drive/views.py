@@ -41,7 +41,7 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
         # state : boarded OR completed
         valid = self.request.QUERY_PARAMS.get('valid', None)
         if valid:
-            qs = qs.filter(Q(state='boarded') | Q(state='completed'))
+            qs = qs.filter(Q(state='boarded') | Q(state='completed') | Q(state='rated'))
 
         # year 
         year = self.request.QUERY_PARAMS.get('year', None)
