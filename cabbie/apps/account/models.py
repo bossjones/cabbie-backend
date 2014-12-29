@@ -204,7 +204,7 @@ class Driver(NullableImageMixin, User):
         from cabbie.apps.stats.models import DriverRideStatMonth
         from cabbie.apps.drive.models import Ride 
 
-        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.RATED):
             for category in _dict.keys(): 
                 v, c = stat._ratings_by_category(category)
                 _dict[category][0] += v
