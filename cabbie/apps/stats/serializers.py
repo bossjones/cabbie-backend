@@ -5,6 +5,7 @@ from cabbie.common.serializers import AbstractSerializer
 
 
 class DriverRideStatMonthSerializer(AbstractSerializer):
+    count = serializers.Field(source='count')
     rating = serializers.Field(source='rating')
 
     class Meta:
@@ -13,6 +14,7 @@ class DriverRideStatMonthSerializer(AbstractSerializer):
                   'created_at', 'updated_at')
 
 class DriverRideStatWeekSerializer(AbstractSerializer):
+    count = serializers.Field(source='count')
     rating = serializers.Field(source='rating')
 
     class Meta:
@@ -21,6 +23,7 @@ class DriverRideStatWeekSerializer(AbstractSerializer):
                   'created_at', 'updated_at')
 
 class DriverRideStatDaySerializer(AbstractSerializer):
+    count = serializers.Field(source='count')
     rating = serializers.Field(source='rating')
 
     class Meta:
