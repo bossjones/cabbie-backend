@@ -16,5 +16,5 @@ def issue_verification_code():
 
 
 def send_verification_code(phone, code):
-    msg = u'백기사 가입인증번호 [{code}] 입력시 인증완료됩니다.'.format(code=code)
+    msg = u'[백기사] 가입인증번호 [{code}] 입력시 인증완료됩니다.'.format(code=code)
     send_sms_raw(phone, msg)
