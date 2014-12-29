@@ -11,14 +11,20 @@ from cabbie.common.fields import JSONField
 
 class AbstractRideStatModel(AbstractTimestampModel):
     state = models.CharField(u'상태', max_length=100)
-    count = models.PositiveIntegerField(u'횟수', default=0)
     ratings = JSONField(u'탑승 평점', default='{}') 
+    rides = JSONField(u'탑승건', default='[]')
 
     # property state_kor
     def _state_kor(self):
         return Ride.STATE_EXPRESSION[self.state]
     _state_kor.short_description = u'상태'
     state_kor = property(_state_kor)
+
+    # property count
+    def _count(self):
+        return len(self.rides)
+    _count.short_description = u'횟수'
+    count = property(_count)
 
     # property rating
     def _rating(self):

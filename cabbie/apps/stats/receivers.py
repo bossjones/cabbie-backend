@@ -7,9 +7,9 @@ from cabbie.common.signals import post_create
 
 
 def on_post_create_ride_history(sender, instance, **kwargs):
-    DriverRideStatDay.objects.sync_count(instance)
-    DriverRideStatWeek.objects.sync_count(instance)
-    DriverRideStatMonth.objects.sync_count(instance)
+    DriverRideStatDay.objects.sync(instance)
+    DriverRideStatWeek.objects.sync(instance)
+    DriverRideStatMonth.objects.sync(instance)
 
 def on_post_ride_rated(sender, ride, **kwargs):
     DriverRideStatDay.objects.sync_rate(ride)

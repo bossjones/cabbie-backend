@@ -58,7 +58,7 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
         if week:
             ride_ids = []
             for stat_week in DriverRideStatWeek.objects.filter(year=year, month=month, week=week).all(): 
-                ride_ids.extend(stat_week.ratings.keys())
+                ride_ids.extend(stat_week.rides)
             qs = qs.filter(id__in=ride_ids)
 
         return qs
