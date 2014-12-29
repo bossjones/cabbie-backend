@@ -226,6 +226,7 @@ class PassengerAdmin(AbstractAdmin):
 
 
 class DriverReservationAdminForm(forms.ModelForm):
+
     class Meta:
         model = DriverReservation
         widgets = {
@@ -239,6 +240,12 @@ class DriverReservationAdmin(AbstractAdmin):
     fields = ('phone', 'name')
     ordering = ('-created_at',)
     actions = ('join',)
+    search_fields = (
+        'phone', 'name', '=id',
+    )
+    list_filter = (
+        'is_joined',
+    )
 
     def join(self, request, queryset):
         drivers = list(queryset.all())
