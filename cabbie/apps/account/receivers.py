@@ -19,7 +19,7 @@ def on_post_create_driver(sender, instance, **kwargs):
         driver_reservation = DriverReservation.objects.get(phone=instance.phone)
     except DriverReservation.DoesNotExist:
         pass
-    finally:
+    else:
         driver_reservation.join()
 
 def on_post_create_passenger(sender, instance, **kwargs):
