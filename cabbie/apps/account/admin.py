@@ -10,6 +10,11 @@ from cabbie.apps.account.models import (
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
+def rating_round_off(obj):
+    return "%.3f" % (obj.rating)
+rating_round_off.short_description = u'평점'
+
+
 class StaffAdmin(AbstractAdmin):
     list_display = ('id', 'phone', 'name', 'is_superuser', 'date_joined')
     list_filter = (
@@ -50,9 +55,9 @@ class DriverAdmin(AbstractAdmin):
     form = DriverForm
     ordering = ('-date_joined',)
     list_display = ('phone', 'name', 'taxi_type', 'car_number', 'company',
-                    'garage', 'point', 'rating', 'current_month_board_count',
-                    'previous_month_board_count', 'board_count',
-                    'verification_code', 'is_verified', 'is_accepted',
+                    'garage', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
+                    'current_month_board_count', 'previous_month_board_count', 'board_count',
+                    'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_freezed', 'is_super', 'is_dormant', 'date_joined',
                     'link_to_rides')
     fieldsets = (
@@ -60,12 +65,12 @@ class DriverAdmin(AbstractAdmin):
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'car_model',
                 'company', 'garage', 'bank_account', 'max_capacity',
-                'taxi_type', 'taxi_service', 'about', 'image',
+                'taxi_type', 'about', 'image',
             ),
         }),
         ('읽기전용', {
             'fields': (
-                'recommend_code', 'point', 'rating',
+                'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
                 'current_month_board_count', 'previous_month_board_count',
                 'board_count', 'passenger_recommend_count',
                 'driver_recommend_count', 'recommended_count',
@@ -79,10 +84,11 @@ class DriverAdmin(AbstractAdmin):
         '^phone', 'name', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', 'rating', 'current_month_board_count',
-        'previous_month_board_count', 'board_count',
-        'passenger_recommend_count', 'driver_recommend_count',
-        'recommended_count', 'verification_code', 'is_verified', 'is_accepted',
+        'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
+        'current_month_board_count', 'previous_month_board_count', 
+        'board_count', 'passenger_recommend_count', 
+        'driver_recommend_count', 'recommended_count', 
+        'verification_code', 'is_verified', 'is_accepted',
         'is_freezed', 'is_super', 'is_dormant', 'date_joined',
         'last_active_at',
     )
@@ -109,6 +115,8 @@ class DriverAdmin(AbstractAdmin):
         drivers = list(queryset.all())
         for driver in drivers:
             driver.send_verification_code()
+            driver.is_verification_code_notified = True
+            driver.save(update_fields=['is_verification_code_notified'])
         msg = u'{0}명의 기사에게 인증코드가 전송되었습니다.'.format(
             len(drivers))
         self.message_user(request, msg)
@@ -218,6 +226,7 @@ class PassengerAdmin(AbstractAdmin):
 
 
 class DriverReservationAdminForm(forms.ModelForm):
+
     class Meta:
         model = DriverReservation
         widgets = {
@@ -227,10 +236,16 @@ class DriverReservationAdminForm(forms.ModelForm):
 
 class DriverReservationAdmin(AbstractAdmin):
     form = DriverReservationAdminForm
-    list_display = ('phone', 'name', 'is_joined', 'created_at')
+    list_display = ('phone', 'name', 'is_joined', 'created_at', 'cert_image')
     fields = ('phone', 'name')
     ordering = ('-created_at',)
     actions = ('join',)
+    search_fields = (
+        'phone', 'name', '=id',
+    )
+    list_filter = (
+        'is_joined',
+    )
 
     def join(self, request, queryset):
         drivers = list(queryset.all())

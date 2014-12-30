@@ -4,6 +4,7 @@ from django.conf import settings
 
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.bot.driver import DriverBot
+from cabbie.apps.drive.bot.passenger import PassengerBot
 from cabbie.utils.ioloop import start
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
@@ -15,12 +16,22 @@ class BotRunner(LoggableMixin, SingletonMixin):
 
 
 class PassengerBotRunner(BotRunner):
-    pass
+    def run(self, count=1):
+        self.info('Running {0} passenger bot(s)'.format(count))
+
+        qs = Passenger.objects.select_related('auth_token')
+        qs = qs.filter(is_bot=True).order_by('?')[:count]
+
+        for passenger in qs:
+            bot = PassengerBot(passenger)
+            bot.start()
+
+        start()
 
 
 class DriverBotRunner(BotRunner):
     def run(self, count=1):
-        self.info('Running {0} bot(s)'.format(count))
+        self.info('Running {0} driver bot(s)'.format(count))
 
         qs = Driver.objects.select_related('auth_token')
         qs = qs.filter(is_bot=True).order_by('?')[:count]

@@ -4,6 +4,9 @@ import cStringIO
 import os
 from urlparse import urlparse
 
+import random
+from datetime import datetime, timedelta
+
 from django.core.files import File
 from django.core.files.storage import default_storage
 from django.db import models
@@ -226,7 +229,9 @@ class ImageMixin(DirtyMixin):
 
     @property
     def url(self):
-        return self.get_image_url('original')
+        return 'https://s3-{location}.amazonaws.com/{bucket}/{location}/{name}'.format(location=self.image.storage.location, 
+                                                                    bucket=self.image.storage.bucket.name,
+                                                                    name=self.image.name)
 
     def _refresh_image_key(self):
         # TODO: Check existence in storage before allocating
@@ -261,7 +266,7 @@ class ImageMixin(DirtyMixin):
         )
 
     def get_image_url(self, image_type):
-        return (self.image.url if image_type == 'original' else
+        return (self.url if image_type == 'original' else
                 default_storage.url(self.get_upload_path(image_type)))
 
     def get_image_urls(self):

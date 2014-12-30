@@ -15,13 +15,34 @@ urlpatterns = patterns('')
 
 admin.site.login_form = AdminAuthenticationForm
 
+# unregister django group admin
 admin.site.unregister(import_('django.contrib.auth.models.Group'))
+
+# unregister authtoken admin
 admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
+
+# unregister django celery admin
 admin.site.unregister(import_('djcelery.models.CrontabSchedule'))
 admin.site.unregister(import_('djcelery.models.IntervalSchedule'))
 admin.site.unregister(import_('djcelery.models.PeriodicTask'))
 admin.site.unregister(import_('djcelery.models.TaskState'))
 admin.site.unregister(import_('djcelery.models.WorkerState'))
+
+# unregister django ses admin
+admin.site.unregister(import_('django_ses.models.SESStat'))
+
+# unregister payment admin
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverBill'))
+admin.site.unregister(import_('cabbie.apps.payment.models.Transaction'))
+admin.site.unregister(import_('cabbie.apps.payment.models.PassengerReturn'))
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverReturn'))
+
+# unregister recommend admin
+admin.site.unregister(import_('cabbie.apps.recommend.models.Recommend'))
+
+# unregister hotspot, favorite admin
+admin.site.unregister(import_('cabbie.apps.drive.models.Favorite'))
+admin.site.unregister(import_('cabbie.apps.drive.models.Hotspot'))
 
 admin.autodiscover()
 urlpatterns += patterns('',
@@ -40,8 +61,12 @@ router.register(r'drivers/bills',
                 import_('cabbie.apps.payment.views.DriverBillViewSet'))
 router.register(r'drivers/coupon',
                 import_('cabbie.apps.payment.views.DriverCouponViewSet'))
-router.register(r'drivers/stats',
-                import_('cabbie.apps.stats.views.DriverRideStatViewSet'))
+router.register(r'drivers/stats/month',
+                import_('cabbie.apps.stats.views.DriverRideStatMonthViewSet'))
+router.register(r'drivers/stats/week',
+                import_('cabbie.apps.stats.views.DriverRideStatWeekViewSet'))
+router.register(r'drivers/stats/day',
+                import_('cabbie.apps.stats.views.DriverRideStatDayViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'rides',
@@ -87,15 +112,24 @@ urlpatterns += patterns('',
     url(r'^api/geo/reverse',
         import_('cabbie.apps.drive.views.GeoReverseView').as_view()),
 
-    url(r'^api/auth',
-        import_('cabbie.apps.account.views.ObtainAuthToken').as_view()),
+    url(r'^api/auth/driver',
+        import_('cabbie.apps.account.views.DriverAuthView').as_view()),
+
+    url(r'^api/auth/passenger',
+        import_('cabbie.apps.account.views.PassengerAuthView').as_view()),
 
     url(r'^api/appversion/android/driver',
         import_('cabbie.apps.appversion.views.AndroidDriverView').as_view()),
 
-    url(r'^api/drivers/reserve',
-        import_('cabbie.apps.account.views.DriverReserveView').as_view()),
+    url(r'^api/appversion/android/passenger',
+        import_('cabbie.apps.appversion.views.AndroidPassengerView').as_view()),
 
+    url(r'^api/drivers/reserve/(?P<reservation_id>[0-9]+)/upload_certificate',
+        import_('cabbie.apps.account.views.DriverReserveUploadCertificateView').as_view()),
+
+    url(r'^api/drivers/reserve',
+        import_('cabbie.apps.account.views.DriverReserveView').as_view()), 
+    
     url(r'^api/', include(router.urls)),
 )
 

@@ -23,12 +23,14 @@ class RideProxy(LoggableMixin, PubsubMixin):
     update_path = '/_/drive/ride/{pk}/update'
     refresh_interval = settings.RIDE_ESTIMATE_REFRESH_INTERVAL
 
-    def __init__(self, passenger_id, source, destination):
+    def __init__(self, passenger_id, source, destination, additional_message):
         super(RideProxy, self).__init__()
         self._passenger_id = passenger_id
         self._passenger_location = None
         self._source = source
         self._destination = destination
+        self._additional_message = additional_message 
+
         self._driver_id = None
         self._driver_location = None
         self._driver_charge_type = None
@@ -98,9 +100,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
             'passenger': ModelManager().get_passenger(self._passenger_id),
             'source': self._source,
             'destination': self._destination,
+            'additional_message': self._additional_message,
         })
         self._transition_to(Ride.REQUESTED, update=False)
-        self._create(source=self._source, destination=self._destination)
+        self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
 
     def cancel(self):
         self.driver_session.notify_driver_cancel()
@@ -238,8 +241,8 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         SessionManager().subscribe('driver_closed',
                                    self.on_driver_session_closed)
 
-    def create(self, passenger_id, source, destination):
-        proxy = RideProxy(passenger_id, source, destination)
+    def create(self, passenger_id, source, destination, additional_message):
+        proxy = RideProxy(passenger_id, source, destination, additional_message)
         proxy.subscribe('driver_set', self.on_ride_proxy_driver_set)
         proxy.subscribe('driver_resetted', self.on_ride_proxy_driver_resetted)
         proxy.subscribe('passenger_resetted', self.on_ride_proxy_passenger_resetted)

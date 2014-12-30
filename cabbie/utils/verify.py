@@ -3,7 +3,7 @@
 import logging
 import random
 
-from cabbie.utils.sms import send_sms
+from cabbie.utils.sms import send_sms_raw
 
 
 logger = logging.getLogger(__name__)
@@ -16,5 +16,5 @@ def issue_verification_code():
 
 
 def send_verification_code(phone, code):
-    msg = u'[{code}] 인증번호를 입력하세요'.format(code=code)
-    send_sms(phone, msg)
+    msg = u'[백기사] 가입인증번호 [{code}] 입력시 인증완료됩니다.'.format(code=code)
+    send_sms_raw(phone, msg)

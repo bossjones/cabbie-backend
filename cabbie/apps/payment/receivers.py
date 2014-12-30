@@ -3,7 +3,6 @@
 from django.conf import settings
 
 from cabbie.apps.recommend.models import Recommend
-from cabbie.apps.drive.signals import post_ride_rated
 from cabbie.apps.payment.models import Transaction
 from cabbie.apps.payment.signals import return_processed, coupon_processed
 from cabbie.common.signals import post_create
@@ -60,25 +59,9 @@ def on_coupon_processed(sender, coupon, **kwargs):
              {'coupon': coupon})
 
 
-def on_post_ride_rated(sender, ride, **kwargs):
-    # For passenger
-    passenger = ride.passenger
-    note = u''
-
-    amount = settings.POINTS_BY_TYPE['mileage']
-
-    Transaction.objects.create(
-        user=passenger,
-        ride=ride,
-        transaction_type=Transaction.MILEAGE,
-        amount=amount,
-        note=note,
-    )
-
 post_create.connect(on_post_create_recommend, sender=Recommend,
                     dispatch_uid='from_payment')
 post_create.connect(on_post_create_transaction, sender=Transaction,
                     dispatch_uid='from_payment')
-post_ride_rated.connect(on_post_ride_rated, dispatch_uid='from_payment')
 return_processed.connect(on_return_processed, dispatch_uid='from_payment')
 coupon_processed.connect(on_coupon_processed, dispatch_uid='from_payment')

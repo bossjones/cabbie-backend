@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'storages',
+    'django_ses',
 
     # Admin
     'suit',
@@ -92,6 +93,7 @@ INSTALLED_APPS = (
     'cabbie.apps.stats',
     'cabbie.apps.appversion',
     'cabbie.apps.notification',
+    'cabbie.apps.policy',
 
     #'cabbie.apps.track',
 )
@@ -185,14 +187,26 @@ VERSION = 1
 HOST = 'bktaxi.com'
 ALLOWED_HOSTS = ['.{0}'.format(HOST)]
 
+# Web
+# ---
+APP_HOST = 'app.{0}'.format(HOST)
+
+WEB_SERVER_HOST = APP_HOST
+WEB_SERVER_PORT = 80
+
+LOCATION_SERVER_HOST = APP_HOST
+LOCATION_SERVER_PORT = 8080
+
+
 
 # Email
 # -----
 
-CONTACT_EMAIL = 'Cabbie <contact@{host}>'.format(host=HOST)
-ALLOWED_DEBUG_EMAIL = ['mjipeo@gmail.com']
+CONTACT_EMAIL = '백기사 <support@{host}>'.format(host=HOST)
+ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com']
 EMAIL_DELIMITER = '=====CABBIE====='
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django_ses.SESBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
 EMAIL_HOST_USER = 'AKIAJD3WYLRGE5C2HKVA'
 EMAIL_HOST_PASSWORD = 'Ala4bqSfpgYFFHi966Ys4eUINKH058fZ85nZYqLKC3yt'
@@ -284,8 +298,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 # Location
 # --------
 
-LOCATION_SERVER_HOST = 'bktaxi.com'
-LOCATION_SERVER_PORT = 8080
 #TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
 TMAP_API_KEY = '1a4dce89-3e7e-3b42-9955-7f1de35a13a5'
 
@@ -332,6 +344,9 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', 'AKIAIMHVSY5T3QSORJSA')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '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')
 AWS_STORAGE_BUCKET_NAME = 'com.bktaxi'
+AWS_LOCATION = 'ap-northeast-1'
+#from boto.s3.connection import OrdinaryCallingFormat, SubdomainCallingFormat
+#AWS_S3_CALLING_FORMAT = SubdomainCallingFormat() 
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
 # Push (Parse)
@@ -356,6 +371,7 @@ SMS_FROM = '027202036'
 
 CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
+MASTER_VERIFICATION_CODE = '0624'
 
 # Non peak hour
 PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]

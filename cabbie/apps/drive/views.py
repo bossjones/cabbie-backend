@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Q
 from django.contrib.gis.geos import Point
 from django.http import Http404
 from rest_framework import status, viewsets
@@ -8,9 +9,11 @@ from rest_framework.response import Response
 from cabbie.apps.drive.models import Ride, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RideSerializer, FavoriteSerializer, HotspotSerializer)
+from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import TMap, TMapError
+from cabbie.utils.date import week_of_month
 
 
 # REST
@@ -34,6 +37,29 @@ class RideViewSet(APIMixin, viewsets.ModelViewSet):
             qs = qs.filter(passenger=user)
         elif user.has_role('driver'):
             qs = qs.filter(driver=user)
+
+        # state : boarded OR completed
+        valid = self.request.QUERY_PARAMS.get('valid', None)
+        if valid:
+            qs = qs.filter(Q(state='boarded') | Q(state='completed') | Q(state='rated'))
+
+        # year 
+        year = self.request.QUERY_PARAMS.get('year', None)
+        if year:
+            qs = qs.filter(created_at__year=year)
+
+        # month
+        month = self.request.QUERY_PARAMS.get('month', None)
+        if month:
+            qs = qs.filter(created_at__month=month)
+
+        # week
+        week = self.request.QUERY_PARAMS.get('week', None)
+        if week:
+            ride_ids = []
+            for stat_week in DriverRideStatWeek.objects.filter(year=year, month=month, week=week).all(): 
+                ride_ids.extend(stat_week.rides)
+            qs = qs.filter(id__in=ride_ids)
 
         return qs
 
@@ -154,7 +180,8 @@ class InternalRideCreateView(InternalView):
             source_location=Point(*source['location']),
             destination=destination,
             destination_location=Point(*destination['location']),
-            charge_type=data['charge_type']
+            charge_type=data['charge_type'],
+            additional_message=data['additional_message'],
         )
 
         ride.histories.create(

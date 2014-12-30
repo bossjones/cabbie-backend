@@ -101,6 +101,28 @@ class ObtainAuthToken(BaseObtainAuthToken):
             return Response({'token':token.key, 'id':token.user.id})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class DriverAuthView(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+    
+    def post(self, request):
+        # add password for all drivers
+        if request.DATA.get('password', None):
+            return Response({'error': 'password is not allowed parameter'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        _credential = dict()
+        _credential['password'] = Driver.get_login_key()
+        _credential['username'] = request.DATA['username'] 
+       
+        serializer = self.serializer_class(data=_credential)
+        if serializer.is_valid():
+            token, created = Token.objects.get_or_create(user=serializer.object['user'])
+            return Response({'token':token.key, 'id':token.user.id})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PassengerAuthView(ObtainAuthToken):
+    serializer_class = AuthTokenSerializer
+    
 
 class PassengerViewSet(PassengerMixin, AbstractUserViewSet):        pass
 class DriverViewSet(DriverMixin, AbstractUserViewSet):              pass
@@ -115,14 +137,17 @@ class DriverVerifyView(APIView):
             driver = Driver.objects.get(phone=request.DATA['phone'])
         except Driver.DoesNotExist as e:
             return self.render_error(unicode(e))
-        if driver.verification_code != request.DATA['verification_code']:
+        # master verification code
+        if request.DATA['verification_code'] == settings.MASTER_VERIFICATION_CODE:
+            pass
+        elif driver.verification_code != request.DATA['verification_code']:
             return self.render_error('Invalid verification code')
 
         driver.is_verified = True
         driver.save()
 
         return self.render({
-            'login_key': driver.get_login_key(),
+            'login_key': Driver.get_login_key(),
             'driver': DriverSerializer(driver).data
         })
 
@@ -137,8 +162,6 @@ class DriverAcceptView(APIView):
             return self.render_error(unicode(e))
         if not driver.is_verified:
             return self.render_error('Must be verified first')
-        if driver.get_login_key() != request.DATA['login_key']:
-            return self.render_error('Invalid login key')
 
         # recommendation
         recommenders = request.DATA.get('recommenders', [])
@@ -313,6 +336,31 @@ class DriverReserveView(APIView):
 
     def post(self, request, *args, **kwargs):
         driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], name=request.DATA['name'])
-        return self.render()
+        return self.render({
+            'reservation_id': driver.id
+        })
 
+class DriverReserveUploadCertificateView(APIView):
+    permission_classes = (AllowAny,)
+    parser_classes = (MultiPartParser,)
+
+    def post(self, request, reservation_id, *args, **kwargs):
+
+        file_obj = request.FILES['upload_file']
+        file_name = request.DATA['filename']
+
+        import mimetypes
+        content_type, encoding = mimetypes.guess_type(file_name)
+        file_obj.content_type = content_type
+        file_obj._name = file_name
+
+        print reservation_id
+
+        driver = DriverReservation.objects.get(id=reservation_id)
+        driver.image = file_obj
+        driver.save()
+
+        return self.render({
+            'uploaded_url': driver.url
+        })
 

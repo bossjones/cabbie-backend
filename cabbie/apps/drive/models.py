@@ -13,13 +13,14 @@ from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
+from cabbie.utils.email import send_email
 
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
-        COMPLETED = \
+        COMPLETED, RATED = \
     'requested', 'approved', 'rejected', 'canceled', 'disconnected', \
-        'arrived', 'boarded', 'completed'
+        'arrived', 'boarded', 'completed', 'rated'
     STATES = (
         (REQUESTED, _('requested')),
         (APPROVED, _('approved')),
@@ -29,7 +30,20 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         (ARRIVED, _('arrived')),
         (BOARDED, _('boarded')),
         (COMPLETED, _('completed')),
+        (RATED, _('rated')),
     )
+
+    STATE_EXPRESSION = { 
+        REQUESTED: u'요청',
+        APPROVED: u'승인',
+        REJECTED: u'기사거절',
+        CANCELED: u'승객취소',
+        DISCONNECTED: u'연결끊김',
+        ARRIVED: u'픽업도착',
+        BOARDED: u'탑승',
+        COMPLETED: u'운행완료',
+        RATED: u'평가완료',
+    }
 
     IMMEDIATE, TIMEOUT, AFTER, WAITING, UNSHOWN = \
     'immediate', 'timeout', 'after', 'waiting', 'unshown'
@@ -48,6 +62,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
                                related_name='rides', verbose_name=u'기사')
 
     state = models.CharField(u'상태', max_length=100, choices=STATES)
+
+    # Additional message
+    additional_message = JSONField(u'추가메세지', default='{}')
 
     # Reject reason
     reason = models.CharField(u'거절이유', max_length=20, choices=REASONS)
@@ -102,26 +119,63 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
 
+    # property state_kor
+    def _state_kor(self):
+        return Ride.STATE_EXPRESSION[self.state]
+    _state_kor.short_description = u'상태'
+    state_kor = property(_state_kor)
+
+    # property rating
+    def _rating(self):
+        total_rating = 0
+        count = 0
+
+        for key, value in self.ratings_by_category.iteritems():
+            total_rating += value
+            if value > 0:
+                count += 1
+
+        return 0.0 if count == 0 else float(total_rating) / count 
+    _rating.short_description = u'평점'
+    rating = property(_rating)
+
+
+    # category rating
+    def _rating_kindness(self):
+        return self.ratings_by_category.get('kindness', None)
+    _rating_kindness.short_description = u'친절'
+    rating_kindness = property(_rating_kindness)
+
+    def _rating_cleanliness(self):
+        return self.ratings_by_category.get('cleanliness', None)
+    _rating_cleanliness.short_description = u'청결'
+    rating_cleanliness = property(_rating_cleanliness)
+
+    def _rating_security(self):
+        return self.ratings_by_category.get('security', None)
+    _rating_security.short_description = u'안전'
+    rating_security = property(_rating_security)
+
+
+
+
     def rate(self, ratings_by_category, comment):
         old_ratings_by_category = self.ratings_by_category
 
         self.ratings_by_category = ratings_by_category
         self.comment = comment
-        self.save(update_fields=['ratings_by_category', 'comment'])
+        update_fields = ['ratings_by_category', 'comment']
 
-        self.driver.rate(self.ratings_by_category, old_ratings_by_category)
+        # state 
+        if self.state != self.RATED:
+            self.state = self.RATED
+            update_fields.extend(['state'])
 
-    @property
-    def rating(self):
-        total_rating = 0
+        self.save(update_fields=update_fields)
 
-        for key, value in self.ratings_by_category.iteritems():
-            total_rating += value
+        # stat
+        post_ride_rated.send(sender=self.__class__, ride=self)
 
-        return 0.0 if len(self.ratings_by_category) == 0 else float(total_rating) / len(self.ratings_by_category)
-
-        if not update:
-            post_ride_rated.send(sender=self.__class__, ride=self)
 
     def transit(self, **data):
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
@@ -136,6 +190,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
                            if 'driver_location' in data else None)
 
         self.histories.create(
+            created_at=self.created_at,
+            updated_at=self.updated_at,
             driver=self.driver,
             state=self.state,
             passenger_location=passenger_location,
@@ -166,6 +222,9 @@ class RideHistory(AbstractTimestampModel):
     passenger_location = models.PointField(u'승객 좌표')
     driver_location = models.PointField(u'기사 좌표', blank=True, null=True)
     data = JSONField(u'데이터', default='{}')
+
+    def __unicode__(self):
+        return u'Ride {0}: {1}'.format(self.ride.id, self.state)
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차 이력'

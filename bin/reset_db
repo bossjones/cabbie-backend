@@ -1,11 +1,17 @@
 #!/bin/zsh
 
+HOST=localhost
+
+if [ $# -eq 1 ] ; then
+    HOST=$1
+fi
+
 PYTHON=~/.virtualenvs/cabbie/bin/python
 
-dropdb cabbie
-createdb cabbie
-psql -d cabbie -c "create extension postgis"
-psql -d cabbie -c "create extension postgis_topology"
+psql -h $HOST -d cabbie -c "drop schema public cascade" 
+psql -h $HOST -d cabbie -c "create schema public" 
+psql -h $HOST -d cabbie -c "create extension postgis"
+psql -h $HOST -d cabbie -c "create extension postgis_topology"
 rm cabbie/apps/**/migrations/0*
 $PYTHON manage.py makemigrations
 $PYTHON manage.py migrate

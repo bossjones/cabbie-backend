@@ -8,8 +8,14 @@ from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 
 
+def rating_round_off(obj):
+    return "%.3f" % (obj.rating)
+rating_round_off.short_description = u'평점'
+
 class RideAdmin(AbstractAdmin):
-    list_filter = ('state', 'updated_at', 'created_at')
+    addable = False
+    deletable = False
+    list_filter = ('driver', 'passenger', 'state', 'updated_at', 'created_at')
     search_fields = (
         '=id',
         'passenger__name',
@@ -18,22 +24,33 @@ class RideAdmin(AbstractAdmin):
         'driver__name',
         '^driver__phone',
     )
-    list_display = ('id', 'passenger', 'driver', 'state', 'source_address',
+    ordering = ('-updated_at',) 
+    list_display = ('id', 'driver', 'passenger', 'state_kor', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
-                    'rating', 'comment', 'updated_at', 'created_at')
+                    rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
     readonly_fields = (
-        'passenger', 'driver', 'state', 'source', 'source_location',
-        'destination', 'destination_location', 'rating', 'ratings_by_category',
+        'passenger', 'driver', 'state_kor', 'source', 'source_location',
+        'destination', 'destination_location', rating_round_off, 'ratings_by_category',
         'comment', 'charge_type', 'summary', 'updated_at', 'created_at',
     )
 
 
 class RideHistoryAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
+    search_fields = (
+        '=ride__id',
+        'driver__name',
+        '^driver__phone',
+    )
+    list_filter = ('driver', 'state',)
     list_display = ('id', 'ride', 'driver', 'state', 'passenger_location',
                     'driver_location', 'created_at')
 
 
 class FavoriteAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
     list_filter = ('created_at',)
     list_display = ('id', 'passenger', 'name', 'location', 'address', 'poi',
                     'created_at')

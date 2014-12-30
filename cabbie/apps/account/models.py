@@ -68,11 +68,11 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     def __unicode__(self):
         if self.is_staff:
-            return u'{name} 관리자'.format(name=self.name)
+            return u'{name} 관리자 ({phone})'.format(name=self.name, phone=self.phone)
         elif self.get_role('passenger'):
-            return u'{name} 승객'.format(name=self.name)
+            return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
         elif self.get_role('driver'):
-            return u'{name} 기사'.format(name=self.name)
+            return u'{name} 기사 ({phone})'.format(name=self.name, phone=self.phone)
         return u'{class_}({phone})'.format(class_=self.__class__.__name__,
                                            phone=self.phone)
 
@@ -120,8 +120,14 @@ class Passenger(User):
         self.delete()
 
     @property
-    def latest_ride_state(self):
-        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
+    def latest_ride(self):
+        if self.rides.count() > 0:
+            latest = self.rides.latest('created_at')
+            return { 
+                'id': latest.id, 
+                'state': latest.state 
+            }
+        return None
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -135,6 +141,7 @@ class Driver(NullableImageMixin, User):
     # Authentication
     verification_code = models.CharField(u'인증코드', max_length=10)
     is_verified = models.BooleanField(u'인증여부', default=False)
+    is_verification_code_notified = models.BooleanField(u'인증코드 공지여부', default=False)
     is_accepted = models.BooleanField(u'승인여부', default=False)
     is_freezed = models.BooleanField(u'사용제한', default=False)
     freeze_note = models.CharField(u'사용제한 비고', max_length=1000,
@@ -171,8 +178,9 @@ class Driver(NullableImageMixin, User):
     def get_default_image_url(self, image_type):
         return ''
 
-    def get_login_key(self):
-        return encrypt(self.verification_code)
+    @staticmethod
+    def get_login_key():
+        return encrypt('02-720-2036')
 
     def send_verification_code(self):
         send_verification_code(self.phone, self.verification_code)
@@ -186,36 +194,93 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def rate(self, ratings_by_category, old_ratings_by_category):
-        # update rating
-        self.update_rating(ratings_by_category, old_ratings_by_category)
-                        
+    def _generate_rating(self):
+        _dict = {
+            'kindness': [0, 0],
+            'cleanliness': [0, 0],
+            'security': [0, 0],
+        }
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.RATED):
+            for category in _dict.keys(): 
+                v, c = stat._ratings_by_category(category)
+                _dict[category][0] += v
+                _dict[category][1] += c
+            
+        return _dict 
+
+    def _update_rating(self):
+        self.total_ratings_by_category = self._generate_rating()
         self.save(update_fields=['total_ratings_by_category'])
 
-    def update_rating(self, ratings_by_category, old_ratings_by_category):
-        for key, value in ratings_by_category.iteritems():
-            if self.total_ratings_by_category.get(key):
-                self.total_ratings_by_category[key][0] += value
-                self.total_ratings_by_category[key][1] += 1
-            else:
-                self.total_ratings_by_category[key] = [value, 1]
+    def _ratings_by_category(self, category):
+        return self.total_ratings_by_category.get(category, [None, None])
 
-        if old_ratings_by_category:
-            for key, value in old_ratings_by_category.iteritems():
-                if self.total_ratings_by_category.get(key):
-                    self.total_ratings_by_category[key][0] -= value
-                    self.total_ratings_by_category[key][1] -= 1
-
-    @property
-    def rating(self):
+    # property : rating (total)
+    def _rating(self):
         total_rating = 0
         total_count = 0
 
-        for key, value in self.total_ratings_by_category.iteritems():
-            total_rating += value[0]
-            total_count += value[1]
+        for category in ['kindness', 'cleanliness', 'security']:
+            value, count = self._ratings_by_category(category)
 
-        return 0.0 if len(self.total_ratings_by_category) == 0 else float(total_rating) / total_count 
+            if value and count:
+                total_rating += value
+                total_count += count 
+
+        return 0.0 if total_rating == 0 and total_count == 0 else float(total_rating) / total_count 
+
+    _rating.short_description = u'종합평점'
+    rating = property(_rating)
+
+    # property : rating kindness
+    def _rating_kindness(self):
+        value, count = self._ratings_by_category('kindness')
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_kindness.short_description = u'친절'
+    rating_kindness = property(_rating_kindness)
+
+    # property : rating cleanliness
+    def _rating_cleanliness(self):
+        value, count = self._ratings_by_category('cleanliness')
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_cleanliness.short_description = u'청결'
+    rating_cleanliness = property(_rating_cleanliness)
+
+    # property : rating security
+    def _rating_security(self):
+        value, count = self._ratings_by_category('security')
+        rating = float(value) / count if value and count else 0   # value and count is not None and greater than 0
+        rating = '%.3f' % rating
+
+        return u'{rating} ({value}/{count})'.format(rating=rating, value=value, count=count)
+    
+    _rating_security.short_description = u'안전'
+    rating_security = property(_rating_security)
+
+
+    @property
+    def ratings_by_category(self):
+        ret = dict()
+
+        for k, v in self.total_ratings_by_category.iteritems():
+            if v[0] > 0 and v[1] > 0:
+                ret[k] = float(v[0]) / v[1]
+            else:
+                ret[k] = 0.0
+
+        return ret
 
     @property
     def rated_count(self):
@@ -233,8 +298,15 @@ class Driver(NullableImageMixin, User):
         self.delete()
 
     @property
-    def latest_ride_state(self):
-        return self.rides.latest('created_at').state if self.rides.count() > 0 else None
+    def latest_ride(self):
+        if self.rides.count() > 0:
+            latest = self.rides.latest('created_at')
+            return { 
+                'id': latest.id, 
+                'state': latest.state 
+            }
+        return None
+
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -242,16 +314,23 @@ class Driver(NullableImageMixin, User):
             self.verification_code = issue_verification_code()
             if update_fields is not None:
                 update_fields.append('verification_code')
-        self.set_password(self.get_login_key())
+        self.set_password(Driver.get_login_key())
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
 
 
-class DriverReservation(AbstractTimestampModel):
+class DriverReservation(NullableImageMixin, AbstractTimestampModel):
+    IMAGE_TYPES = ('original',)
+
     phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
     name = models.CharField(u'이름', max_length=30)
     is_joined = models.BooleanField(u'가입여부', default=False)
+
+    def cert_image(self):
+        return '<a href="%s" target="_blank"><img src="%s" width="200"/></a>' % (self.url, self.url)
+    cert_image.allow_tags = True
+    cert_image.short_description = u'자격증 사진'
 
     class Meta:
         verbose_name = u'기사 가입신청자'

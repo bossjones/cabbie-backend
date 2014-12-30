@@ -1,16 +1,35 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.db.models import F
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
-from cabbie.apps.account.models import Passenger, Driver
+from cabbie.apps.account.models import Passenger, Driver, DriverReservation
 from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
 from cabbie.common.signals import post_create
+from cabbie.utils.email import send_email
 
 
-def on_post_create_user(sender, instance, **kwargs):
+def on_post_create_driver(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
+
+    # update driver reservation
+    try:
+        driver_reservation = DriverReservation.objects.get(phone=instance.phone)
+    except DriverReservation.DoesNotExist:
+        pass
+    else:
+        driver_reservation.join()
+
+def on_post_create_passenger(sender, instance, **kwargs):
+    Token.objects.create(user=instance.user_ptr)
+
+    # send email to passenger
+    if sender is Passenger:
+        send_email('mail/passenger_signup.txt', instance.email, {'subject': '{name}님 환영합니다'.format(name=instance.name), 'message': '백기사에 가입해 주셔서 감사합니다.'})
+
+
 
 
 def on_post_create_driver_bill(sender, instance, **kwargs):
@@ -36,9 +55,9 @@ def on_post_ride_board(sender, ride, **kwargs):
     driver.save(update_fields=['board_count', 'last_active_at', 'deposit'])
 
 
-post_create.connect(on_post_create_user, sender=Passenger,
+post_create.connect(on_post_create_passenger, sender=Passenger,
                     dispatch_uid='from_account')
-post_create.connect(on_post_create_user, sender=Driver,
+post_create.connect(on_post_create_driver, sender=Driver,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver_bill, sender=DriverBill,
                     dispatch_uid='from_account')
