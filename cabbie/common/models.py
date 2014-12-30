@@ -266,7 +266,7 @@ class ImageMixin(DirtyMixin):
         )
 
     def get_image_url(self, image_type):
-        return (self.image.url if image_type == 'original' else
+        return (self.url if image_type == 'original' else
                 default_storage.url(self.get_upload_path(image_type)))
 
     def get_image_urls(self):
