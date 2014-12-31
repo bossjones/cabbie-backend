@@ -104,7 +104,7 @@ DATABASES = {
         'NAME': 'cabbie',
         'USER': 'cabbie',
         'PASSWORD': 'roqkfwk1',
-        'HOST': 'cabbie.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
+        'HOST': 'bktaxi-app-production.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
         'PORT': 5432,
     },
 }
