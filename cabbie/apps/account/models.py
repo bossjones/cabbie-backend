@@ -151,7 +151,7 @@ class Driver(NullableImageMixin, User):
     license_number = models.CharField(u'자격증번호', max_length=100,
                                       unique=True)
     car_number = models.CharField(u'차량번호', max_length=20, unique=True)
-    car_model = models.CharField(u'차량모델', max_length=50)
+    car_model = models.CharField(u'차량모델', max_length=50, blank=True)
     company = models.CharField(u'회사', max_length=50)
     max_capacity = models.PositiveIntegerField(u'탑승인원수', default=4)
     garage = models.CharField(u'차고지', max_length=100, blank=True)
