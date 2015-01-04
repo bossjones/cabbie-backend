@@ -107,6 +107,15 @@ DATABASES = {
         'HOST': 'bktaxi-app-production.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
         'PORT': 5432,
     },
+    'driver_location': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'driver_location',
+        'USER': 'cabbie',
+        'PASSWORD': 'roqkfwk1',
+        'HOST': '',
+        'PORT': 5432,
+    },
+
 }
 
 CACHES = {
