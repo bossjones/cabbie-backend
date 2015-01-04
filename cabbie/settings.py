@@ -187,9 +187,10 @@ ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
-APP_HOST = 'app.{0}'.format(HOST)
+APP_HOST = 'apptest.{0}'.format(HOST)
+API_HOST = 'apitest.{0}'.format(HOST)
 
-WEB_SERVER_HOST = APP_HOST
+WEB_SERVER_HOST = API_HOST
 WEB_SERVER_PORT = 80
 
 LOCATION_SERVER_HOST = APP_HOST
