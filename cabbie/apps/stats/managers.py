@@ -14,7 +14,12 @@ class DriverRideStatMonthManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+        
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -26,8 +31,15 @@ class DriverRideStatMonthManager(models.Manager):
             driver=ride.driver, year=date.year, month=date.month,
             state=Ride.RATED)
 
+        # ratings
         stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
+        
+        # rides
+        if ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride.id)
+
         stat.save(update_fields=['rides', 'ratings'])
 
         # update rating in driver account, only done from month stat
@@ -44,7 +56,12 @@ class DriverRideStatWeekManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             week=week, state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -56,9 +73,16 @@ class DriverRideStatWeekManager(models.Manager):
         stat, created = self.get_or_create(
             driver=ride.driver, year=date.year, month=date.month,
             week=week, state=Ride.RATED)
-
+        
+        # ratings
         stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
+
+        # rides
+        if ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride.id)
+
         stat.save(update_fields=['rides', 'ratings'])
 
 class DriverRideStatDayManager(models.Manager):
@@ -72,7 +96,12 @@ class DriverRideStatDayManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             week=week, day=date.day, state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -85,7 +114,14 @@ class DriverRideStatDayManager(models.Manager):
             driver=ride.driver, year=date.year, month=date.month,
             week=week, day=date.day, state=Ride.RATED)
 
+        # ratings
         stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
+
+        # rides
+        if ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride.id)
+
         stat.save(update_fields=['rides', 'ratings'])
 
