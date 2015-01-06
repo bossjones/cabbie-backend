@@ -84,19 +84,28 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # ------
 
     def handle_auth(self, token, role):
-        user_id = Authenticator().authenticate(token, role)
+        user = Authenticator().authenticate(token, role)
 
-        if not user_id:
+        if not user:
             self.warn('Failed to authenticate: {0}'.format(token))
-            self.send_error('Failed to authenticate')
+            self.send_error('Failed to authenticate: cannot find user')
             return
 
-        self._user_id = user_id
+        # driver : check if freezed 
+        if role == 'driver':
+            driver = user.get_role(role)
+            
+            if driver.is_freezed:
+                self.warn('Failed to authenticate: driver {0} is freezed now'.format(driver))
+                self.send_error('Failed to authenticate: freezed')
+                return
+
+        self._user_id = user.id
         self._role = role
-        SessionManager().add(user_id, self)
+        SessionManager().add(user.id, self)
 
         self.info('{role} {id} was authenticated'.format(
-            role=role.capitalize(), id=user_id))
+            role=role.capitalize(), id=user.id))
 
         self.send('auth_succeeded')
 
