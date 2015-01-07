@@ -110,9 +110,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
 
     def get_incrementer(self, reverse=False):
         incrementer = super(Ride, self).get_incrementer(reverse)
-        incrementer.add(Passenger, self.passenger_id, 'ride_count')
-        if self.driver:
-            incrementer.add(Driver, self.driver_id, 'ride_count')
         return incrementer
 
     @property
