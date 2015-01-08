@@ -3,13 +3,17 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.utils.timezone
+from django.conf import settings
 import cabbie.common.models
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('account', '0001_initial'),
+        ('account', '__first__'),
+        ('drive', '__first__'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('recommend', '__first__'),
     ]
 
     operations = [
@@ -101,6 +105,9 @@ class Migration(migrations.Migration):
                 ('transaction_type', models.CharField(db_index=True, max_length=100, verbose_name='\uc885\ub958', choices=[(b'mileage', '\ub9c8\uc77c\ub9ac\uc9c0'), (b'recommend', '\ucd94\ucc9c'), (b'recommended', '\ud53c\ucd94\ucc9c'), (b'grant', '\uc9c0\uae09'), (b'return', '\ud658\uae09')])),
                 ('amount', models.IntegerField(verbose_name='\uae08\uc561')),
                 ('note', models.CharField(max_length=1000, verbose_name='\uba54\ubaa8', blank=True)),
+                ('recommend', models.ForeignKey(verbose_name='\ucd94\ucc9c', blank=True, to='recommend.Recommend', null=True)),
+                ('ride', models.ForeignKey(verbose_name='\ucf5c', blank=True, to='drive.Ride', null=True)),
+                ('user', models.ForeignKey(verbose_name='\uc0ac\uc6a9\uc790', to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': [b'-created_at'],
