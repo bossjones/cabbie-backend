@@ -28,16 +28,17 @@ class DriverBillAdmin(AbstractAdmin):
 class DriverCouponAdmin(AbstractAdmin):
     raw_id_fields = ('driver',)
     list_display = ('id', 'driver', 'previous_month_board_count',
-                    'coupon_type', 'amount', 'serial_number', 'is_processed',
+                    'coupon_type', 'coupon_name', 'amount', 'serial_number', 'is_processed',
                     'processed_at', 'created_at')
     list_filter = ('coupon_type', 'is_processed', 'processed_at', 'created_at')
     search_fields = (
         '=id',
         'driver__name',
         '^driver__phone',
+        'coupon_name',
     )
     fieldsets = (
-        (None, {'fields': ('driver', 'coupon_type', 'amount',
+        (None, {'fields': ('driver', 'coupon_type', 'coupon_name', 'amount',
                            'serial_number')}),
         ('읽기전용', {'fields': (
             'is_processed', 'processed_at', 'created_at',

@@ -22,16 +22,18 @@ class DriverBill(AbstractTimestampModel):
 
 
 class DriverCoupon(AbstractTimestampModel):
-    GAS, = ('gas',)
+    GAS, CASH = ('gas', 'cash')
 
     COUPON_TYPES = (
-        (GAS, u'LPG 충전권'),
+        (CASH, u'현금'),
+        (GAS, u'상품권'),
     )
 
     driver = models.ForeignKey(Driver, related_name='coupons',
                                verbose_name=u'기사')
-    coupon_type = models.CharField(u'쿠폰 종류', max_length=100, db_index=True,
-                                   choices=COUPON_TYPES, default=GAS)
+    coupon_type = models.CharField(u'리워드 종류', max_length=100, db_index=True,
+                                   choices=COUPON_TYPES, default=CASH)
+    coupon_name = models.CharField(u'리워드명', max_length=100, null=True, blank=True)
     amount = models.PositiveIntegerField(u'금액', null=True, blank=True)
     serial_number = models.CharField(u'쿠폰일련번호', max_length=100,
                                      blank=True)
@@ -39,8 +41,8 @@ class DriverCoupon(AbstractTimestampModel):
     processed_at = models.DateTimeField(u'지급시점', null=True, blank=True)
 
     class Meta(AbstractTimestampModel.Meta):
-        verbose_name = u'기사 쿠폰'
-        verbose_name_plural = u'기사 쿠폰'
+        verbose_name = u'기사 리워드'
+        verbose_name_plural = u'기사 리워드'
 
     def previous_month_board_count(self):
         return self.driver.previous_month_board_count
