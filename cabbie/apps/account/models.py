@@ -58,6 +58,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
                                                             default=0)
     recommended_count = models.PositiveIntegerField(u'피추천횟수', default=0)
 
+    is_sms_agreed = models.BooleanField(u'SMS 수신동의', default=False)
+    is_email_agreed = models.BooleanField(u'이메일 수신동의', default=False)
+
     objects = UserManager()
 
     class Meta:

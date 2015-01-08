@@ -25,7 +25,7 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
 class UserSerializer(AbstractSerializer):
     class Meta:
         model = User
-        fields = ('id', 'phone', 'password', 'name', 'point', 
+        fields = ('id', 'phone', 'password', 'name', 'is_sms_agreed', 'is_email_agreed', 'point', 
                 'date_joined', 'recommend_code')
         read_only_fields = ('point', 'date_joined', 'recommend_code')
         write_only_fields = ('password',)
