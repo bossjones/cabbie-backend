@@ -22,11 +22,11 @@ class DriverBill(AbstractTimestampModel):
 
 
 class DriverCoupon(AbstractTimestampModel):
-    GAS, CASH = ('gas', 'cash')
+    GIFTCARD, CASH = ('giftcard', 'cash')
 
     COUPON_TYPES = (
         (CASH, u'현금'),
-        (GAS, u'상품권'),
+        (GIFTCARD, u'상품권'),
     )
 
     driver = models.ForeignKey(Driver, related_name='coupons',
