@@ -2,21 +2,16 @@ from collections import defaultdict
 import time
 
 from django.conf import settings
-from django.contrib.gis.geos import Point 
-
 from tornado import gen
 
 from cabbie.apps.drive.location.estimate import TmapEstimator
 from cabbie.apps.drive.location.geo import Location
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.session import SessionManager
-from cabbie.apps.drive.models import Location as DriverLocation 
-from cabbie.apps.account.models import Driver
 from cabbie.utils.geo import distance, Rtree2D
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
-from cabbie.utils import json
 
 
 class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
@@ -28,6 +23,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
     def __init__(self):
         super(DriverManager, self).__init__()
+        self._driver_index = Rtree2D()
         self._driver_locations = defaultdict(Location)
         self._driver_charge_types = {}
         self._estimate_cache = {}
@@ -49,11 +45,9 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         is_new = driver_id not in self._driver_locations
         old_charge_type = self._driver_charge_types.get(driver_id)
 
+        self._driver_index.set(driver_id, location)
         self._driver_locations[driver_id].update(location)
 
-        # update location on database
-        self._update_location(driver_id, location)        
- 
         self._driver_charge_types[driver_id] = charge_type
 
         if is_new:
@@ -66,7 +60,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
     def deactivate(self, driver_id):
         try:
-            self._remove_driver_location(driver_id)
+            self._driver_index.remove(driver_id)
         except KeyError:
             self.error('Failed to remove {0} from index'.format(driver_id))
 
@@ -93,7 +87,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         """
 
         candidates = list(
-            self._get_nearest_drivers(location, count, max_distance,
+            self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
         locations = map(self.get_driver_location, candidates)
@@ -160,36 +154,18 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
     def get_driver_charge_type(self, driver_id):
         return self._driver_charge_types.get(driver_id)
 
+    def get_nearest_drivers(self, location, count=None, max_distance=None,
+                            charge_type=None):
+        # Heuristic
+        pseudo_count = count * 3
+        ids = self._driver_index.nearest(location, count=pseudo_count,
+                                         max_distance=max_distance)
+        ids = [
+            id_ for id_ in ids
+            if int(self._driver_charge_types[id_]) <= int(charge_type)]
+
+        return ids[:count]
+
     def on_driver_session_closed(self, user_id, old_session):
         if self.is_activated(user_id):
             self.deactivate(user_id)
-
-    # location on spatial database
-    def _update_location(self, driver_id, location):
-        is_new = False
-
-        try:
-            driver_location = DriverLocation.objects.get(driver_id=driver_id)
-        except DriverLocation.DoesNotExist:
-            DriverLocation.objects.create(driver_id=driver_id, location=Point(*location))
-            is_new = True
-        else: 
-            driver_location.location = Point(*location)
-            driver_location.save(update_fields=['location'])
-            is_new = False
-
-        return is_new
-
-    def _get_nearest_drivers(self, location, count=None, max_distance=None,
-                            charge_type=None):
-        qs = DriverLocation.objects.filter(location__distance_lte=(Point(*location), 2000))
-
-        return [driver_location.driver.id for driver_location in qs.all()]
-
-    def _remove_driver_location(self, driver_id):
-        try:
-            driver_location = DriverLocation.objects.get(driver_id=driver_id) 
-        except DriverLocation.DoesNotExist:
-            pass
-        else:
-            driver_location.delete()
