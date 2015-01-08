@@ -26,7 +26,7 @@ def on_post_create_passenger(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
 
     # send email to passenger
-    if sender is Passenger and instance.is_email_agreed:
+    if sender is Passenger and instance.is_email_agreed and False:
         send_email('mail/passenger_signup.txt', instance.email, {'subject': '{name}님 환영합니다'.format(name=instance.name), 'message': '백기사에 가입해 주셔서 감사합니다.'})
 
 
