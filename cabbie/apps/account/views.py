@@ -179,6 +179,7 @@ class DriverAcceptView(APIView):
             )
 
         driver.is_accepted = True
+        driver.is_sms_agreed = request.DATA['is_sms_agreed']
         driver.save()
 
         return self.render()

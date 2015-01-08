@@ -35,7 +35,6 @@ class ModelManager(LoggableMixin, SingletonMixin):
         }
         if isinstance(user, Passenger):
             serialized.update({
-                'ride_count': user.ride_count,
             })
         if isinstance(user, Driver):
             serialized.update({

@@ -25,7 +25,7 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
 class UserSerializer(AbstractSerializer):
     class Meta:
         model = User
-        fields = ('id', 'phone', 'password', 'name', 'point', 
+        fields = ('id', 'phone', 'password', 'name', 'is_sms_agreed', 'is_email_agreed', 'point', 
                 'date_joined', 'recommend_code')
         read_only_fields = ('point', 'date_joined', 'recommend_code')
         write_only_fields = ('password',)
@@ -36,9 +36,7 @@ class PassengerSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = Passenger
-        fields = UserSerializer.Meta.fields + ('email', 'ride_count', 'latest_ride') 
-        read_only_fields = UserSerializer.Meta.read_only_fields \
-                           + ('ride_count',)
+        fields = UserSerializer.Meta.fields + ('email', 'latest_ride') 
 
 
 class DriverSerializer(UserSerializer):
@@ -47,6 +45,7 @@ class DriverSerializer(UserSerializer):
     rating = serializers.Field(source='rating')
     ratings_by_category = JSONField(source='ratings_by_category')
     rated_count = serializers.Field(source='rated_count')
+    ride_count = serializers.Field(source='ride_count')
 
     class Meta(UserSerializer.Meta):
         model = Driver
@@ -54,5 +53,3 @@ class DriverSerializer(UserSerializer):
             'license_number', 'car_number', 'car_model', 'company',
             'max_capacity', 'taxi_type', 'about',
             'rating', 'ratings_by_category', 'rated_count', 'ride_count', 'image_urls', 'latest_ride')
-        read_only_fields = UserSerializer.Meta.read_only_fields \
-                           + ('ride_count',)

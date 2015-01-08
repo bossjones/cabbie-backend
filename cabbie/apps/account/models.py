@@ -52,12 +52,14 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     previous_month_board_count = models.PositiveIntegerField(u'전월 콜횟수',
                                                              default=0)
     board_count = models.PositiveIntegerField(u'총 콜횟수', default=0)
-    ride_count = models.PositiveIntegerField(u'총 배차횟수', default=0)
     driver_recommend_count = models.PositiveIntegerField(u'추천횟수 (기사)',
                                                          default=0)
     passenger_recommend_count = models.PositiveIntegerField(u'추천횟수 (승객)',
                                                             default=0)
     recommended_count = models.PositiveIntegerField(u'피추천횟수', default=0)
+
+    is_sms_agreed = models.BooleanField(u'SMS 수신동의', default=False)
+    is_email_agreed = models.BooleanField(u'이메일 수신동의', default=False)
 
     objects = UserManager()
 
@@ -151,7 +153,7 @@ class Driver(NullableImageMixin, User):
     license_number = models.CharField(u'자격증번호', max_length=100,
                                       unique=True)
     car_number = models.CharField(u'차량번호', max_length=20, unique=True)
-    car_model = models.CharField(u'차량모델', max_length=50)
+    car_model = models.CharField(u'차량모델', max_length=50, blank=True)
     company = models.CharField(u'회사', max_length=50)
     max_capacity = models.PositiveIntegerField(u'탑승인원수', default=4)
     garage = models.CharField(u'차고지', max_length=100, blank=True)
@@ -284,13 +286,29 @@ class Driver(NullableImageMixin, User):
 
     @property
     def rated_count(self):
-        max_count = 0
-        
-        for key, value in self.total_ratings_by_category.iteritems():
-            if value[1] > max_count: 
-                max_count = value[1]
+        total_count = 0
 
-        return max_count  
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.RATED):
+            total_count += stat.count
+        
+        return total_count 
+
+
+    @property
+    def ride_count(self):
+        total_count = 0
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+            total_count += stat.count
+        
+        return total_count 
+
 
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(

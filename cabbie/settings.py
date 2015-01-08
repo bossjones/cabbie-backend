@@ -104,19 +104,26 @@ DATABASES = {
         'NAME': 'cabbie',
         'USER': 'cabbie',
         'PASSWORD': 'roqkfwk1',
-        'HOST': 'cabbie.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
+        'HOST': 'bktaxi-app-production.cgti7agq49bc.ap-northeast-1.rds.amazonaws.com',
         'PORT': 5432,
     },
+    'driver_location': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'driver_location',
+        'USER': 'cabbie',
+        'PASSWORD': 'roqkfwk1',
+        'HOST': '',
+        'PORT': 5432,
+    },
+
 }
 
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.cache.RedisCache',
-        'LOCATION': '127.0.0.1:6379:1',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'redis_cache.client.DefaultClient',
-        },
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'cache_table',
     }
+
 }
 
 LOGGING = {
@@ -157,13 +164,13 @@ LOGGING = {
     },
     'loggers': {
         'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
         'cabbie': {
-            'handlers': ['file'],
-            'level': 'INFO',
+            'handlers': ['console'],
+            'level': 'DEBUG',
             'propagate': False,
         },
     }
@@ -185,13 +192,14 @@ APPEND_SLASH = False
 
 VERSION = 1
 HOST = 'bktaxi.com'
-ALLOWED_HOSTS = ['.{0}'.format(HOST)]
+ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
-APP_HOST = 'app.{0}'.format(HOST)
+APP_HOST = 'apptest.{0}'.format(HOST)
+API_HOST = 'apitest.{0}'.format(HOST)
 
-WEB_SERVER_HOST = APP_HOST
+WEB_SERVER_HOST = API_HOST
 WEB_SERVER_PORT = 80
 
 LOCATION_SERVER_HOST = APP_HOST

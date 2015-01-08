@@ -14,7 +14,12 @@ class DriverRideStatMonthManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+        
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -22,13 +27,32 @@ class DriverRideStatMonthManager(models.Manager):
             return
         
         date = ride.created_at.date()
-        stat, created = self.get_or_create(
-            driver=ride.driver, year=date.year, month=date.month,
+
+        stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month,
+            state=Ride.BOARDED)
+        stat_completed, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month,
+            state=Ride.COMPLETED)
+        stat_rated, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month,
             state=Ride.RATED)
 
-        stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
-        stat.save(update_fields=['rides', 'ratings'])
+        # ratings
+        stat_boarded.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_completed.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_rated.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        
+        # rides
+        if ride.id in stat_boarded.rides: pass
+        else: stat_boarded.rides.append(ride.id)
+
+        if ride.id in stat_completed.rides: pass
+        else: stat_completed.rides.append(ride.id)
+
+        if ride.id in stat_rated.rides: pass
+        else: stat_rated.rides.append(ride.id)
+
+        stat_boarded.save(update_fields=['rides', 'ratings'])
+        stat_completed.save(update_fields=['rides', 'ratings'])
+        stat_rated.save(update_fields=['rides', 'ratings'])
 
         # update rating in driver account, only done from month stat
         ride.driver._update_rating()
@@ -44,7 +68,12 @@ class DriverRideStatWeekManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             week=week, state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -53,13 +82,33 @@ class DriverRideStatWeekManager(models.Manager):
         
         date = ride.created_at.date()
         week = week_of_month(date)
-        stat, created = self.get_or_create(
-            driver=ride.driver, year=date.year, month=date.month,
-            week=week, state=Ride.RATED)
 
-        stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
-        stat.save(update_fields=['rides', 'ratings'])
+        stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week,
+            state=Ride.BOARDED)
+        stat_completed, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week,
+            state=Ride.COMPLETED)
+        stat_rated, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week,
+            state=Ride.RATED)
+
+        # ratings
+        stat_boarded.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_completed.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_rated.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        
+        # rides
+        if ride.id in stat_boarded.rides: pass
+        else: stat_boarded.rides.append(ride.id)
+
+        if ride.id in stat_completed.rides: pass
+        else: stat_completed.rides.append(ride.id)
+
+        if ride.id in stat_rated.rides: pass
+        else: stat_rated.rides.append(ride.id)
+
+        stat_boarded.save(update_fields=['rides', 'ratings'])
+        stat_completed.save(update_fields=['rides', 'ratings'])
+        stat_rated.save(update_fields=['rides', 'ratings'])
+
 
 class DriverRideStatDayManager(models.Manager):
     def sync(self, ride_history):
@@ -72,7 +121,12 @@ class DriverRideStatDayManager(models.Manager):
             driver=ride_history.driver, year=date.year, month=date.month,
             week=week, day=date.day, state=ride_history.state)
 
-        stat.rides.append(ride_history.ride.id)
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+
         stat.save(update_fields=['rides'])
     
     def sync_rate(self, ride):
@@ -81,11 +135,29 @@ class DriverRideStatDayManager(models.Manager):
         
         date = ride.created_at.date()
         week = week_of_month(date)
-        stat, created = self.get_or_create(
-            driver=ride.driver, year=date.year, month=date.month,
-            week=week, day=date.day, state=Ride.RATED)
 
-        stat.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
-        stat.rides.append(ride.id)
-        stat.save(update_fields=['rides', 'ratings'])
+        stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week, day=date.day,
+            state=Ride.BOARDED)
+        stat_completed, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week, day=date.day,
+            state=Ride.COMPLETED)
+        stat_rated, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week, day=date.day,
+            state=Ride.RATED)
 
+        # ratings
+        stat_boarded.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_completed.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        stat_rated.ratings[u'{id}'.format(id=ride.id)] = ride.ratings_by_category
+        
+        # rides
+        if ride.id in stat_boarded.rides: pass
+        else: stat_boarded.rides.append(ride.id)
+
+        if ride.id in stat_completed.rides: pass
+        else: stat_completed.rides.append(ride.id)
+
+        if ride.id in stat_rated.rides: pass
+        else: stat_rated.rides.append(ride.id)
+
+        stat_boarded.save(update_fields=['rides', 'ratings'])
+        stat_completed.save(update_fields=['rides', 'ratings'])
+        stat_rated.save(update_fields=['rides', 'ratings'])

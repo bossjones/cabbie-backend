@@ -54,10 +54,11 @@ class DriverForm(forms.ModelForm):
 class DriverAdmin(AbstractAdmin):
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('phone', 'name', 'taxi_type', 'car_number', 'company',
-                    'garage', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
+    list_display = ('phone', 'name', 'taxi_type', 'car_number', 'car_model', 'company',
+                    rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'current_month_board_count', 'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
+                    'is_sms_agreed',
                     'is_freezed', 'is_super', 'is_dormant', 'date_joined',
                     'link_to_rides')
     fieldsets = (
@@ -178,6 +179,7 @@ class DriverAdmin(AbstractAdmin):
 class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('phone', 'email', 'name', 'point',
+                    'is_sms_agreed', 'is_email_agreed',
                     'current_month_board_count', 'previous_month_board_count',
                     'board_count', 'passenger_recommend_count',
                     'recommended_count', 'date_joined', 'link_to_rides')

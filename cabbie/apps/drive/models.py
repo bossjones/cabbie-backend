@@ -15,6 +15,17 @@ from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
+class Location(AbstractTimestampModel):
+    driver_id = models.PositiveIntegerField(primary_key=True, blank=False, null=False, default=0, verbose_name=u'기사아이디')
+
+    location = models.PointField(u'좌표')
+
+    objects = models.GeoManager()
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'기사위치'
+        verbose_name_plural = u'기사위치'
+
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
@@ -110,9 +121,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
 
     def get_incrementer(self, reverse=False):
         incrementer = super(Ride, self).get_incrementer(reverse)
-        incrementer.add(Passenger, self.passenger_id, 'ride_count')
-        if self.driver:
-            incrementer.add(Driver, self.driver_id, 'ride_count')
         return incrementer
 
     @property

@@ -21,7 +21,7 @@ class DriverBillSerializer(AbstractSerializer):
 class DriverCouponSerializer(AbstractSerializer):
     class Meta:
         model = DriverCoupon
-        fields = ('id', 'coupon_type', 'amount', 'created_at', 
+        fields = ('id', 'coupon_type', 'coupon_name', 'amount', 'created_at', 
                   'is_processed', 'processed_at')       
 
     

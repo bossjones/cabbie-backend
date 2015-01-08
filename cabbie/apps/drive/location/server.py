@@ -84,21 +84,40 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # ------
 
     def handle_auth(self, token, role):
-        user_id = Authenticator().authenticate(token, role)
+        user = Authenticator().authenticate(token, role)
 
-        if not user_id:
+        if not user:
             self.warn('Failed to authenticate: {0}'.format(token))
-            self.send_error('Failed to authenticate')
+            self.send_error('Failed to authenticate: cannot find user')
             return
 
-        self._user_id = user_id
+        # driver : check if freezed 
+        if role == 'driver':
+            driver = user.get_role(role)
+            
+            if driver.is_freezed:
+                self.warn('Failed to authenticate: driver {0} is freezed now'.format(driver))
+                self.send_error('Failed to authenticate: freezed')
+                return
+
+        self._user_id = user.id
         self._role = role
-        SessionManager().add(user_id, self)
+        SessionManager().add(user.id, self)
 
         self.info('{role} {id} was authenticated'.format(
-            role=role.capitalize(), id=user_id))
+            role=role.capitalize(), id=user.id))
 
         self.send('auth_succeeded')
+    
+        # link old ride proxy
+        if self._role == 'driver':
+            old_ride_proxy = RideProxyManager().get_ride_proxy_by_driver_id(self._user_id)
+        elif self._role == 'passenger':
+            old_ride_proxy = RideProxyManager().get_ride_proxy_by_passenger_id(self._user_id)
+        
+        if old_ride_proxy:
+            self.debug('Old ride proxy found for {0} {1}: {2}'.format(self._role, self._user_id, old_ride_proxy))
+            self.ride_proxy = old_ride_proxy
 
     # Driver-side
     # -----------

@@ -49,6 +49,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
         self.passenger_session.ride_proxy = self
 
+    def __unicode__(self):
+        return u'RideProxy(P{0}-D{1} S{2} R{3})'.format(self._passenger_id, 
+                                        self._driver_id, self._state, self._ride_id)
+
     @property
     def driver(self):
         return (ModelManager().get_driver(self._driver_id)
@@ -250,6 +254,12 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         self._proxies_by_passenger[passenger_id] = proxy
         return proxy
 
+    def get_ride_proxy_by_driver_id(self, driver_id):
+        return self._proxies_by_driver.get(driver_id, None)
+
+    def get_ride_proxy_by_passenger_id(self, passenger_id):
+        return self._proxies_by_passenger.get(passenger_id, None)
+
     def on_ride_proxy_driver_set(self, ride_proxy, driver_id):
         self._proxies_by_driver[driver_id] = ride_proxy
 
@@ -266,11 +276,15 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         self._proxies_by_passenger.pop(ride_proxy.passenger['id'], None)
 
     def on_passenger_session_closed(self, user_id, old_session):
+        self.debug('Passenger {0} session closed'.format(user_id))
+
         proxy = self._proxies_by_passenger.pop(user_id, None)
         if proxy:
-            proxy.passenger_disconnect()
+            pass
 
     def on_driver_session_closed(self, user_id, old_session):
+        self.debug('Driver {0} session closed'.format(user_id))
+
         proxy = self._proxies_by_driver.pop(user_id, None)
         if proxy:
             proxy.driver_disconnect()

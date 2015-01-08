@@ -13,11 +13,22 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG and True
 STORATE_DEBUG = DEBUG and True
 
+WEB_SERVER_HOST = 'localhost'
+WEB_SERVER_PORT = 8000
+
+LOCATION_SERVER_HOST='localhost'
+
 if STORATE_DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'cabbie',
+            'USER': 'cabbie',
+            'HOST': 'localhost',
+        },
+        'driver_location': {
+            'ENGINE': 'django.contrib.gis.db.backends.postgis',
+            'NAME': 'driver_location',
             'USER': 'cabbie',
             'HOST': 'localhost',
         }

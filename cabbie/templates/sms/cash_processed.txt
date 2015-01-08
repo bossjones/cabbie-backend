@@ -1,0 +1,1 @@
+[백기사] 현금 {{ coupon.amount|number }}원이 지급되었습니다.

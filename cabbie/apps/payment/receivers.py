@@ -3,7 +3,7 @@
 from django.conf import settings
 
 from cabbie.apps.recommend.models import Recommend
-from cabbie.apps.payment.models import Transaction
+from cabbie.apps.payment.models import Transaction, DriverCoupon
 from cabbie.apps.payment.signals import return_processed, coupon_processed
 from cabbie.common.signals import post_create
 from cabbie.utils.sms import send_sms
@@ -55,8 +55,11 @@ def on_return_processed(sender, return_, **kwargs):
 
 
 def on_coupon_processed(sender, coupon, **kwargs):
-    send_sms('sms/coupon_processed.txt', coupon.driver.phone,
-             {'coupon': coupon})
+    if coupon.coupon_type == DriverCoupon.GIFTCARD:
+        send_sms('sms/coupon_processed.txt', coupon.driver.phone, {'coupon': coupon})
+    elif coupon.coupon_type == DriverCoupon.CASH:
+        send_sms('sms/cash_processed.txt', coupon.driver.phone, {'coupon': coupon})
+        
 
 
 post_create.connect(on_post_create_recommend, sender=Recommend,

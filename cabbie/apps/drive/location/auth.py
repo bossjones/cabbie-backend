@@ -17,4 +17,4 @@ class Authenticator(LoggableMixin, SingletonMixin):
         else:
             # Double check if the user has specified role
             role = user.get_role(role)
-            return user.id if role is not None else None
+            return user if role is not None else None
