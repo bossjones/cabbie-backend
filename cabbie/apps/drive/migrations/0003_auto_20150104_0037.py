@@ -11,12 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='location',
-            name='driver_id',
-            field=models.PositiveIntegerField(default=0, serialize=False, verbose_name='\uae30\uc0ac\uc544\uc774\ub514', primary_key=True),
-            preserve_default=True,
-        ),
         migrations.RemoveField(
             model_name='location',
             name='driver',
@@ -24,5 +18,11 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='location',
             name='id',
+        ),
+        migrations.AddField(
+            model_name='location',
+            name='driver_id',
+            field=models.PositiveIntegerField(default=0, serialize=False, verbose_name='\uae30\uc0ac\uc544\uc774\ub514', primary_key=True),
+            preserve_default=True,
         ),
     ]
