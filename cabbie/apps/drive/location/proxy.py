@@ -6,7 +6,7 @@ from tornado import gen
 from cabbie.apps.drive.location.estimate import TmapEstimator
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.secret import fetch
-from cabbie.apps.drive.location.session import SessionManager
+from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.models import Ride
 from cabbie.utils.geo import distance
 from cabbie.utils.ioloop import delay
@@ -50,7 +50,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.passenger_session.ride_proxy = self
 
     def __unicode__(self):
-        return u'RideProxy(P{0}-D{1} S{2} R{3})'.format(self._passenger_id, 
+        return u'RideProxy(P{0}-D{1} {2} R{3})'.format(self._passenger_id, 
                                         self._driver_id, self._state, self._ride_id)
 
     @property
@@ -65,11 +65,15 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     @property
     def driver_session(self):
-        return SessionManager().get(self._driver_id)
+        driver_session = SessionManager().get(self._driver_id)
+        #return driver_session
+        return driver_session if driver_session else SessionBufferManager().get_or_create(self._driver_id)
 
     @property
     def passenger_session(self):
-        return SessionManager().get(self._passenger_id)
+        passenger_session = SessionManager().get(self._passenger_id)
+        #return passenger_session
+        return passenger_session if passenger_session else SessionBufferManager().get_or_create(self._passenger_id)
 
     def set_driver(self, driver_id, location, charge_type):
         self.debug('Setting driver to {0}'.format(driver_id))
@@ -280,7 +284,7 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
 
         proxy = self._proxies_by_passenger.pop(user_id, None)
         if proxy:
-            pass
+            proxy.passenger_disconnect()
 
     def on_driver_session_closed(self, user_id, old_session):
         self.debug('Driver {0} session closed'.format(user_id))

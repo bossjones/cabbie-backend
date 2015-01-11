@@ -5,7 +5,7 @@ import tornado.websocket
 from cabbie.apps.drive.location.auth import Authenticator
 from cabbie.apps.drive.location.driver import DriverManager
 from cabbie.apps.drive.location.proxy import RideProxyManager
-from cabbie.apps.drive.location.session import SessionManager
+from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.location.watch import WatchManager
 from cabbie.utils import json
 from cabbie.utils.ioloop import start
@@ -47,12 +47,12 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     ride_proxy = property(**ride_proxy())
 
     def open(self):
-        self.debug('Opened')
+        self.debug('Opened {0}'.format(hex(id(self))))
 
     def on_close(self):
         if self.authenticated:
-            SessionManager().remove(self._user_id)
-        self.debug('Closed')
+            SessionManager().remove(self._user_id, self)
+        self.debug('Closed {0}'.format(hex(id(self))))
 
     def on_message(self, message):
         if not isinstance(message, unicode):
@@ -118,6 +118,11 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         if old_ride_proxy:
             self.debug('Old ride proxy found for {0} {1}: {2}'.format(self._role, self._user_id, old_ride_proxy))
             self.ride_proxy = old_ride_proxy
+      
+        # flush buffered messages
+        session_buffer = SessionBufferManager().get_or_create(self._user_id)
+        session_buffer.flush(self) 
+        SessionBufferManager().remove(self._user_id)
 
     # Driver-side
     # -----------
@@ -256,6 +261,93 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
 
     def notify_passenger_disconnect(self):
         self.send('passenger_disconnected')
+
+
+class SessionBuffer(LoggableMixin):
+    """Represents a (web)socket session buffer of driver or passenger."""
+
+    def __init__(self, user_id, *args, **kwargs):
+        super(SessionBuffer, self).__init__(*args, **kwargs)
+        self._user_id = user_id
+        self._buffered = []
+
+    def __unicode__(self):
+        return (u'SessionBuffer({id})'.format(id=self._user_id)
+                if self.authenticated else u'SessionBuffer')
+
+    @property
+    def authenticated(self):
+        return self._user_id is not None
+
+    def _buffer(self, method, type, data=None):
+        self._buffered.append({'method': method, 'type': type, 'data': data or {}})
+        self.debug('Buffer message {0} for user {1}'.format(type, self._user_id))
+
+    def flush(self, session):
+        self.debug('Flush buffered message')
+
+        for message in self._buffered:
+            self.debug('Flush buffered message {0}'.format(message['type']))
+            getattr(session, message['method'])(**message['data'])
+
+    def notify_driver_request(self, passenger, source, destination, additional_message):
+        self._buffer('notify_driver_request', 'driver_requested', {
+            'passenger': passenger,
+            'source': source,
+            'destination': destination,
+            'additional_message': additional_message,
+        })
+
+    def notify_driver_cancel(self):
+        self._buffer('notify_driver_cancel', 'driver_canceled')
+
+    def notify_driver_disconnect(self):
+        self._buffer('notify_driver_disconnect', 'driver_disconnected')
+
+    # Passenger-side
+    # --------------
+
+    def notify_passenger_assign(self, assignment):
+        if assignment:
+            self.debug('Notifying assignment ({0} candidates)'.format(
+                len(assignment['candidates'])))
+        else:
+            self.debug('Notifying empty assignment')
+
+        self._buffer('notify_passenger_assign', 'passenger_assigned', {'assignment': assignment})
+
+    def notify_passenger_approve(self):
+        self._buffer('notify_passenger_approve', 'passenger_approved')
+
+    def notify_passenger_reject(self, reason):
+        self._buffer('notify_passenger_reject', 'passenger_rejected', {'reason': reason})
+
+    def notify_passenger_progress(self, location, estimate):
+        self._buffer('notify_passenger_progress', 'passenger_progress', {
+            'location': location,
+            'estimate': estimate,
+        })
+
+    def notify_passenger_arrive(self):
+        self._buffer('notify_passenger_arrive', 'passenger_arrived')
+
+    def notify_passenger_board(self):
+        self._buffer('notify_passenger_board', 'passenger_boarded')
+
+    def notify_passenger_journey(self, location, journey):
+        self._buffer('notify_passenger_journey', 'passenger_journey', {
+            'location': location,
+            'journey': journey,
+        })
+
+    def notify_passenger_complete(self, summary, ride_id):
+        self._buffer('notify_passenger_complete', 'passenger_completed', {
+            'ride_id': ride_id,
+            'summary': summary
+        })
+
+    def notify_passenger_disconnect(self):
+        self._buffer('notify_passenger_disconnect', 'passenger_disconnected')
 
 
 # Server
