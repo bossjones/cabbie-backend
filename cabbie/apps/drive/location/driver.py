@@ -4,7 +4,7 @@ import time
 from django.conf import settings
 from tornado import gen
 
-from cabbie.apps.drive.location.estimate import TmapEstimator
+from cabbie.apps.drive.location.estimate import HaversineEstimator
 from cabbie.apps.drive.location.geo import Location
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.session import SessionManager
@@ -17,7 +17,7 @@ from cabbie.utils.pubsub import PubsubMixin
 class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
     """Manages the location information of drivers."""
 
-    estimator_class = TmapEstimator
+    estimator_class = HaversineEstimator
     estimate_cache_timeout = settings.ESTIMATE_CACHE_TIMEOUT
     estimate_cache_distance = settings.ESTIMATE_CACHE_DISTANCE
 

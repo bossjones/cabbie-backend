@@ -25,7 +25,7 @@ class RideAdmin(AbstractAdmin):
         '^driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'driver', 'passenger', 'state_kor', 'source_address',
+    list_display = ('id', 'driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
     readonly_fields = (
