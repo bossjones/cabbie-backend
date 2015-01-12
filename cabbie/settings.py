@@ -187,11 +187,11 @@ ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
-APP_HOST = 'apptest.{0}'.format(HOST)
-API_HOST = 'apitest.{0}'.format(HOST)
+APP_HOST = 'app.{0}'.format(HOST)
+API_HOST = 'api.{0}'.format(HOST)
 
 WEB_SERVER_HOST = API_HOST
-WEB_SERVER_PORT = 80
+WEB_SERVER_PORT = 443 
 
 LOCATION_SERVER_HOST = APP_HOST
 LOCATION_SERVER_PORT = 8080
@@ -302,15 +302,15 @@ TMAP_API_KEY = '1a4dce89-3e7e-3b42-9955-7f1de35a13a5'
 
 DEFAULT_SPEED = 40.0                    # km/h
 TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
-ESTIMATE_CACHE_TIMEOUT = 1 * 60         # seconds
-LOCATION_REFRESH_INTERVAL = 1           # seconds
+ESTIMATE_CACHE_TIMEOUT = 5              # seconds
+LOCATION_REFRESH_INTERVAL = 3           # seconds
 RIDE_ESTIMATE_REFRESH_INTERVAL = 10     # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
-SESSION_CLOSE_TIMEOUT = 3               # seconds
-MAX_DISTANCE = 10 * 1000                # meters
-ESTIMATE_CACHE_DISTANCE = 200           # meters
-CANDIDATE_COUNT = 10
-REASSIGN_COUNT = 10
+SESSION_CLOSE_TIMEOUT = 5               # seconds
+MAX_DISTANCE = 5 * 1000                 # meters
+ESTIMATE_CACHE_DISTANCE = 20            # meters
+CANDIDATE_COUNT = 50
+REASSIGN_COUNT = 50
 
 
 # Bot
