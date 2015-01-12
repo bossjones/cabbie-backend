@@ -49,12 +49,20 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     'immediate', 'timeout', 'after', 'waiting', 'unshown'
 
     REASONS = (
-        (IMMEDIATE, _(u'즉시거절')),
-        (TIMEOUT, _(u'수락시간초과')),
-        (AFTER, _(u'수락후 거절')),
-        (WAITING, _(u'대기중 거절')),
-        (UNSHOWN, _(u'승객이 나타나지 않음')),
+        (IMMEDIATE, _('immediate')),
+        (TIMEOUT, _('timeout')),
+        (AFTER, _('after')),
+        (WAITING, _('waiting')),
+        (UNSHOWN, _('unshown')),
     )
+
+    REASON_EXPRESSION = {
+        IMMEDIATE: u'즉시거절',
+        TIMEOUT: u'30초 타임아웃',
+        AFTER: u'탑승이전 취소',
+        WAITING: u'대기중 취소',
+        UNSHOWN: u'승객 나타나지 않음',
+    }
 
     passenger = models.ForeignKey(Passenger, related_name='rides',
                                   verbose_name=u'승객')
@@ -121,6 +129,13 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         return Ride.STATE_EXPRESSION[self.state]
     _state_kor.short_description = u'상태'
     state_kor = property(_state_kor)
+
+    # property reason_kor
+    def _reason_kor(self):
+        return Ride.REASON_EXPRESSION.get(self.reason, '')
+    _reason_kor.short_description = u'거절이유'
+    reason_kor = property(_reason_kor)
+
 
     # property rating
     def _rating(self):
