@@ -3,7 +3,7 @@ import time
 from django.conf import settings
 from tornado import gen
 
-from cabbie.apps.drive.location.estimate import TmapEstimator
+from cabbie.apps.drive.location.estimate import HaversineEstimator
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.secret import fetch
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
@@ -199,7 +199,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         if self._state != Ride.APPROVED:
             return
 
-        self._estimate = yield TmapEstimator().estimate(
+        self._estimate = yield HaversineEstimator().estimate(
             self._driver_location, self._passenger_location)
 
         delay(self.refresh_interval, self._refresh_estimate)
