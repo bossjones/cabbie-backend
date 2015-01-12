@@ -271,24 +271,27 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         self._proxies_by_driver.pop(old_driver_id, None)
 
     def on_ride_proxy_passenger_resetted(self, ride_proxy, old_passenger_id):
-        self._proxies_by_passenger.pop(old_passenger_id, None)
+        #self._proxies_by_passenger.pop(old_passenger_id, None)
+        pass
 
     def on_ride_proxy_finished(self, ride_proxy):
-        driver = ride_proxy.driver
-        if driver:
-            self._proxies_by_driver.pop(driver['id'], None)
-        self._proxies_by_passenger.pop(ride_proxy.passenger['id'], None)
+       #driver = ride_proxy.driver
+       #if driver:
+       #    self._proxies_by_driver.pop(driver['id'], None)
+       #self._proxies_by_passenger.pop(ride_proxy.passenger['id'], None)
+        pass
 
     def on_passenger_session_closed(self, user_id, old_session):
         self.debug('Passenger {0} session closed'.format(user_id))
 
-        proxy = self._proxies_by_passenger.pop(user_id, None)
+        proxy = self._proxies_by_passenger.get(user_id, None)
         if proxy:
-            proxy.passenger_disconnect()
+            #proxy.passenger_disconnect()
+            pass
 
     def on_driver_session_closed(self, user_id, old_session):
         self.debug('Driver {0} session closed'.format(user_id))
 
-        proxy = self._proxies_by_driver.pop(user_id, None)
+        proxy = self._proxies_by_driver.get(user_id, None)
         if proxy:
             proxy.driver_disconnect()
