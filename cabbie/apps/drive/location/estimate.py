@@ -74,7 +74,10 @@ class HaversineEstimator(AbstractEstimator):
 
     def compute(self, p1, p2):
         distance = haversine(p1, p2)
-        speed = self.speed * 1000 / HOUR
+        
+        # Manhattan distance
+        distance = distance * 1.414
+        speed = self.speed * 1000.0 / HOUR
         time = int(distance / speed)
         return Estimate(distance, time)
 
