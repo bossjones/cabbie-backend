@@ -356,7 +356,7 @@ from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
 
 MESSAGE_RIDE_COMPLETE_TITLE = u'목적지 도착!'
-MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가하시면 마일리지를 적립해 드립니다. (10초소요)'
+MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가해 주세요. (10초소요)'
 
 # SMS
 # ---
