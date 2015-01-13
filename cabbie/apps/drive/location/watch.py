@@ -223,7 +223,9 @@ class WatchManager(LoggableMixin, SingletonMixin):
                 zombies.append(passenger_id)
                 continue
 
-            SessionManager().get(passenger_id).notify_passenger_assign(
+            old_session = SessionManager().get(passenger_id)
+            self.debug('Watching session {session} for {id}'.format(session=hex(id(old_session)), id=passenger_id))
+            old_session.notify_passenger_assign(
                 watch.assignment)
 
         for passenger_id in zombies:

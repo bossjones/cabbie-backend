@@ -2,6 +2,7 @@ from django.conf import settings
 import tornado.web
 import tornado.websocket
 
+from cabbie.apps.drive.models import Ride
 from cabbie.apps.drive.location.auth import Authenticator
 from cabbie.apps.drive.location.driver import DriverManager
 from cabbie.apps.drive.location.proxy import RideProxyManager
@@ -11,12 +12,12 @@ from cabbie.utils import json
 from cabbie.utils.ioloop import start
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
-
+from cabbie.utils.pubsub import PubsubMixin
 
 # Handler
 # -------
 
-class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
+class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     """Represents a (web)socket session of driver or passenger."""
 
     def __init__(self, *args, **kwargs):
@@ -50,6 +51,15 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         self.debug('Opened {0}'.format(hex(id(self))))
 
     def on_close(self):
+        # Ride.REQUESTED, broadcast immediately
+        if self.authenticated and self._ride_proxy and self._ride_proxy._state == Ride.REQUESTED:
+            self.publish('{role}_closed'.format(role=self._role), self._user_id, self)
+            self.debug('Immediate session close for session {0}'.format(hex(id(self))))
+            if self.role == 'driver': 
+                self._ride_proxy.driver_disconnect()
+            elif self.role == 'passenger':
+                self._ride_proxy.passenger_disconnect()
+
         if self.authenticated:
             SessionManager().remove(self._user_id, self)
         self.debug('Closed {0}'.format(hex(id(self))))
@@ -75,7 +85,12 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
     # -----
 
     def send(self, type, data=None):
-        self.write_message(json.dumps({'type': type, 'data': data or {}}))
+        try:
+            self.write_message(json.dumps({'type': type, 'data': data or {}}))
+        except tornado.websocket.WebSocketClosedError, e:
+            self.info('Send message {type} error, close this session {session}'.format(type=type, session=hex(id(self))))
+            self.close()
+
 
     def send_error(self, error_msg=None):
         self.send('error', {'msg': error_msg or ''})
@@ -280,8 +295,17 @@ class SessionBuffer(LoggableMixin):
         return self._user_id is not None
 
     def _buffer(self, method, type, data=None):
-        self._buffered.append({'method': method, 'type': type, 'data': data or {}})
-        self.debug('Buffer message {0} for user {1}'.format(type, self._user_id))
+        if len(self._buffered) == 0:
+            # add first
+            self._buffered.append({'method': method, 'type': type, 'data': data or {}})
+        elif self._buffered[-1]['method'] == method:
+            # update
+            self._buffered[-1] = {'method': method, 'type': type, 'data': data or {}}
+        else:
+            # add
+            self._buffered.append({'method': method, 'type': type, 'data': data or {}})
+            
+        self.debug('Buffer message {0} for user {1}, buffered size {2}'.format(type, self._user_id, len(self._buffered)))
 
     def flush(self, session):
         self.debug('Flush buffered message')
