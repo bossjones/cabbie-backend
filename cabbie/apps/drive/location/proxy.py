@@ -1,4 +1,5 @@
 import time
+from functools import partial
 
 from django.conf import settings
 from tornado import gen
@@ -9,7 +10,7 @@ from cabbie.apps.drive.location.secret import fetch
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.models import Ride
 from cabbie.utils.geo import distance
-from cabbie.utils.ioloop import delay
+from cabbie.utils.ioloop import delay, cancel
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
@@ -48,6 +49,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._passenger_location = self._source.get('location')
 
         self.passenger_session.ride_proxy = self
+
+        # timeout callback
+        self._timeout_reject = None
 
     def __unicode__(self):
         return u'RideProxy(P{0}-D{1} {2} R{3})'.format(self._passenger_id, 
@@ -113,13 +117,26 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._transition_to(Ride.REQUESTED, update=False)
         self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
 
+        # timeout 30s
+        self._timeout_reject = delay(settings.REQUEST_TIMEOUT, partial(self.reject, 'timeout'))
+
+    def _cancel_timeout_reject(self):
+        self.info('Cancel reject timeout')
+        cancel(self._timeout_reject)
+
     def cancel(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.driver_session.notify_driver_cancel()
         self._transition_to(Ride.CANCELED)
         self._reset_driver()
         self._reset_passenger()
 
     def approve(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.passenger_session.notify_passenger_approve()
         self._transition_to(Ride.APPROVED)
 
@@ -127,16 +144,25 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._refresh_estimate()
 
     def reject(self, reason):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.passenger_session.notify_passenger_reject(reason)
         self._transition_to(Ride.REJECTED, reason=reason)
         self._reset_driver()
         self._reset_passenger()
 
     def arrive(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.passenger_session.notify_passenger_arrive()
         self._transition_to(Ride.ARRIVED)
 
     def board(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.passenger_session.notify_passenger_board()
         self._transition_to(Ride.BOARDED)
 
@@ -144,6 +170,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._boarded_location = self._driver_location
 
     def complete(self, summary):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
         self._reset_driver()
@@ -172,6 +201,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.publish('finished', self)
 
     def passenger_disconnect(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.driver_session:
             self.driver_session.notify_driver_disconnect()
             self.driver_session.ride_proxy = None
@@ -179,6 +211,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.publish('finished', self)
 
     def driver_disconnect(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_passenger_disconnect()
         self._transition_to(Ride.DISCONNECTED, sinner='driver')
