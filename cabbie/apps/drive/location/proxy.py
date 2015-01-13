@@ -292,6 +292,6 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
     def on_driver_session_closed(self, user_id, old_session):
         self.debug('Driver {0} session closed'.format(user_id))
 
-        proxy = self._proxies_by_driver.get(user_id, None)
-        if proxy:
+        proxy = self._proxies_by_driver.pop(user_id, None)
+        if proxy and proxy._state != Ride.DISCONNECTED:
             proxy.driver_disconnect()
