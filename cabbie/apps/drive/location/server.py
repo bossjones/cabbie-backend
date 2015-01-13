@@ -115,8 +115,8 @@ class Session(LoggableMixin, tornado.websocket.WebSocketHandler):
         elif self._role == 'passenger':
             old_ride_proxy = RideProxyManager().get_ride_proxy_by_passenger_id(self._user_id)
         
-        if old_ride_proxy:
-            self.debug('Old ride proxy found for {0} {1}: {2}'.format(self._role, self._user_id, old_ride_proxy))
+        if old_ride_proxy and old_ride_proxy._state in [Ride.APPROVED, Ride.ARRIVED, Ride.BOARDED]:
+            self.debug('Alive old ride proxy found for {0} {1}: {2}'.format(self._role, self._user_id, old_ride_proxy))
             self.ride_proxy = old_ride_proxy
       
         # flush buffered messages

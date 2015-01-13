@@ -54,7 +54,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._timeout_reject = None
 
     def __unicode__(self):
-        return u'RideProxy(P{0}-D{1} {2} R{3})'.format(self._passenger_id, 
+        return u'RideProxy(P-{0}-D-{1} {2} R-{3})'.format(self._passenger_id, 
                                         self._driver_id, self._state, self._ride_id)
 
     @property
