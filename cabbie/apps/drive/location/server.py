@@ -59,6 +59,8 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
                 self._ride_proxy.driver_disconnect()
             elif self.role == 'passenger':
                 self._ride_proxy.passenger_disconnect()
+                
+            self._transition_to(Ride.DISCONNECTED, sinner=self.role)
 
         if self.authenticated:
             SessionManager().remove(self._user_id, self)
