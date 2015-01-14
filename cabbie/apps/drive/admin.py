@@ -13,8 +13,6 @@ def rating_round_off(obj):
 rating_round_off.short_description = u'평점'
 
 class RideAdmin(AbstractAdmin):
-    addable = False
-    deletable = False
     list_filter = ('driver', 'passenger', 'state', 'updated_at', 'created_at')
     search_fields = (
         '=id',
@@ -28,13 +26,53 @@ class RideAdmin(AbstractAdmin):
     list_display = ('id', 'driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
+
+    fieldsets = (
+        (None, { 
+            'fields': (
+                'state',
+            ),
+        }),
+        ('읽기전용', {'fields': ('driver', 'passenger', 'updated_at', 'created_at')}),
+    )
+
     readonly_fields = (
         'passenger', 'driver', 'state_kor', 'source', 'source_location',
         'destination', 'destination_location', rating_round_off, 'ratings_by_category',
         'comment', 'charge_type', 'summary', 'updated_at', 'created_at',
     )
 
+    actions = (
+        'transit_to_completed',
+    )
 
+    def transit_to_completed(self, request, queryset):
+        rides = list(queryset.all())
+        for ride in rides:
+            transit_states = None
+            if ride.state == 'boarded':
+                transit_states = ['completed']
+            elif ride.state == 'approved':
+                transit_states = ['boarded', 'completed']
+            elif ride.state == 'requested':
+                transit_states = ['boarded', 'completed']
+            elif ride.state == 'arrived':
+                transit_states = ['boarded', 'completed']
+            elif ride.state == 'rejected':
+                transit_states = ['boarded', 'completed']
+            elif ride.state == 'disconnected':
+                transit_states = ['boarded', 'completed']
+            elif ride.state == 'canceled':
+                transit_states = ['boarded', 'completed']
+
+            if transit_states:
+                data = ride.histories.latest('id').data
+                
+                for state in transit_states:
+                    data.update({'state': state, 'admin': True })
+                    ride.transit(**data)
+    transit_to_completed.short_description = u'운행완료처리'
+        
 class RideHistoryAdmin(AbstractAdmin):
     addable = False
     deletable = False
