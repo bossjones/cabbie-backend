@@ -143,15 +143,15 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     # -----------
 
     def handle_driver_update_location(self, location, charge_type):
-        #self.debug('Updating location to {0} (charge_type: {1})'.format(
-            #location, charge_type))
 
         if self.ride_proxy:
             # If there is already ride match, just forward the location info to
             # passenger
+            self.debug('Updating location to {0} to {1}'.format(location, self.ride_proxy.passenger_session))
             self.ride_proxy.update_driver_location(location)
         else:
             # Otherwise, report to the location manager
+            self.debug('Updating location to {0}'.format(location))
             DriverManager().update_location(self._user_id, location,
                                             charge_type)
 
