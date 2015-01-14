@@ -125,8 +125,9 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         self.send('auth_succeeded')
     
         # link old ride proxy
-        old_ride_proxy = None
-        if self._role == 'passenger':
+        if self._role == 'driver':
+            old_ride_proxy = RideProxyManager().get_ride_proxy_by_driver_id(self._user_id)
+        elif self._role == 'passenger':
             old_ride_proxy = RideProxyManager().get_ride_proxy_by_passenger_id(self._user_id)
         
         if old_ride_proxy and old_ride_proxy._state in [Ride.APPROVED, Ride.ARRIVED, Ride.BOARDED]:
