@@ -19,10 +19,10 @@ class RideAdmin(AbstractAdmin):
     search_fields = (
         '=id',
         'passenger__name',
-        '^passenger__phone',
+        'passenger__phone',
         '=passenger__email',
         'driver__name',
-        '^driver__phone',
+        'driver__phone',
     )
     ordering = ('-updated_at',) 
     list_display = ('id', 'driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
@@ -41,12 +41,20 @@ class RideHistoryAdmin(AbstractAdmin):
     search_fields = (
         '=ride__id',
         'driver__name',
-        '^driver__phone',
+        'driver__phone',
     )
     list_filter = ('driver', 'state',)
-    list_display = ('id', 'ride', 'driver', 'state', 'passenger_location',
-                    'driver_location', 'created_at')
+    list_display = ('ride', 'driver', 'passenger', 'state_kor', 'reject_reason', 'passenger_location',
+                    'driver_location', 'updated_at', 'created_at')
 
+    def passenger(self, obj):
+        return obj.ride.passenger
+
+    def state_kor(self, obj):
+        return Ride.STATE_EXPRESSION.get(obj.state, '')
+
+    def reject_reason(self, obj):
+        return Ride.REASON_EXPRESSION.get(obj.ride.reason, '')
 
 class FavoriteAdmin(AbstractAdmin):
     addable = False

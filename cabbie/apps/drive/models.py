@@ -96,6 +96,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         verbose_name = u'배차'
         verbose_name_plural = u'배차'
 
+    def __unicode__(self):
+        return u'{id}'.format(id=self.id)
+
     def source_address(self):
         return self.source.get('address', '')
     source_address.short_description = u'출발지 주소'

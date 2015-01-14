@@ -312,6 +312,7 @@ ESTIMATE_CACHE_DISTANCE = 20            # meters
 CANDIDATE_COUNT = 50
 REASSIGN_COUNT = 50
 
+REQUEST_TIMEOUT = 30                    # seconds
 
 # Bot
 # ---
