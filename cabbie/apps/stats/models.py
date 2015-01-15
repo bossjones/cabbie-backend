@@ -86,7 +86,14 @@ class AbstractRideStatModel(AbstractTimestampModel):
     _rating_count_security.short_description = u'안전 총수' 
     rating_count_security = property(_rating_count_security)
 
-               
+    def _remove_rating(self, ride_id):
+        try:
+            del self.ratings[u'{id}'.format(id=ride_id)]
+        except KeyError:
+            pass
+
+    def _remove_ride(self, ride_id):
+        self.rides = [id for id in self.rides if id != ride_id]
 
     class Meta(AbstractTimestampModel.Meta):
         abstract = True
