@@ -14,6 +14,9 @@ rating_round_off.short_description = u'평점'
 
 class RideAdmin(AbstractAdmin):
     deletable = True 
+
+    list_max_show_all = 1000
+     
     list_filter = ('driver', 'passenger', 'state', 'updated_at', 'created_at')
     search_fields = (
         '=id',
