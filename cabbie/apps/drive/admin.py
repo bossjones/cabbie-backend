@@ -56,25 +56,32 @@ class RideAdmin(AbstractAdmin):
             transit_states = None
             if ride.state == 'boarded':
                 transit_states = ['completed']
+
+            elif ride.state == 'requested':
+                transit_states = ['approved', 'boarded', 'completed']
+
             elif ride.state == 'approved':
                 transit_states = ['boarded', 'completed']
-            elif ride.state == 'requested':
-                transit_states = ['boarded', 'completed']
+
             elif ride.state == 'arrived':
                 transit_states = ['boarded', 'completed']
+
             elif ride.state == 'rejected':
-                transit_states = ['boarded', 'completed']
-            elif ride.state == 'disconnected':
-                transit_states = ['boarded', 'completed']
+                transit_states = ['approved', 'boarded', 'completed']
+
             elif ride.state == 'canceled':
-                transit_states = ['boarded', 'completed']
+                transit_states = ['approved', 'boarded', 'completed']
+
+            elif ride.state == 'disconnected':
+                transit_states = ['approved', 'boarded', 'completed']
 
             if transit_states:
                 data = ride.histories.latest('id').data
                 
                 for state in transit_states:
                     data.update({'state': state, 'admin': True })
-                    ride.transit(**data)
+                    if len(ride.histories.filter(state=state).all()) == 0:
+                        ride.transit(**data)
     transit_to_completed.short_description = u'운행완료처리'
         
 class RideHistoryAdmin(AbstractAdmin):
@@ -86,7 +93,7 @@ class RideHistoryAdmin(AbstractAdmin):
         'driver__phone',
     )
     list_filter = ('driver', 'state',)
-    list_display = ('ride', 'driver', 'passenger', 'state_kor', 'reject_reason', 'passenger_location',
+    list_display = ('ride', 'driver', 'passenger', 'state_kor', 'reject_reason', 'admin', 'passenger_location',
                     'driver_location', 'updated_at', 'created_at')
 
     def passenger(self, obj):
@@ -96,7 +103,13 @@ class RideHistoryAdmin(AbstractAdmin):
         return Ride.STATE_EXPRESSION.get(obj.state, '')
 
     def reject_reason(self, obj):
-        return Ride.REASON_EXPRESSION.get(obj.ride.reason, '')
+        return Ride.REASON_EXPRESSION.get(obj.ride.reason, '') if obj.state == Ride.REJECTED else ''
+
+    def admin(self, obj):
+        if obj.is_admin:
+            return u'어드민'
+        else:
+            return ''
 
 class FavoriteAdmin(AbstractAdmin):
     addable = False

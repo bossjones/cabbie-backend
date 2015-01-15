@@ -245,6 +245,11 @@ class RideHistory(AbstractTimestampModel):
         verbose_name = u'배차 이력'
         verbose_name_plural = u'배차 이력'
 
+    def _is_admin(self):
+        return self.data.get('admin', False)
+    _is_admin.short_description = u'어드민'
+    is_admin = property(_is_admin)
+
 
 class Favorite(AbstractTimestampModel):
     passenger = models.ForeignKey(Passenger, related_name='favorites',
