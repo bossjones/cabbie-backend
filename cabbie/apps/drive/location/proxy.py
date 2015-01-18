@@ -163,20 +163,25 @@ class RideProxy(LoggableMixin, PubsubMixin):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
-        self.passenger_session.notify_passenger_board()
+        self.passenger_session.notify_passenger_board(self._ride_id)
+
+        # boarded = completed
         self._transition_to(Ride.BOARDED)
+        self._transition_to(Ride.COMPLETED, summary={})
 
         self._boarded_at = time.time()
         self._boarded_location = self._driver_location
 
+        self._reset_driver()
+        self._reset_passenger()
+
+    # deprecated
     def complete(self, summary):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
         self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
-        self._reset_driver()
-        self._reset_passenger()
 
     def update_driver_location(self, location):
         self._driver_location = location
@@ -205,9 +210,8 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._cancel_timeout_reject()
 
         if self.driver_session:
-            self.driver_session.notify_driver_disconnect()
+            self.driver_session.notify_passenger_disconnect()
             self.driver_session.ride_proxy = None
-        self._transition_to(Ride.DISCONNECTED, sinner='passenger')
         self.publish('finished', self)
 
     def driver_disconnect(self):
@@ -215,8 +219,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._cancel_timeout_reject()
 
         if self.passenger_session:
-            self.passenger_session.notify_passenger_disconnect()
-        self._transition_to(Ride.DISCONNECTED, sinner='driver')
+            self.passenger_session.notify_driver_disconnect()
         self._reset_driver()
 
     def _transition_to(self, state, update=True, **kwargs):
@@ -274,6 +277,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
                 yield fetch(url, self._update_queue.pop(0))
 
 class RideProxyManager(LoggableMixin, SingletonMixin):
+
+    disconnectable_state = [Ride.REQUESTED]
+
     def __init__(self):
         super(RideProxyManager, self).__init__()
         self._proxies_by_passenger = {}
@@ -320,13 +326,25 @@ class RideProxyManager(LoggableMixin, SingletonMixin):
         self.debug('Passenger {0} session closed'.format(user_id))
 
         proxy = self._proxies_by_passenger.get(user_id, None)
+
+        # notify to self
+        old_session.notify_passenger_disconnect()            
+
+        # notify to counterpart
         if proxy:
             #proxy.passenger_disconnect()
             pass
+
+
 
     def on_driver_session_closed(self, user_id, old_session):
         self.debug('Driver {0} session closed'.format(user_id))
 
         proxy = self._proxies_by_driver.pop(user_id, None)
-        if proxy and proxy._state not in [Ride.DISCONNECTED, Ride.CANCELED, Ride.REJECTED, Ride.BOARDED, Ride.COMPLETED, Ride.RATED]:
+
+        #notify to self
+        old_session.notify_driver_disconnect()
+
+        # REQUESTED, APPROVED, ARRIVED
+        if proxy and proxy._state in self.disconnectable_state:
             proxy.driver_disconnect()

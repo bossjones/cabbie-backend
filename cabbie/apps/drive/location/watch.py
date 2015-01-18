@@ -88,7 +88,7 @@ class WatchManager(LoggableMixin, SingletonMixin):
             self.assign(passenger_id)
 
     def unwatch(self, passenger_id):
-        watch = self._watches_by_passenger[passenger_id]
+        watch = self._watches_by_passenger.get(passenger_id, None)
         if watch:
             self._remove_matches_by_watch(watch)
 

@@ -26,6 +26,28 @@ class AbstractRideStatModel(AbstractTimestampModel):
     _count.short_description = u'횟수'
     count = property(_count)
 
+    def _count_without_admin(self):
+        if self.state != Ride.REJECTED and self.state != Ride.CANCELED:
+            return self._count()
+
+        count = 0
+        for ride_id in self.rides:
+            try:
+                ride = Ride.objects.get(id=ride_id)
+            except Ride.DoesNotExists:
+                continue
+            else:
+                is_admin = False
+                is_admin = any([history.is_admin for history in ride.histories.all()])
+                if not is_admin:
+                    count += 1
+
+        return count
+    _count_without_admin.short_description = u'실제횟수'
+    count_without_admin = property(_count_without_admin)
+                
+
+
     # property rating
     def _rating(self):
         value = 0
@@ -86,7 +108,14 @@ class AbstractRideStatModel(AbstractTimestampModel):
     _rating_count_security.short_description = u'안전 총수' 
     rating_count_security = property(_rating_count_security)
 
-               
+    def _remove_rating(self, ride_id):
+        try:
+            del self.ratings[u'{id}'.format(id=ride_id)]
+        except KeyError:
+            pass
+
+    def _remove_ride(self, ride_id):
+        self.rides = [id for id in self.rides if id != ride_id]
 
     class Meta(AbstractTimestampModel.Meta):
         abstract = True

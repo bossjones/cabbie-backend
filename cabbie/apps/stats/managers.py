@@ -57,6 +57,24 @@ class DriverRideStatMonthManager(models.Manager):
         # update rating in driver account, only done from month stat
         ride.driver._update_rating()
 
+    def sync_delete(self, ride_history):
+        if not ride_history.driver:
+            return
+
+        date = ride_history.ride.created_at.date()
+        stat, created = self.get_or_create(
+            driver=ride_history.driver, year=date.year, month=date.month,
+            state=ride_history.state)
+
+        # rides
+        if ride_history.ride.id in stat.rides:
+            pass
+        else:
+            stat.rides.append(ride_history.ride.id)
+        
+        stat.save(update_fields=['rides'])
+    
+
 class DriverRideStatWeekManager(models.Manager):
     def sync(self, ride_history):
         if not ride_history.driver:
