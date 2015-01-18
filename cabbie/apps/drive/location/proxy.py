@@ -210,7 +210,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._cancel_timeout_reject()
 
         if self.driver_session:
-            self.driver_session.notify_driver_disconnect()
+            self.driver_session.notify_passenger_disconnect()
             self.driver_session.ride_proxy = None
         self.publish('finished', self)
 
@@ -219,7 +219,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._cancel_timeout_reject()
 
         if self.passenger_session:
-            self.passenger_session.notify_passenger_disconnect()
+            self.passenger_session.notify_driver_disconnect()
         self._reset_driver()
 
     def _transition_to(self, state, update=True, **kwargs):

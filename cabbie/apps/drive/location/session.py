@@ -49,7 +49,6 @@ class SessionManager(LoggableMixin, SingletonMixin, PubsubMixin):
     # unavailable
 
     session_close_timeout = settings.SESSION_CLOSE_TIMEOUT
-    ping_interval = 1
 
     def __init__(self):
         super(SessionManager, self).__init__()
@@ -86,10 +85,3 @@ class SessionManager(LoggableMixin, SingletonMixin, PubsubMixin):
                 self.publish('{role}_closed'.format(role=old_session.role),
                             user_id, old_session)
         delay(self.session_close_timeout, on_delay)
-
-    def _ping(self):
-        for user_id, session in self._sessions.iteritems():
-            self.debug('Ping user {0} session {1}'.format(user_id, session.ws_connection))
-            session.ping('')
-
-        delay(self.ping_interval, self._ping)

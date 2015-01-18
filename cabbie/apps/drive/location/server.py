@@ -20,6 +20,9 @@ from cabbie.utils.pubsub import PubsubMixin
 class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     """Represents a (web)socket session of driver or passenger."""
 
+    heartbeating_interval = 1
+    dead_point = 10
+    
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
         self._user_id = None
@@ -29,22 +32,33 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     def _ping(self):
         try:
-            self.info('Ping from session {0}'.format(hex(id(self))))
             self.ping('data')
             self._ping_count += 1
-
+            
         except tornado.websocket.WebSocketClosedError:
             self.info('Close session {0} which cannot ping'.format(hex(id(self))))
+
+            if self.authenticated:
+                SessionManager().remove(self._user_id, self)
+                self.debug('Closed {0}'.format(hex(id(self))))
+
             self.close()
             return
 
-        if self._ping_count == 3:
-            self.info('Close session {0} which cannot get pong 3 times'.format(hex(id(self))))
-            self.close();
+        if self._ping_count == self.dead_point:
+            self.info('Close session {0} which cannot get pong {1} times'.format(hex(id(self)), self.dead_point))
 
-        delay(1, self._ping)
+            if self.authenticated:
+                SessionManager().remove(self._user_id, self)
+                self.debug('Closed {0}'.format(hex(id(self))))
+
+            self.close();
+            return
+
+        delay(self.heartbeating_interval, self._ping)
 
     def on_pong(self, data):
+        # remove session buffer
         self._ping_count -= 1
 
     def __unicode__(self):
@@ -71,8 +85,6 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     def open(self):
         self.debug('Opened {0}'.format(hex(id(self))))
 
-        self._ping()
-
     def on_close(self):
         # Ride.REQUESTED, broadcast immediately
         if self.authenticated and self._ride_proxy and self._ride_proxy._state == Ride.REQUESTED:
@@ -83,7 +95,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
             elif self.role == 'passenger':
                 self._ride_proxy.passenger_disconnect()
                 
-            self._transition_to(Ride.DISCONNECTED, sinner=self.role)
+            self._ride_proxy._transition_to(Ride.DISCONNECTED, sinner=self.role)
 
         if self.authenticated:
             SessionManager().remove(self._user_id, self)
@@ -155,7 +167,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         elif self._role == 'passenger':
             old_ride_proxy = RideProxyManager().get_ride_proxy_by_passenger_id(self._user_id)
         
-        if old_ride_proxy and old_ride_proxy._state in [Ride.APPROVED, Ride.ARRIVED, Ride.BOARDED]:
+        if old_ride_proxy and old_ride_proxy._state in [Ride.REQUESTED, Ride.APPROVED, Ride.ARRIVED, Ride.BOARDED]:
             self.debug('Alive old ride proxy found for {0} {1}: {2}'.format(self._role, self._user_id, old_ride_proxy))
             self.ride_proxy = old_ride_proxy
       
@@ -163,6 +175,9 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         session_buffer = SessionBufferManager().get_or_create(self._user_id)
         session_buffer.flush(self) 
         SessionBufferManager().remove(self._user_id)
+
+        # start heartbeating
+        self._ping()
 
     # Driver-side
     # -----------
@@ -336,6 +351,10 @@ class SessionBuffer(LoggableMixin):
             self._buffered.append({'method': method, 'type': type, 'data': data or {}})
             
         self.debug('Buffer message {0} for user {1}, buffered size {2}'.format(type, self._user_id, len(self._buffered)))
+
+    @property
+    def size(self):
+        return len(self._buffered)
 
     def flush(self, session):
         self.debug('Flush buffered message')
