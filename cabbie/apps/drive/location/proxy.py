@@ -163,20 +163,25 @@ class RideProxy(LoggableMixin, PubsubMixin):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
-        self.passenger_session.notify_passenger_board()
+        self.passenger_session.notify_passenger_board(self._ride_id)
+
+        # boarded = completed
         self._transition_to(Ride.BOARDED)
+        self._transition_to(Ride.COMPLETED, summary={})
 
         self._boarded_at = time.time()
         self._boarded_location = self._driver_location
 
+        self._reset_driver()
+        self._reset_passenger()
+
+    # deprecated
     def complete(self, summary):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
         self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
-        self._reset_driver()
-        self._reset_passenger()
 
     def update_driver_location(self, location):
         self._driver_location = location

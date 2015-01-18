@@ -9,7 +9,7 @@ from cabbie.apps.drive.location.proxy import RideProxyManager
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.location.watch import WatchManager
 from cabbie.utils import json
-from cabbie.utils.ioloop import start
+from cabbie.utils.ioloop import start, delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
@@ -25,6 +25,27 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         self._user_id = None
         self._role = None
         self._ride_proxy = None
+        self._ping_count = 0
+
+    def _ping(self):
+        try:
+            self.info('Ping from session {0}'.format(hex(id(self))))
+            self.ping('data')
+            self._ping_count += 1
+
+        except tornado.websocket.WebSocketClosedError:
+            self.info('Close session {0} which cannot ping'.format(hex(id(self))))
+            self.close()
+            return
+
+        if self._ping_count == 3:
+            self.info('Close session {0} which cannot get pong 3 times'.format(hex(id(self))))
+            self.close();
+
+        delay(1, self._ping)
+
+    def on_pong(self, data):
+        self._ping_count -= 1
 
     def __unicode__(self):
         return (u'Session({role}-{id})'.format(role=self._role[0].upper(),
@@ -49,6 +70,8 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     def open(self):
         self.debug('Opened {0}'.format(hex(id(self))))
+
+        self._ping()
 
     def on_close(self):
         # Ride.REQUESTED, broadcast immediately
@@ -92,7 +115,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         except tornado.websocket.WebSocketClosedError, e:
             self.info('Send message {type} error, close this session {session}'.format(type=type, session=hex(id(self))))
             self.close()
-
+    
 
     def send_error(self, error_msg=None):
         self.send('error', {'msg': error_msg or ''})
@@ -167,7 +190,10 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     def handle_driver_reject(self, reason):
         self.info('Rejected')
-        self.ride_proxy.reject(reason)
+
+        if self.ride_proxy:
+            self.info('No proxy, seems already timed out by server')
+            self.ride_proxy.reject(reason)
 
     def handle_driver_arrive(self):
         self.info('Arrived')
@@ -178,8 +204,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         self.ride_proxy.board()
 
     def handle_driver_complete(self, summary):
-        self.info('Completed')
-        self.ride_proxy.complete(summary)
+        self.info('Complete, but do not handle')
 
     def notify_driver_request(self, passenger, source, destination, additional_message):
         self.send('driver_requested', {
@@ -261,8 +286,10 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     def notify_passenger_arrive(self):
         self.send('passenger_arrived')
 
-    def notify_passenger_board(self):
-        self.send('passenger_boarded')
+    def notify_passenger_board(self, ride_id):
+        self.send('passenger_boarded', {
+            'ride_id': ride_id,
+        })
 
     def notify_passenger_journey(self, location, journey):
         self.send('passenger_journey', {
@@ -270,6 +297,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
             'journey': journey,
         })
 
+    # deprecated
     def notify_passenger_complete(self, summary, ride_id):
         self.send('passenger_completed', {
             'ride_id': ride_id,
@@ -357,8 +385,10 @@ class SessionBuffer(LoggableMixin):
     def notify_passenger_arrive(self):
         self._buffer('notify_passenger_arrive', 'passenger_arrived')
 
-    def notify_passenger_board(self):
-        self._buffer('notify_passenger_board', 'passenger_boarded')
+    def notify_passenger_board(self, ride_id):
+        self._buffer('notify_passenger_board', 'passenger_boarded', {
+            'ride_id': ride_id,
+        })
 
     def notify_passenger_journey(self, location, journey):
         self._buffer('notify_passenger_journey', 'passenger_journey', {
