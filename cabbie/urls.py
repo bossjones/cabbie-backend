@@ -135,6 +135,9 @@ urlpatterns += patterns('',
     url(r'^api/drivers/reserve',
         import_('cabbie.apps.account.views.DriverReserveView').as_view()), 
     
+    url(r'^api/user/update_push_id',
+        import_('cabbie.apps.account.views.UserUpdatePushIdView').as_view()), 
+    
     url(r'^api/', include(router.urls)),
 )
 

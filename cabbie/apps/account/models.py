@@ -61,6 +61,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     is_sms_agreed = models.BooleanField(u'SMS 수신동의', default=False)
     is_email_agreed = models.BooleanField(u'이메일 수신동의', default=False)
 
+    # Push
+    push_id = models.CharField(u'푸시아이디', max_length=30, default='')
+
     objects = UserManager()
 
     class Meta:
