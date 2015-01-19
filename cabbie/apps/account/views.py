@@ -331,7 +331,21 @@ class UserQueryView(APIView):
 
 
         return self.render_error('phone 또는 email을 입력해 주세요.') 
-            
+  
+class UserUpdatePushIdView(APIView):
+    def post(self, request, *args, **kwargs):
+        
+        try:
+            user = User.objects.get(pk=request.user.id)
+        except User.DoesNotExist:
+            return self.render_error('Not authenticated user')
+        else:
+            push_id = '{0}_user_{1}'.format(request.DATA['prefix'], request.user.id)
+            user.push_id = push_id
+            user.save(update_fields=['push_id'])
+
+            return self.render()
+
 class DriverReserveView(APIView):
     permission_classes = (AllowAny,)
 
