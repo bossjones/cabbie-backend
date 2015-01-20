@@ -32,7 +32,7 @@ class ModelManager(LoggableMixin, SingletonMixin):
             'id': user.id,
             'name': user.name,
             'phone': user.phone,
-            'app_version', user.app_version,
+            'app_version': user.app_version,
         }
         if isinstance(user, Passenger):
             serialized.update({

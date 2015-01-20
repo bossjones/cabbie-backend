@@ -62,7 +62,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self.debug('Detect ride {0}'.format(state))
 
         destroy_state = Ride.BOARDED
-        driver_app_version = self.driver.app_version
+        driver_app_version = self.driver['app_version']
+
+        self.info('Driver app version {0}'.format(driver_app_version))
 
         if driver_app_version:
             destroy_state = Ride.COMPLETED
@@ -73,7 +75,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
             self._reset_passenger()
             return
 
-        delay(self.LOCATION_DB_SYNC_INTERVAL, self._destroy)
+        delay(self.sync_interval, self._destroy)
 
     def __unicode__(self):
         return u'RideProxy(P-{0}-D-{1} {2} R-{3})'.format(self._passenger_id, 
