@@ -221,8 +221,9 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     def handle_driver_complete(self, summary):
         self.info('Complete, but do not handle')
 
-    def notify_driver_request(self, passenger, source, destination, additional_message):
+    def notify_driver_request(self, ride_id, passenger, source, destination, additional_message):
         self.send('driver_requested', {
+            'ride_id': ride_id,
             'passenger': passenger,
             'source': source,
             'destination': destination,

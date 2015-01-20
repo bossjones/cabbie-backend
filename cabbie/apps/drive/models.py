@@ -193,11 +193,18 @@ class Ride(IncrementMixin, AbstractTimestampModel):
 
 
     def transit(self, **data):
+
+        old_state = self.state
+
         for field in ('state', 'driver_id', 'charge_type', 'summary', 'reason'):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
         self.save()
+
+        # ignore state transition when already rated
+        if old_state == self.RATED:
+            self.state = old_state
 
         passenger_location = (Point(*data['passenger_location'])
                               if 'passenger_location' in data else None)

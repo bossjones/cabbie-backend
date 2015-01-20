@@ -305,6 +305,7 @@ TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
 ESTIMATE_CACHE_TIMEOUT = 5              # seconds
 LOCATION_REFRESH_INTERVAL = 3           # seconds
 RIDE_ESTIMATE_REFRESH_INTERVAL = 10     # seconds
+LOCATION_DB_SYNC_INTERVAL = 10          # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
 SESSION_CLOSE_TIMEOUT = 5               # seconds
 MAX_DISTANCE = 5 * 1000                 # meters
@@ -358,6 +359,9 @@ register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
 
 MESSAGE_RIDE_COMPLETE_TITLE = u'목적지 도착!'
 MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가해 주세요. (10초소요)'
+
+MESSAGE_RIDE_BOARD_TITLE = u'탑승완료'
+MESSAGE_RIDE_BOARD_ALERT = u'백기사를 이용해 주셔서 감사합니다. 편안한 시간되세요!'
 
 # SMS
 # ---

@@ -167,7 +167,10 @@ class GeoReverseView(APIView):
 
 class InternalRideCreateView(InternalView):
     def post(self, request):
+
         data = json.loads(request.body)
+
+        data['state'] = 'requested'
 
         source = data['source']
         destination = data['destination']
@@ -207,3 +210,14 @@ class InternalRideUpdateView(InternalView):
         ride = self._get_ride(pk)
         ride.transit(**data)
         return self.render_json()
+
+class InternalRideFetchView(InternalView):
+    def _get_ride(self, pk):
+        try:
+            return RideHistory.objects.filter(ride__id=pk).latest('updated_at')
+        except Ride.DoesNotExist:
+            raise Http404
+
+    def post(self, request, pk=None):
+        ride = self._get_ride(pk)
+        return self.render_json({'state': ride.state})
