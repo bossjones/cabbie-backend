@@ -67,9 +67,9 @@ class SessionManager(LoggableMixin, SingletonMixin, PubsubMixin):
                      user_id, session)
 
     def remove(self, user_id, session):
-        old_session = self._sessions.get(user_id)
+        old_session = self._sessions.get(user_id, None)
 
-        if id(session) != id(old_session):
+        if old_session is not None and id(session) != id(old_session):
             self.info('Don\'t remove old_session {0} because closed one is {1}'.format(hex(id(old_session)), hex(id(session))))
             return
 

@@ -22,7 +22,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     heartbeating_interval = 1
     dead_point = 10
-    
+
     def __init__(self, *args, **kwargs):
         super(Session, self).__init__(*args, **kwargs)
         self._user_id = None
@@ -36,13 +36,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
             self._ping_count += 1
             
         except tornado.websocket.WebSocketClosedError:
-            self.info('Close session {0} which cannot ping'.format(hex(id(self))))
-
-            if self.authenticated:
-                SessionManager().remove(self._user_id, self)
-                self.debug('Closed {0}'.format(hex(id(self))))
-
-            self.close()
+            self.info('Closed session {0}, finish ping'.format(hex(id(self))))
             return
 
         if self._ping_count == self.dead_point:
@@ -125,8 +119,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         try:
             self.write_message(json.dumps({'type': type, 'data': data or {}}))
         except tornado.websocket.WebSocketClosedError, e:
-            self.info('Send message {type} error, close this session {session}'.format(type=type, session=hex(id(self))))
-            self.close()
+            self.info('Closed session {session}, ignore to send message {type}'.format(session=hex(id(self)), type=type))
     
 
     def send_error(self, error_msg=None):
@@ -221,8 +214,9 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
     def handle_driver_complete(self, summary):
         self.info('Complete, but do not handle')
 
-    def notify_driver_request(self, passenger, source, destination, additional_message):
+    def notify_driver_request(self, ride_id, passenger, source, destination, additional_message):
         self.send('driver_requested', {
+            'ride_id': ride_id,
             'passenger': passenger,
             'source': source,
             'destination': destination,
