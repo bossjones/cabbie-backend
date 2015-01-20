@@ -6,7 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from cabbie.apps.drive.models import Ride, Favorite, Hotspot
+from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.apps.stats.models import DriverRideStatWeek
