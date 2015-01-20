@@ -78,8 +78,8 @@ class DriverBot(Bot):
         self._update_location()
         self._move()
 
-    def handle_driver_requested(self, source, destination, passenger, additional_message):
-        self.info('Requested from {0}'.format(passenger))
+    def handle_driver_requested(self, ride_id, source, destination, passenger, additional_message):
+        self.info('Requested from {0}, ride id {1}'.format(passenger, ride_id))
 
         if self._reject_dice.roll():
             delay(self.gentle_delay, self._reject)

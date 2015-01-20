@@ -64,6 +64,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     # Push
     push_id = models.CharField(u'푸시아이디', max_length=30, default='')
 
+    # App version
+    app_version = models.CharField(u'앱버전', max_length=10, default='')
+
     objects = UserManager()
 
     class Meta:

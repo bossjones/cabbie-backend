@@ -6,7 +6,7 @@ from tornado import gen
 
 from cabbie.apps.drive.location.estimate import HaversineEstimator
 from cabbie.apps.drive.location.model import ModelManager
-from cabbie.apps.drive.location.secret import fetch
+from cabbie.apps.drive.location.secret import fetch, post
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.models import Ride
 from cabbie.utils.geo import distance
@@ -22,7 +22,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     create_path = '/_/drive/ride/create'
     update_path = '/_/drive/ride/{pk}/update'
+    fetch_path = '/_/drive/ride/{pk}/fetch'
     refresh_interval = settings.RIDE_ESTIMATE_REFRESH_INTERVAL
+    sync_interval = settings.LOCATION_DB_SYNC_INTERVAL 
 
     def __init__(self, passenger_id, source, destination, additional_message):
         super(RideProxy, self).__init__()
@@ -52,6 +54,28 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
         # timeout callback
         self._timeout_reject = None
+
+    def _destroy(self):
+       
+        state = self._fetch_state() 
+        
+        self.debug('Detect ride {0}'.format(state))
+
+        destroy_state = Ride.BOARDED
+        driver_app_version = self.driver['app_version']
+
+        self.info('Driver app version {0}'.format(driver_app_version))
+
+        if driver_app_version:
+            destroy_state = Ride.COMPLETED
+
+        if state == destroy_state:
+            self.info('Detect ride {0}, destroy, driver version {1}'.format(state, driver_app_version))
+            self._reset_driver()
+            self._reset_passenger()
+            return
+
+        delay(self.sync_interval, self._destroy)
 
     def __unicode__(self):
         return u'RideProxy(P-{0}-D-{1} {2} R-{3})'.format(self._passenger_id, 
@@ -108,14 +132,16 @@ class RideProxy(LoggableMixin, PubsubMixin):
     # -------------
 
     def request(self):
+        self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
+
         self.driver_session.notify_driver_request(**{
+            'ride_id': self._ride_id,
             'passenger': ModelManager().get_passenger(self._passenger_id),
             'source': self._source,
             'destination': self._destination,
             'additional_message': self._additional_message,
         })
         self._transition_to(Ride.REQUESTED, update=False)
-        self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
 
         # timeout 30s
         self._timeout_reject = delay(settings.REQUEST_TIMEOUT, partial(self.reject, 'timeout'))
@@ -143,6 +169,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
         # Start periodic refreshing
         self._refresh_estimate()
 
+        # self destroy : boarded, rejected, canceled, disconnected
+        self._destroy()
+
+
     def reject(self, reason):
         # cancel timed out reject
         self._cancel_timeout_reject()
@@ -165,15 +195,11 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
         self.passenger_session.notify_passenger_board(self._ride_id)
 
-        # boarded = completed
+        # boarded 
         self._transition_to(Ride.BOARDED)
-        self._transition_to(Ride.COMPLETED, summary={})
 
         self._boarded_at = time.time()
         self._boarded_location = self._driver_location
-
-        self._reset_driver()
-        self._reset_passenger()
 
     # deprecated
     def complete(self, summary):
@@ -255,15 +281,24 @@ class RideProxy(LoggableMixin, PubsubMixin):
             'charge_type': self._driver_charge_type,
         }
 
-    @gen.coroutine
     def _create(self, **kwargs):
         data = self._common()
         data.update(kwargs)
-        payload = yield fetch(self.create_path, data)
+        payload = post(self.create_path, data)
         if payload['status'] != 'success':
             self.error('Failed to create a ride entry')
         else:
             self._ride_id = payload['data']['id']
+
+    def _fetch_state(self, **kwargs):
+        url = self.fetch_path.format(pk=self._ride_id)
+        payload = post(url)
+        if payload['status'] != 'success':
+            self.error('Failed to fetch a ride state')
+            return 'unknown'
+        else:
+            return payload['data']['state']
+
 
     @gen.coroutine
     def _update(self, **kwargs):

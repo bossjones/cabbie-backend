@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.apps.appversion.models import AndroidDriver, AndroidPassenger
 from cabbie.apps.appversion.serializers import AndroidDriverSerializer, AndroidPassengerSerializer
+from cabbie.apps.account.models import User
 
 # REST
 # ----
@@ -11,10 +12,27 @@ from cabbie.apps.appversion.serializers import AndroidDriverSerializer, AndroidP
 class AbstractAndroidApplicationVersionView(APIView):
     permission_classes = (AllowAny,)
 
+    def get(self, request, *args, **kwargs):
+        
+        app_version = request.GET.get('app_version', None)
+        user_id = request.GET.get('id', None)
+
+        if app_version is not None and user_id is not None:
+            try:
+                user = User.objects.get(pk=user_id)
+            except User.DoesNotExist, e:
+                pass
+            else:
+                user.app_version = app_version
+                user.save(update_fields=['app_version'])
+
+
 
 class AndroidDriverView(AbstractAndroidApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
+        super(AndroidDriverView, self).get(request, *args, **kwargs)
+
         ordered = AndroidDriver.objects.order_by('-version_code')
         
         if ordered:
@@ -27,6 +45,8 @@ class AndroidDriverView(AbstractAndroidApplicationVersionView):
 class AndroidPassengerView(AbstractAndroidApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
+        super(AndroidPassengerView, self).get(request, *args, **kwargs)
+
         ordered = AndroidPassenger.objects.order_by('-version_code') 
         
         if ordered:

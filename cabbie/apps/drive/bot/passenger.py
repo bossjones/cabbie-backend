@@ -95,7 +95,7 @@ class PassengerBot(Bot):
 
         self._state = self.ARRIVED
 
-    def handle_passenger_boarded(self):
+    def handle_passenger_boarded(self, ride_id):
         self.info('Boarded')
 
         self._state = self.BOARDED
