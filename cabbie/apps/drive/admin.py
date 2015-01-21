@@ -90,7 +90,7 @@ class RideAdmin(AbstractAdmin):
         
 class RideHistoryAdmin(AbstractAdmin):
     addable = False
-    deletable = False
+    deletable = True 
     search_fields = (
         '=ride__id',
         'driver__name',
