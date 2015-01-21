@@ -75,6 +75,10 @@ class RideAdmin(AbstractAdmin):
             elif ride.state == 'disconnected':
                 transit_states = ['approved', 'boarded', 'completed']
 
+            elif ride.state == 'rated':
+                transit_states = ['approved', 'boarded', 'completed']
+            
+
             if transit_states:
                 data = ride.histories.latest('id').data
                 
