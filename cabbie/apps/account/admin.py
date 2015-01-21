@@ -54,7 +54,7 @@ class DriverForm(forms.ModelForm):
 class DriverAdmin(AbstractAdmin):
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'name', 'taxi_type', 'car_number', 'car_model', 'company',
+    list_display = ('id', 'phone', 'name', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'current_month_board_count', 'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
@@ -94,6 +94,7 @@ class DriverAdmin(AbstractAdmin):
         'last_active_at',
     )
     list_filter = (
+        'app_version',
         'taxi_type',
         'is_verified',
         'is_accepted',
@@ -178,7 +179,7 @@ class DriverAdmin(AbstractAdmin):
 
 class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'email', 'name', 'point',
+    list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
                     'current_month_board_count', 'previous_month_board_count',
                     'board_count', 'passenger_recommend_count',
@@ -206,6 +207,7 @@ class PassengerAdmin(AbstractAdmin):
         'passenger_recommend_count', 'recommended_count'
     )
     list_filter = (
+        'app_version',
         ('date_joined', DateRangeFilter),
     )
     actions = (

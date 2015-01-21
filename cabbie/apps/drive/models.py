@@ -200,11 +200,13 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
-        self.save()
 
         # ignore state transition when already rated
         if old_state == self.RATED:
-            self.state = old_state
+            pass
+        else:
+            self.save()
+
 
         passenger_location = (Point(*data['passenger_location'])
                               if 'passenger_location' in data else None)
