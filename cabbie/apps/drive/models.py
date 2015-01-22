@@ -201,6 +201,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             if value:
                 setattr(self, field, value)
 
+        if self.state == old_state:
+            return
+
         # ignore state transition when already rated
         if old_state == self.RATED:
             pass
@@ -220,7 +223,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             state=self.state,
             passenger_location=passenger_location,
             driver_location=driver_location,
-            data=data,
         )
 
         if self.state == self.BOARDED:
