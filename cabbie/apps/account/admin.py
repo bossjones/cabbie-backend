@@ -52,6 +52,8 @@ class DriverForm(forms.ModelForm):
 
 
 class DriverAdmin(AbstractAdmin):
+    list_max_show_all = 1000
+
     form = DriverForm
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'name', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
@@ -178,6 +180,8 @@ class DriverAdmin(AbstractAdmin):
 
 
 class PassengerAdmin(AbstractAdmin):
+    list_max_show_all = 1000
+
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
