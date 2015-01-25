@@ -9,6 +9,7 @@ from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
 from cabbie.common.signals import post_create
 from cabbie.utils.email import send_email
+from cabbie.utils.sms import send_sms
 
 
 def on_post_create_driver(sender, instance, **kwargs):
@@ -21,6 +22,15 @@ def on_post_create_driver(sender, instance, **kwargs):
         pass
     else:
         driver_reservation.join()
+
+def on_post_create_driver_reservation(sender, instance, **kwargs):
+    
+    # send to driver account admin
+    for phone in settings.DRIVER_ACCOUNT_MANAGER:
+        send_sms('sms/driver_reservation.txt', phone, {
+            'name': instance.name,
+            'phone': instance.phone,
+        })
 
 def on_post_create_passenger(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
@@ -58,6 +68,8 @@ def on_post_ride_board(sender, ride, **kwargs):
 post_create.connect(on_post_create_passenger, sender=Passenger,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver, sender=Driver,
+                    dispatch_uid='from_account')
+post_create.connect(on_post_create_driver_reservation, sender=DriverReservation,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver_bill, sender=DriverBill,
                     dispatch_uid='from_account')

@@ -234,7 +234,6 @@ class PassengerAdmin(AbstractAdmin):
 
 
 class DriverReservationAdminForm(forms.ModelForm):
-
     class Meta:
         model = DriverReservation
         widgets = {
@@ -243,6 +242,8 @@ class DriverReservationAdminForm(forms.ModelForm):
 
 
 class DriverReservationAdmin(AbstractAdmin):
+    deletable = True
+
     form = DriverReservationAdminForm
     list_display = ('phone', 'name', 'is_joined', 'created_at', 'cert_image')
     fields = ('phone', 'name')
