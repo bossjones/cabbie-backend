@@ -20,6 +20,7 @@ from cabbie.apps.account.session import (
 from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
+from cabbie.utils.sms import send_sms
 from cabbie.utils.validator import is_valid_phone
 from cabbie.utils import json
 
@@ -181,6 +182,10 @@ class DriverAcceptView(APIView):
         driver.is_accepted = True
         driver.is_sms_agreed = request.DATA['is_sms_agreed']
         driver.save()
+
+        # send welcome sms
+        if driver.is_sms_agreed:
+            send_sms('sms/driver_accept.txt', driver.phone, {})
 
         return self.render()
 
