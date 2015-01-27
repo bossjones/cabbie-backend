@@ -223,6 +223,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             state=self.state,
             passenger_location=passenger_location,
             driver_location=driver_location,
+            data=data,
         )
 
         if self.state == self.BOARDED:
