@@ -204,13 +204,14 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         if self.state == old_state:
             return
 
-        # ignore state transition when already rated
+        # ignore ride update when already rated
         if old_state == self.RATED:
             pass
         else:
             self.save()
 
 
+        # create history
         passenger_location = (Point(*data['passenger_location'])
                               if 'passenger_location' in data else None)
         driver_location = (Point(*data['driver_location'])
@@ -230,7 +231,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             post_ride_board.send(sender=self.__class__, ride=self)
 
         if self.state == self.COMPLETED:
-            post_ride_complete.send(sender=self.__class__, ride=self)
+            if old_state != self.RATED:
+                post_ride_complete.send(sender=self.__class__, ride=self)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
