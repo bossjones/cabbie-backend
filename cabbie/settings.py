@@ -77,6 +77,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'storages',
     'django_ses',
+    'django_extensions',
 
     # Admin
     'suit',
