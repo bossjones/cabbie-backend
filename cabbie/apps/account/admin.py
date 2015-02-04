@@ -245,8 +245,8 @@ class DriverReservationAdmin(AbstractAdmin):
     deletable = True
 
     form = DriverReservationAdminForm
-    list_display = ('phone', 'name', 'is_joined', 'created_at', 'cert_image')
-    fields = ('phone', 'name')
+    list_display = ('phone', 'name', 'car_model', 'is_joined', 'created_at', 'cert_image')
+    fields = ('phone', 'name', 'car_model')
     ordering = ('-created_at',)
     actions = ('join',)
     search_fields = (

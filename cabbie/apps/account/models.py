@@ -351,6 +351,7 @@ class DriverReservation(NullableImageMixin, AbstractTimestampModel):
     phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
     name = models.CharField(u'이름', max_length=30)
+    car_model = models.CharField(u'차량모델', max_length=50, blank=True, default=u'')
     is_joined = models.BooleanField(u'가입여부', default=False)
 
     def cert_image(self):

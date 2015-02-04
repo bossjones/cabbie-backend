@@ -356,7 +356,9 @@ class DriverReserveView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], name=request.DATA['name'])
+        driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], 
+                                                                  name=request.DATA['name'], 
+                                                                  car_model=request.DATA['car_model'])
         return self.render({
             'reservation_id': driver.id
         })
