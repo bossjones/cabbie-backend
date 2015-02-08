@@ -197,6 +197,8 @@ WEB_SERVER_PORT = 443
 LOCATION_SERVER_HOST = APP_HOST
 LOCATION_SERVER_PORT = 8080
 
+LOCATION_WEB_SERVER_PORT = 7777
+
 
 
 # Email
@@ -306,15 +308,15 @@ TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
 ESTIMATE_CACHE_TIMEOUT = 5              # seconds
 LOCATION_REFRESH_INTERVAL = 3           # seconds
 RIDE_ESTIMATE_REFRESH_INTERVAL = 10     # seconds
-LOCATION_DB_SYNC_INTERVAL = 10          # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
 SESSION_CLOSE_TIMEOUT = 5               # seconds
-MAX_DISTANCE = 5 * 1000                 # meters
+MAX_DISTANCE = 2 * 1000                 # meters
+RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters
 CANDIDATE_COUNT = 50
 REASSIGN_COUNT = 50
 
-REQUEST_TIMEOUT = 30                    # seconds
+REQUEST_TIMEOUT = 32                    # seconds
 
 # Bot
 # ---
@@ -357,6 +359,22 @@ PARSE_REST_API_KEY = 'sUDJrgh7zik3ceToqDqD4MReOGsbBbW0uQ11jsdc'
 PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
 from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
+
+
+MESSAGE_RIDE_REQUEST_TITLE = u'콜요청!'
+MESSAGE_RIDE_REQUEST_ALERT = u'콜이 요청되었습니다. (30초 이내 수락/거절)'
+
+MESSAGE_RIDE_APPROVE_TITLE = u'콜수락'
+MESSAGE_RIDE_APPROVE_ALERT = u'콜이 수락되었습니다.'
+
+MESSAGE_RIDE_PROGRESS_TITLE = u'백기사 접근중'
+MESSAGE_RIDE_PROGRESS_ALERT = u'기사님이 픽업장소로 이동중입니다.'
+
+MESSAGE_RIDE_REJECT_TITLE = u'콜거절'
+MESSAGE_RIDE_REJECT_ALERT = u'콜이 거절되었습니다.'
+
+MESSAGE_RIDE_ARRIVE_TITLE = u'백기사 도착'
+MESSAGE_RIDE_ARRIVE_ALERT = u'백기사가 픽업장소에 도착하였습니다.'
 
 MESSAGE_RIDE_COMPLETE_TITLE = u'서비스 평가'
 MESSAGE_RIDE_COMPLETE_ALERT = u'백기사 어떠셨나요? 지금 바로 평가해 주세요. (10초소요)'

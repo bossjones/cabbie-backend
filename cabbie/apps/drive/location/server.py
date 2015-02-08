@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.db.models import Q
+
 import tornado.web
 import tornado.websocket
 
@@ -80,17 +82,6 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         self.debug('Opened {0}'.format(hex(id(self))))
 
     def on_close(self):
-        # Ride.REQUESTED, broadcast immediately
-        if self.authenticated and self._ride_proxy and self._ride_proxy._state == Ride.REQUESTED:
-            self.publish('{role}_closed'.format(role=self._role), self._user_id, self)
-            self.debug('Immediate session close for session {0}'.format(hex(id(self))))
-            if self.role == 'driver': 
-                self._ride_proxy.driver_disconnect()
-            elif self.role == 'passenger':
-                self._ride_proxy.passenger_disconnect()
-                
-            self._ride_proxy._transition_to(Ride.DISCONNECTED, sinner=self.role)
-
         if self.authenticated:
             SessionManager().remove(self._user_id, self)
         self.debug('Closed {0}'.format(hex(id(self))))
@@ -200,8 +191,9 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         self.info('Rejected')
 
         if self.ride_proxy:
-            self.info('No proxy, seems already timed out by server')
             self.ride_proxy.reject(reason)
+        else: 
+            self.info('No proxy, seems already timed out by server')
 
     def handle_driver_arrive(self):
         self.info('Arrived')
@@ -265,6 +257,8 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         # Create a new ride proxy instance
         proxy = RideProxyManager().create(self._user_id, source, destination, additional_message)
         proxy.set_driver(driver_id, driver_location, driver_charge_type)
+
+        # notify to driver
         proxy.request()
 
     def handle_passenger_cancel(self):
@@ -357,8 +351,9 @@ class SessionBuffer(LoggableMixin):
             self.debug('Flush buffered message {0}'.format(message['type']))
             getattr(session, message['method'])(**message['data'])
 
-    def notify_driver_request(self, passenger, source, destination, additional_message):
+    def notify_driver_request(self, ride_id, passenger, source, destination, additional_message):
         self._buffer('notify_driver_request', 'driver_requested', {
+            'ride_id': ride_id,
             'passenger': passenger,
             'source': source,
             'destination': destination,
@@ -418,16 +413,307 @@ class SessionBuffer(LoggableMixin):
     def notify_passenger_disconnect(self):
         self._buffer('notify_passenger_disconnect', 'passenger_disconnected')
 
+# Web
+class RideProxyMixin:
+    def proxy_by_ride_id(self, ride_id):
+        return RideProxyManager().get_ride_proxy_by_ride_id(ride_id)
+
+    def proxy_by_driver_id(self, driver_id):
+        return RideProxyManager().get_ride_proxy_by_driver_id(driver_id)
+
+
+class DriverAuthenticatedWebHandler(tornado.web.RequestHandler):
+
+    driver = None
+
+    def authenticate(self):
+        token_header = self.request.headers['Authorization']
+        try:
+            token = token_header.split(' ')[1]
+        except:
+            raise tornado.web.HTTPError(401, 'token not found')
+        else:
+            self.driver = Authenticator().authenticate(token, 'driver')
+            
+            if self.driver:
+                return True
+            else:
+                raise tornado.web.HTTPError(401, 'driver not authenticated')
+
+    @property
+    def is_authenticated(self):
+        return self.driver is not None
+
+
+class PassengerAuthenticatedWebHandler(tornado.web.RequestHandler):
+
+    passenger = None
+
+    def authenticate(self):
+        token_header = self.request.headers['Authorization']
+        try:
+            token = token_header.split(' ')[1]
+        except:
+            raise tornado.web.HTTPError(401, 'token not found')
+        else:
+            self.passenger = Authenticator().authenticate(token, 'passenger')
+            
+            if self.passenger:
+                return True
+            else:
+                raise tornado.web.HTTPError(401, 'passenger not authenticated')
+
+    @property
+    def is_authenticated(self):
+        return self.passenger is not None
+
+
+class WebSessionLocation(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    charge_type = 1000  # discard later
+
+    def __unicode__(self):
+        return u'WebSessionLocation(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionLocation'
+
+    def get(self):
+        self.authenticate()
+
+        self.debug('Getting location of {0} via http'.format(self.driver.id))
+
+        location = DriverManager().get_driver_location(self.driver.id)
+        
+        if location is None:
+            raise tornado.web.HTTPError(403, 'location not found') 
+
+        self.write(json.dumps({ 'location':location }))
+    
+    def post(self):
+        self.authenticate()
+
+        location = self.get_argument('location')
+
+        proxy = self.proxy_by_driver_id(self.driver.id)
+
+        if proxy:
+            self.debug('Updating location to {0} to {1} via http'.format(location, proxy.passenger_session))
+            proxy.update_driver_location(json.loads(location))
+        else:
+            self.debug('Updating location to {0} via http'.format(location))
+            DriverManager().update_location(self.driver.id, json.loads(location), self.charge_type) 
+
+        self.write('{}')
+
+class WebSessionDeactivate(LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionDeactivate(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionDeactivate'
+
+    def post(self):
+        self.authenticate()
+
+        self.debug('Deactivate user {0}, remove location'.format(self.driver.id))
+        DriverManager().deactivate(self.driver.id) 
+
+        self.write('{}')
+
+class WebSessionRequest(LoggableMixin, PassengerAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionRequest(P-{id})'.format(id=self.passenger.id) if self.is_authenticated else u'WebSessionRequest'
+
+    def post(self):
+        self.authenticate()
+
+        driver_id = int(self.get_argument('driver_id'))
+        charge_type = int(self.get_argument('charge_type'))
+        source = json.loads(self.get_argument('source'))
+        destination = json.loads(self.get_argument('destination'))
+        additional_message = json.loads(self.get_argument('additional_message'))
+
+        self.info(u'Requested to {driver_id}'.format(driver_id=driver_id)) 
+
+        # Fetch the last driver info before deactivating
+        driver_location = DriverManager().get_driver_location(driver_id)
+
+        # Check if driver location is valid
+        if driver_location is None:
+            # send late reject response 
+            self.info(u'Driver location not found')
+            self.write(json.dumps({ 'reason': 'late' }))
+            return
+
+        driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
+
+        # Change the states of drivers and passengers accordingly
+        WatchManager().unwatch(self.passenger.id)
+        DriverManager().deactivate(driver_id)
+
+        # Create a new ride proxy instance
+        proxy = RideProxyManager().create(self.passenger.id, source, destination, additional_message)
+        proxy.set_driver(driver_id, driver_location, driver_charge_type)
+
+        # notify to driver
+        ride_id = proxy.request()
+        
+        self.write(json.dumps({ 'ride_id': ride_id }))
+
+
+class WebSessionCancel(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionCancel(P-{id})'.format(id=self.passenger.id) if self.is_authenticated else u'WebSessionCancel'
+
+    def post(self):
+        self.authenticate()
+
+        self.write('{}')
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Cancel ride {0}'.format(ride_id))
+            proxy.cancel() 
+        else:  
+            self.debug('No proxy found for {0}, ignore cancel'.format(ride_id))
+
+        self.write('{}')
+
+
+class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionApprove(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionApprove'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Approve ride {0}'.format(ride_id))
+            proxy.approve() 
+        else:  
+            self.debug('No proxy found for {0}, ignore approve'.format(ride_id))
+
+        self.write('{}')
+
+class WebSessionReject(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionReject(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionReject'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            reason = self.get_argument('reason')
+            self.debug('Reject ride {0} with reason {1}'.format(ride_id, reason))
+            proxy.reject(reason) 
+        else:  
+            self.debug('No proxy found for {0}, ignore reject'.format(ride_id))
+
+        self.write('{}')
+
+class WebSessionArrive(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionArrive(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionArrive'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Arrived ride {0}'.format(ride_id))
+            proxy.arrive() 
+        else:  
+            self.debug('No proxy found for {0}, ignore arrive'.format(ride_id))
+
+        self.write('{}')
+
+class WebSessionBoard(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionBoard(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionBoard'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Board ride {0}'.format(ride_id))
+            proxy.board() 
+        else:  
+            self.debug('No proxy found for {0}, ignore board'.format(ride_id))
+
+        self.write('{}')
+
+        # remove proxy after 20min
+
+class WebSessionComplete(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionComplete(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionComplete'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Complete ride {0}'.format(ride_id))
+            proxy.complete({}) 
+        else:  
+            self.debug('No proxy found for {0}, ignore complete'.format(ride_id))
+
+        self.write('{}')
 
 # Server
 # ------
 
 class LocationServer(LoggableMixin, SingletonMixin):
+    def recover_ride_proxies(self):
+        rides = Ride.objects.filter(Q(state=Ride.APPROVED) | Q(state=Ride.ARRIVED)) 
+
+        for ride in rides.all():
+            proxy = RideProxyManager().create(ride.passenger.id, ride.source, ride.destination, ride.additional_message)
+            proxy._recover(ride)
+
     def start(self):
+        self.recover_ride_proxies()
+
         application = tornado.web.Application([
-            (r'/location', Session),
+            # websocket
+            # ---------
+            tornado.web.url(r'/location', Session),
         ])
         application.listen(settings.LOCATION_SERVER_PORT)
+
+        application_web = tornado.web.Application([
+            # web 
+            # ---
+
+            # driver api
+            tornado.web.url(r'/ride/location', WebSessionLocation),
+            tornado.web.url(r'/ride/deactivate', WebSessionDeactivate),
+            tornado.web.url(r'/ride/approve/([0-9]+)', WebSessionApprove),
+            tornado.web.url(r'/ride/reject/([0-9]+)', WebSessionReject),
+            tornado.web.url(r'/ride/arrive/([0-9]+)', WebSessionArrive),
+            tornado.web.url(r'/ride/board/([0-9]+)', WebSessionBoard),
+            tornado.web.url(r'/ride/complete/([0-9]+)', WebSessionComplete),
+
+            # passenger api
+            tornado.web.url(r'/ride/request', WebSessionRequest),
+            tornado.web.url(r'/ride/cancel/([0-9]+)', WebSessionCancel),
+        ])
+        application_web.listen(settings.LOCATION_WEB_SERVER_PORT)
 
         self.info('Start serving')
 

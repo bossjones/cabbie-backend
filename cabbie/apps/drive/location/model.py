@@ -92,4 +92,25 @@ class ModelManager(LoggableMixin, SingletonMixin):
 
         return data
 
+    def _get_ride_cache_key(self, ride_id):
+        return 'ride_{id}'.format(id=ride_id)
+
+    def get_ride(self, ride_id, **kwargs):
+        return self._get_ride(ride_id, **kwargs)
+
+    def _get_ride(self, ride_id, force_refresh=False, serialize=True):
+        now = time.time()
+        cache_key = self._get_ride_cache_key(ride_id)
+
+        entry = self._cache.get(cache_key)
+        if (force_refresh or not entry
+                or now - entry['refreshed_at'] >= self.cache_timeout):
+            entry = {
+                'refreshed_at': now,
+                'object': Ride.objects.get(pk=ride_id),
+            }
+            self._cache[cache_key] = entry
+        return (self.serialize(entry['object'])
+                if serialize else entry['object'])
+
 

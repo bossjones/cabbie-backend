@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RideSerializer, FavoriteSerializer, HotspotSerializer)
+from cabbie.apps.drive.receivers import post_ride_requested
 from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
@@ -186,6 +187,9 @@ class InternalRideCreateView(InternalView):
             charge_type=data['charge_type'],
             additional_message=data['additional_message'],
         )
+
+        if ride.state == Ride.REQUESTED:
+            post_ride_requested.send(sender=Ride, ride=ride)
 
         ride.histories.create(
             driver=ride.driver,
