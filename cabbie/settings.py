@@ -303,7 +303,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 #TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
 TMAP_API_KEY = '1a4dce89-3e7e-3b42-9955-7f1de35a13a5'
 
-DEFAULT_SPEED = 30.0                    # km/h
+DEFAULT_SPEED = 25.0                    # km/h
 TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
 ESTIMATE_CACHE_TIMEOUT = 5              # seconds
 LOCATION_REFRESH_INTERVAL = 3           # seconds
