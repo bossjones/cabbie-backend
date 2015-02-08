@@ -1,4 +1,5 @@
 import traceback
+import requests
 
 from django.conf import settings
 from tornado import gen
@@ -69,7 +70,4 @@ class Bot(LoggableMixin, PubsubMixin):
                 traceback.print_exc()
 
     def send(self, type_, data=None):
-        self._client.write_message(json.dumps({
-            'type': type_,
-            'data': data or {},
-        }))
+        requests.post(self.location_web_url + self.url_mapping[type_]

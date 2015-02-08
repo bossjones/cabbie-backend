@@ -30,6 +30,7 @@ def on_post_create_driver_reservation(sender, instance, **kwargs):
         send_sms('sms/driver_reservation.txt', phone, {
             'name': instance.name,
             'phone': instance.phone,
+            'car_model': instance.car_model,
         })
 
 def on_post_create_passenger(sender, instance, **kwargs):
