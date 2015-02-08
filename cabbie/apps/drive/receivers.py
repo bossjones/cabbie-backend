@@ -31,7 +31,7 @@ def on_post_ride_requested(sender, ride, **kwargs):
         }
     }
 
-    send_push_notification(message, ['user_{0}'.format(driver.id)], False)
+    send_push_notification(message, ['driver_{0}'.format(driver.id)], False)
 
 
 def on_post_ride_approve(sender, ride, **kwargs):
