@@ -30,10 +30,10 @@ class DriverBot(Bot):
     distance_error_bound = 25
 
     reject_reason_dice = Dice(
-        (u'기분이 별로 안좋아서 지금은 안되겠습니다.', 5),
-        (u'목적지가 마음에 들지 않습니다.', 3),
-        (u'차에 기름이 부족합니다.', 2),
-        (u'그냥 싫습니다.', 1),
+        (u'immediate', 5),
+        (u'timeout', 3),
+        (u'late', 2),
+        (u'after', 1),
     )
 
     def __init__(self, instance, start_location, speed, reject_dice,
