@@ -48,7 +48,9 @@ def send_push_notification(message, channels, async=True, **kwargs):
     if not getattr(_local, 'push_enabled', True):
         return
 
-    print 'kwargs:{0}'.format(kwargs)
+    if settings.DEBUG:
+        logger.info(u'Ignore sending push to channels {0}'.format(channels))
+        return
 
     if not settings.DEBUG and async:
         return _send_push_notification.delay(message, channels, **kwargs)
