@@ -70,13 +70,19 @@ class Rtree2D(object):
     def get(self, id, objects=False):
         return self._locations.get(id)
 
-    def set(self, id, location, obj=None):
+    def set(self, id, location=None, state=None, obj=None):
         # Clean up previous value first if any
         old = self._locations.get(id)
         if old is not None:
-            self._index.delete(id, self.to_coords(old))
+            self._index.delete(id, self.to_coords(old[0]))
 
-        self._locations[id] = location
+        if old and state is None:
+            state = old[1]
+
+        if old and location is None:
+            location = old[0]
+
+        self._locations[id] = (location, state)
         self._index.insert(id, self.to_coords(location), obj=obj)
 
     def remove(self, id):
@@ -88,7 +94,7 @@ class Rtree2D(object):
                                   objects=objects)
         if max_distance is not None:
             ids = [id_ for id_ in ids
-                   if distance(self._locations[id_], location) <= max_distance]
+                   if distance(self._locations[id_][0], location) <= max_distance]
         return ids
 
 
