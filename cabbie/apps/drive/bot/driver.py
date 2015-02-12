@@ -1,8 +1,7 @@
 # encoding: utf-8
 
 import random
-import requests
- 
+
 from django.conf import settings
 
 from cabbie.apps.drive.bot.base import Bot
@@ -31,27 +30,11 @@ class DriverBot(Bot):
     distance_error_bound = 25
 
     reject_reason_dice = Dice(
-        (u'immediate', 5),
-        (u'timeout', 3),
-        (u'late', 2),
-        (u'after', 1),
+        (u'기분이 별로 안좋아서 지금은 안되겠습니다.', 5),
+        (u'목적지가 마음에 들지 않습니다.', 3),
+        (u'차에 기름이 부족합니다.', 2),
+        (u'그냥 싫습니다.', 1),
     )
-
-    location_web_url = 'http://{host}:{port}'.format(
-                        host=settings.LOCATION_SERVER_HOST,
-                        port=settings.LOCATION_WEB_SERVER_PORT)
-
-    current_ride_id = None
-    
-    url_mapping = {
-        'driver_update_location': '/ride/location/{0}',
-        'driver_approve': '/ride/approve/{0}',
-        'driver_reject': '/ride/reject/{0}',
-        'driver_arrive': '/ride/arrive/{0}',
-        'driver_board': '/ride/board/{0}',
-        'driver_complete': '/ride/complete/{0}',
-    }
-
 
     def __init__(self, instance, start_location, speed, reject_dice,
                  charge_type_change_dice, direction_change_dice):
@@ -97,8 +80,6 @@ class DriverBot(Bot):
 
     def handle_driver_requested(self, ride_id, source, destination, passenger, additional_message):
         self.info('Requested from {0}, ride id {1}'.format(passenger, ride_id))
-
-        self.current_ride_id = ride_id
 
         if self._reject_dice.roll():
             delay(self.gentle_delay, self._reject)
@@ -243,7 +224,3 @@ class DriverBot(Bot):
             })
 
         delay(self.update_location_interval, self._update_location)
-
-    def send(self, type_, data=None):
-        url = self.location_web_url + self.url_mapping[type_].format(self.current_ride_id)
-        requests.post(url) 
