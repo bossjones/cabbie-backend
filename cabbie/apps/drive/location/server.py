@@ -8,6 +8,7 @@ from cabbie.apps.drive.models import Ride
 from cabbie.apps.drive.location.auth import Authenticator
 from cabbie.apps.drive.location.driver import DriverManager
 from cabbie.apps.drive.location.proxy import RideProxyManager
+from cabbie.apps.drive.location.request import RequestProxyManager
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
 from cabbie.apps.drive.location.watch import WatchManager
 from cabbie.utils import json
@@ -524,38 +525,18 @@ class WebSessionRequest(LoggableMixin, PassengerAuthenticatedWebHandler):
     def post(self):
         self.authenticate()
 
-        driver_id = int(self.get_argument('driver_id'))
-        charge_type = int(self.get_argument('charge_type'))
         source = json.loads(self.get_argument('source'))
         destination = json.loads(self.get_argument('destination'))
         additional_message = json.loads(self.get_argument('additional_message'))
 
-        self.info(u'Requested to {driver_id}'.format(driver_id=driver_id)) 
-
-        # Fetch the last driver info before deactivating
-        driver_location = DriverManager().get_driver_location(driver_id)
-
-        # Check if driver location is valid
-        if driver_location is None:
-            # send late reject response 
-            self.info(u'Driver location not found')
-            self.write(json.dumps({ 'reason': 'late' }))
-            return
-
-        driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
-
         # Change the states of drivers and passengers accordingly
         WatchManager().unwatch(self.passenger.id)
-        DriverManager().deactivate(driver_id)
 
         # Create a new ride proxy instance
-        proxy = RideProxyManager().create(self.passenger.id, source, destination, additional_message)
-        proxy.set_driver(driver_id, driver_location, driver_charge_type)
+        proxy = RequestProxyManager().create(self.passenger, source, destination, additional_message)
+        proxy.request()
 
-        # notify to driver
-        ride_id = proxy.request()
-        
-        self.write(json.dumps({ 'ride_id': ride_id }))
+        self.write(json.dumps({ 'request_id': proxy._request_id }))
 
 
 class WebSessionCancel(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebHandler):
@@ -587,35 +568,31 @@ class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHan
     def __unicode__(self):
         return u'WebSessionApprove(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionApprove'
 
-    def post(self, ride_id):
+    def post(self, request_id):
         self.authenticate()
 
-        proxy = self.proxy_by_ride_id(int(ride_id))
+        # try approve
+        approved, ride_id = RequestProxyManager().approve(request_id, self.driver.id)        
 
-        if proxy:
-            self.debug('Approve ride {0}'.format(ride_id))
-            proxy.approve() 
-        else:  
-            self.debug('No proxy found for {0}, ignore approve'.format(ride_id))
-
-        self.write('{}')
+        if approved:
+            self.debug('Approve request {0}'.format(request_id))
+            self.write(json.dumps({ 'ride_id': ride_id })) 
+        else:
+            raise tornado.web.HTTPError(403, 'cannot approve') 
+            
 
 class WebSessionReject(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
 
     def __unicode__(self):
         return u'WebSessionReject(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionReject'
 
-    def post(self, ride_id):
+    def post(self, request_id):
         self.authenticate()
 
-        proxy = self.proxy_by_ride_id(int(ride_id))
+        # try reject
+        RequestProxyManager().reject(request_id, self.driver.id)
 
-        if proxy:
-            reason = self.get_argument('reason')
-            self.debug('Reject ride {0} with reason {1}'.format(ride_id, reason))
-            proxy.reject(reason) 
-        else:  
-            self.debug('No proxy found for {0}, ignore reject'.format(ride_id))
+        self.debug('Reject request {0}'.format(request_id))
 
         self.write('{}')
 

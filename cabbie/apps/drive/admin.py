@@ -3,7 +3,7 @@
 from django import forms
 from django.contrib import admin
 
-from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 
@@ -11,6 +11,12 @@ from cabbie.common.widgets import PointWidget
 def rating_round_off(obj):
     return "%.3f" % (obj.rating)
 rating_round_off.short_description = u'평점'
+
+class RequestAdmin(AbstractAdmin):
+    list_filter = ('passenger', 'created_at') 
+    search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
+    ordering = ('-created_at',)
+    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval')
 
 class RideAdmin(AbstractAdmin):
     deletable = True 
@@ -150,6 +156,7 @@ class HotspotAdmin(AbstractAdmin):
     search_fields = ('address', 'poi')
 
 
+admin.site.register(Request, RequestAdmin)
 admin.site.register(Ride, RideAdmin)
 admin.site.register(RideHistory, RideHistoryAdmin)
 admin.site.register(Favorite, FavoriteAdmin)

@@ -15,6 +15,36 @@ from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
+class Request(AbstractTimestampModel):
+    STANDBY, APPROVED, REJECTED,  = 'standby', 'approved', 'rejected'
+
+    STATES = (
+        (STANDBY, _('standby')),
+        (APPROVED, _('approved')),
+        (REJECTED, _('rejected')),
+    )
+    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객')
+    source_location = models.PointField(u'출발지 좌표')
+    state = models.CharField(u'상태', max_length=50, choices=STATES)
+    contacts = JSONField(u'보낸기사 리스트', default='[]')
+    rejects = JSONField(u'거절기사 리스트', default='[]')
+    approval = models.ForeignKey(Driver, blank=True, null=True, related_name='approved_requests', verbose_name=u'승인기사')
+      
+    objects = models.GeoManager()
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'배차 요청'
+        verbose_name_plural = u'배차 요청'
+
+
+    def update(self, **data):
+        for field in ('state', 'contacts', 'rejects', 'approval_id'): 
+            value = data.get(field)
+            if value:
+                setattr(self, field, value)
+    
+        self.save()
+    
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \

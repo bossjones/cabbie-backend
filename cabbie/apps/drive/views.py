@@ -6,7 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.apps.drive.receivers import post_ride_requested
@@ -188,9 +188,6 @@ class InternalRideCreateView(InternalView):
             additional_message=data['additional_message'],
         )
 
-        if ride.state == Ride.REQUESTED:
-            post_ride_requested.send(sender=Ride, ride=ride)
-
         ride.histories.create(
             driver=ride.driver,
             state=ride.state,
@@ -225,3 +222,32 @@ class InternalRideFetchView(InternalView):
     def post(self, request, pk=None):
         ride = self._get_ride(pk)
         return self.render_json({'state': ride.state})
+
+class InternalRequestCreateView(InternalView):
+    def post(self, request):
+        data = json.loads(request.body)
+        
+        print 'DATA:', data
+        
+        req = Request.objects.create(
+            passenger_id=data['passenger_id'],
+            source_location=Point(*data['source_location']),
+            state=Request.STANDBY,
+        )
+
+        return self.render_json({'id': req.id}) 
+
+class InternalRequestUpdateView(InternalView):
+    def _get_request(self, pk):
+        try:
+            return Request.objects.get(pk=pk)
+        except Request.DoesNotExist:
+            raise Http404
+
+    def post(self, request, pk=None):
+        data = json.loads(request.body)
+        req = self._get_request(pk)
+        req.update(**data)
+        return self.render_json()
+
+

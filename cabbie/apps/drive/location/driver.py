@@ -58,6 +58,12 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         self.publish('location_update', driver_id, location)
 
+    def mark_requested(self, driver_id):
+        self._driver_index.update(driver_id, 'requested')
+
+    def mark_standby(self, driver_id):
+        self._driver_index.update(driver_id, None)
+
     def deactivate(self, driver_id):
         try:
             self._driver_index.remove(driver_id)
@@ -85,11 +91,16 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         `passenger_id` is only need for caching.
         """
-
+        
+        # [(id, state), ... ]
         candidates = list(
             self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
+        # [id, ... ]
+        candidates = map(operator.itemgetter(0), candidates)
+
+        # [location, ... ]
         locations = map(self.get_driver_location, candidates)
 
         estimates = yield self._cached_estimate([(
@@ -161,7 +172,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         ids = self._driver_index.nearest(location, count=pseudo_count,
                                          max_distance=max_distance)
         ids = [
-            id_ for id_ in ids
+            (id_, state_) for id_, state_ in ids
             if int(self._driver_charge_types[id_]) <= int(charge_type)]
 
         return ids[:count]
