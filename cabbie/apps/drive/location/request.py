@@ -181,7 +181,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         print self._updatee()
 
-        if self.no_contacts:
+        if self.no_contacts and self.refresh_count == 0:
             self.terminate()
     
     @property
