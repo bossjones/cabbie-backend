@@ -303,5 +303,5 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         # start timer
         for id_ in driver_ids:
-            self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.add_reject, id_))
+            self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.reject, id_))
 
