@@ -196,6 +196,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         # cancel all timers 
         for k,v in self._timers.iteritems():
+
             cancel(v)
 
         self._approval = driver_id
@@ -251,19 +252,22 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         candidates = DriverManager().get_nearest_drivers(self._source['location'], self.candidate_count, 
                                                         self.max_distance, self.charge_type) 
         
+        push_targets = []
+
         for id_, state_ in candidates:
-            self.info('Driver {id}, {state} found'.format(id=id_, state=state_))
+            self.debug('Driver {id}, {state} found'.format(id=id_, state=state_))
 
             if state_ is None and id_ not in self._rejects and id_ not in self._contacts:
                 self.info('Driver {id} sent '.format(id=id_))
+
                 self.add_contact(id_)
                 DriverManager().mark_requested(id_)
 
-                # send push  
-                self.send_request(id_)
+                push_targets.append(id_)
 
-                # start timer for each push
-                self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.add_reject, id_))
+        # send push
+        if bool(push_targets):
+            self.send_request(push_targets)
 
         # repeat
         self.refresh_count -= 1
@@ -272,7 +276,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         elif self.no_contacts:
             self.terminate() 
 
-    def send_request(self, driver_id):
+    def send_request(self, driver_ids):
         passenger = self._passenger 
 
         message = {
@@ -293,6 +297,11 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             }
         }
 
-        send_push_notification(message, ['driver_{0}'.format(driver_id)], False)
+        channels = ['driver_{id}'.format(id=id_) for id_ in driver_ids]
 
+        send_push_notification(message, channels, False)
+
+        # start timer
+        for id_ in driver_ids:
+            self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.add_reject, id_))
 

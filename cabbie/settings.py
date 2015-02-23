@@ -360,6 +360,8 @@ PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
 from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
 
+PUSH_CHANNEL_PREFIX = None
+
 
 MESSAGE_RIDE_REQUEST_TITLE = u'콜요청!'
 MESSAGE_RIDE_REQUEST_ALERT = u'콜이 요청되었습니다. (30초 이내 수락/거절)'
