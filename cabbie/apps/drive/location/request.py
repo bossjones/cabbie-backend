@@ -258,7 +258,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.debug('Driver {id}, {state} found'.format(id=id_, state=state_))
 
             if state_ is None and id_ not in self._rejects and id_ not in self._contacts:
-                self.info('Driver {id} sent '.format(id=id_))
+                self.info('Driver {driver_id} sent in request {request_id}'.format(driver_id=id_, request_id=self._request_id))
 
                 self.add_contact(id_)
                 DriverManager().mark_requested(id_)
