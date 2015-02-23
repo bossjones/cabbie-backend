@@ -1,7 +1,9 @@
 # scripts/mock_driver.py
 
 import requests
+
 from rest_framework.authtoken.models import Token
+from django.conf import settings
 
 from cabbie.apps.account.models import Driver
 from cabbie.utils import json
@@ -25,7 +27,8 @@ def run(*args):
     args = args[0].split(',')
     command_ = args[0]
 
-    host = 'http://localhost:7777'
+    host = 'http://{host}:{port}'.format(host=settings.LOCATION_SERVER_HOST, 
+                                        port=settings.LOCATION_WEB_SERVER_PORT) 
     payload = {}
 
     if command_ == 'request':
