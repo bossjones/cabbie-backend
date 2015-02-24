@@ -194,6 +194,10 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.info('Request {0} already approved, trial by {1} failed'.format(self._request_id, driver_id))
             return False
 
+        if driver_id in self._rejects:
+            self.info('Request {0} already rejected by {1}'.format(self._request_id, driver_id))
+            return False
+
         # cancel all timers 
         for k,v in self._timers.iteritems():
 
