@@ -562,6 +562,24 @@ class WebSessionCancel(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebH
 
         self.write('{}')
 
+class WebSessionCancelRide(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionCancelRide(P-{id})'.format(id=self.passenger.id) if self.is_authenticated else u'WebSessionCancelRide'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Cancel ride {0}'.format(ride_id))
+            proxy.cancel() 
+        else:  
+            self.debug('No proxy found for {0}, ignore cancel'.format(ride_id))
+
+        self.write('{}')
+
 
 class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
 
@@ -579,7 +597,26 @@ class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHan
             self.write(json.dumps({ 'ride_id': ride_id })) 
         else:
             raise tornado.web.HTTPError(403, 'cannot approve') 
-            
+ 
+class WebSessionApproveRide(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionApproveRide(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionApproveRide'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        # try reject
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            self.debug('Approve ride {0}'.format(ride_id))
+            proxy.approve() 
+        else:  
+            self.debug('No proxy found for {0}, ignore approve'.format(ride_id))
+
+        self.write('{}')
+           
 
 class WebSessionReject(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
 
@@ -595,6 +632,27 @@ class WebSessionReject(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHand
         self.debug('Reject request {0}'.format(request_id))
 
         self.write('{}')
+
+class WebSessionRejectRide(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
+
+    def __unicode__(self):
+        return u'WebSessionRejectRide(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionRejectRide'
+
+    def post(self, ride_id):
+        self.authenticate()
+
+        # try reject
+        proxy = self.proxy_by_ride_id(int(ride_id))
+
+        if proxy:
+            reason = self.get_argument('reason')
+            self.debug('Reject ride {0} with reason {1}'.format(ride_id, reason))
+            proxy.reject(reason) 
+        else:  
+            self.debug('No proxy found for {0}, ignore reject'.format(ride_id))
+
+        self.write('{}')
+
 
 class WebSessionArrive(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
 
@@ -680,15 +738,17 @@ class LocationServer(LoggableMixin, SingletonMixin):
             # driver api
             tornado.web.url(r'/ride/location', WebSessionLocation),
             tornado.web.url(r'/ride/deactivate', WebSessionDeactivate),
-            tornado.web.url(r'/ride/approve/([0-9]+)', WebSessionApprove),
-            tornado.web.url(r'/ride/reject/([0-9]+)', WebSessionReject),
-            tornado.web.url(r'/ride/arrive/([0-9]+)', WebSessionArrive),
-            tornado.web.url(r'/ride/board/([0-9]+)', WebSessionBoard),
-            tornado.web.url(r'/ride/complete/([0-9]+)', WebSessionComplete),
+            tornado.web.url(r'/ride/approve/([0-9]+)', WebSessionApprove),              # request_id
+            tornado.web.url(r'/ride/reject/([0-9]+)', WebSessionReject),                # request_id
+            tornado.web.url(r'/ride/reject/ride/([0-9]+)', WebSessionRejectRide),       # ride_id 
+            tornado.web.url(r'/ride/arrive/([0-9]+)', WebSessionArrive),                # ride_id
+            tornado.web.url(r'/ride/board/([0-9]+)', WebSessionBoard),                  # ride_id
+            tornado.web.url(r'/ride/complete/([0-9]+)', WebSessionComplete),            # ride_id
 
             # passenger api
             tornado.web.url(r'/ride/request', WebSessionRequest),
-            tornado.web.url(r'/ride/cancel/([0-9]+)', WebSessionCancel),
+            tornado.web.url(r'/ride/cancel/([0-9]+)', WebSessionCancel),                # request_id
+            tornado.web.url(r'/ride/cancel/ride/([0-9]+)', WebSessionCancelRide),       # ride_id 
         ])
         application_web.listen(settings.LOCATION_WEB_SERVER_PORT)
 
