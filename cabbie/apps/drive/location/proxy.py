@@ -188,6 +188,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         # Start periodic refreshing
         self._refresh_estimate()
 
+        # send push 
+        self.send_approve_push() 
+
     def reject(self, reason):
         # cancel timed out reject
         self._cancel_timeout_reject()
@@ -264,6 +267,23 @@ class RideProxy(LoggableMixin, PubsubMixin):
                 # destroy ride
                 self._destroy('destination reached') 
                  
+    def send_approve_push(self):
+        # For passenger, send approve 
+        passenger = self.passenger
+
+        message = {
+            'alert': settings.MESSAGE_RIDE_APPROVE_ALERT,
+            'title': settings.MESSAGE_RIDE_APPROVE_TITLE,
+            'push_type': 'ride_approved',
+            'data': {
+                'ride_id': self._ride_id,
+                'driver': self.driver, 
+            }
+        }
+        send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+
+
+
     def send_location_progress_push(self):
         if self._estimate:
             # send push notification to passenger for location progress  
