@@ -177,7 +177,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._transition_to(Ride.CANCELED)
         self._destroy('cancel')
 
-    def approve(self):
+    def approve(self, candidate):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
@@ -189,7 +189,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._refresh_estimate()
 
         # send push 
-        self.send_approve_push() 
+        self.send_approve_push(candidate) 
 
     def reject(self, reason):
         # cancel timed out reject
@@ -267,7 +267,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                 # destroy ride
                 self._destroy('destination reached') 
                  
-    def send_approve_push(self):
+    def send_approve_push(self, candidate):
         # For passenger, send approve 
         passenger = self.passenger
 
@@ -277,7 +277,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
             'push_type': 'ride_approved',
             'data': {
                 'ride_id': self._ride_id,
-                'driver': self.driver, 
+                'candidate': candidate, 
             }
         }
         send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)

@@ -93,12 +93,15 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         """
         
         # [(id, state), ... ]
-        candidates = list(
+        candidates_with_state = list(
             self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
         # [id, ... ]
-        candidates = map(operator.itemgetter(0), candidates)
+        candidates = map(operator.itemgetter(0), candidates_with_state)
+
+        # [state, ... ]
+        states = map(operator.itemgetter(1), candidates_with_state)
 
         # [location, ... ]
         locations = map(self.get_driver_location, candidates)
@@ -115,6 +118,7 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
             'location': locations[i],
             'estimate': estimates[i],
             'charge_type': self._driver_charge_types[driver_id],
+            'state': states[i],
         } for i, driver_id in enumerate(candidates)])
 
     @gen.coroutine

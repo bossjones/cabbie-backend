@@ -73,7 +73,7 @@ class RequestProxyManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         # notify to driver
         proxy.request()
-        proxy.approve()
+        proxy.approve(request.get_contact_detail(driver_id))     # send push this timing
 
         return True, proxy._ride_id
         
@@ -112,6 +112,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self._request_id = None
         self._state = None
         self._contacts = [] 
+        self._contacts_detail = {}
         self._rejects = []
         self._approval = None
 
@@ -161,6 +162,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self._contacts.append(driver_id)
 
         print self._updatee()
+
+    def set_contact_detail(self, driver_id, data):
+        self._contacts_detail[driver_id] = data
+
+    def get_contact_detail(self, driver_id):
+        return self._contacts_detail.get(driver_id, None)
 
     def remove_contact(self, driver_id):
         try:
@@ -247,24 +254,32 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         # mark all as standby
 
+    @gen.coroutine
     def request(self):
         if self.approved:
             self.info('Request {0} approved, no more request'.format(self._request_id))
             return
 
         # find
-        candidates = DriverManager().get_nearest_drivers(self._source['location'], self.candidate_count, 
+        candidates = yield DriverManager().get_driver_candidates(self._passenger.id, self._source['location'], self.candidate_count, 
                                                         self.max_distance, self.charge_type) 
         
         push_targets = []
 
-        for id_, state_ in candidates:
+        for candidate in candidates:
+            id_ = candidate['driver'].id
+            state_ = candidate['state']
+
             self.debug('Driver {id}, {state} found'.format(id=id_, state=state_))
 
             if state_ is None and id_ not in self._rejects and id_ not in self._contacts:
                 self.info('Driver {driver_id} sent in request {request_id}'.format(driver_id=id_, request_id=self._request_id))
 
                 self.add_contact(id_)
+
+                # cache contact info
+                self.set_contact_detail(id_, candidate)
+
                 DriverManager().mark_requested(id_)
 
                 push_targets.append(id_)
