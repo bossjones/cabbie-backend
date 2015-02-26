@@ -562,6 +562,7 @@ class WebSessionCancel(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebH
 
         self.write('{}')
 
+
 class WebSessionCancelRide(RideProxyMixin, LoggableMixin, PassengerAuthenticatedWebHandler):
 
     def __unicode__(self):
@@ -598,25 +599,6 @@ class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHan
         else:
             raise tornado.web.HTTPError(403, 'cannot approve') 
  
-class WebSessionApproveRide(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
-
-    def __unicode__(self):
-        return u'WebSessionApproveRide(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionApproveRide'
-
-    def post(self, ride_id):
-        self.authenticate()
-
-        # try reject
-        proxy = self.proxy_by_ride_id(int(ride_id))
-
-        if proxy:
-            self.debug('Approve ride {0}'.format(ride_id))
-            proxy.approve() 
-        else:  
-            self.debug('No proxy found for {0}, ignore approve'.format(ride_id))
-
-        self.write('{}')
-           
 
 class WebSessionReject(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHandler):
 

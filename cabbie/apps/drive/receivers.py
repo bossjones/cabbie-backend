@@ -37,13 +37,32 @@ def on_post_ride_requested(sender, ride, **kwargs):
 def on_post_ride_approve(sender, ride, **kwargs):
     # For passenger, send approve 
     passenger = ride.passenger
+    driver = ride.driver
 
     message = {
         'alert': settings.MESSAGE_RIDE_APPROVE_ALERT,
         'title': settings.MESSAGE_RIDE_APPROVE_TITLE,
         'push_type': 'ride_approved',
         'data': {
-            'ride_id': ride.id
+            'ride_id': ride.id,
+            'driver': {
+                'id': driver.id, 
+                'name': driver.name,
+                'phone': driver.phone,
+                'app_version': driver.app_version,
+                'license_number': driver.license_number,
+                'car_number': driver.car_number,
+                'car_model': driver.car_model,
+                'company': driver.company,
+                'max_capacity': driver.max_capacity,
+                'taxi_type': driver.taxi_type,
+                'taxi_service': driver.taxi_service,
+                'about': driver.about,
+                'rated_count': driver.rated_count,
+                'ride_count': driver.ride_count,
+                'rating': driver.rating,
+                'image_urls': driver.image_urls,
+            }
         }
     }
     send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
