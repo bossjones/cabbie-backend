@@ -1,12 +1,28 @@
 from rest_framework import viewsets
 
-from cabbie.apps.payment.models import Transaction, DriverBill, DriverCoupon
+from cabbie.apps.payment.models import PassengerReturn, Transaction, DriverBill, DriverCoupon
 from cabbie.apps.payment.serializers import (
-    TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
+    PassengerReturnSerializer, TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
 
 
 # REST
 # ----
+
+class PassengerReturnViewSet(viewsets.ModelViewSet):
+    queryset = (PassengerReturn.objects
+                .prefetch_related('user')
+                .all()) 
+    serializer_class = PassengerReturnSerializer
+    filter_fields = ('is_processed',)
+    ordering = ('-created_at',)
+
+    def pre_save(self, obj):
+        obj.user = self.request.user.get_role('passenger')
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = self.queryset.filter(user=user)
+        return qs
 
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = (Transaction.objects

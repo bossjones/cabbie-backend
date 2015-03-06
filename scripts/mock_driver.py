@@ -13,6 +13,7 @@ url_mapping = {
     'approve': '/ride/approve/{0}',
     'reject': '/ride/reject/{0}',
     'reject_ride': '/ride/reject/ride/{0}',
+    'board': '/ride/board/{0}',
     'cancel': '/ride/cancel/{0}',
     'cancel_ride': '/ride/cancel/ride/{0}',
 }
@@ -114,6 +115,26 @@ def run(*args):
 
             # data
             payload['reason'] = 'after'
+
+
+    elif command_ == 'board':
+        if len(args) != 3:
+            print 'argument board,{ride_id},{driver_id}'
+            return 
+        else:
+            ride_id_ = args[1]
+            user_id_ = args[2]
+                
+            # url
+            url = '{host}{url}'.format(host=host, url=url_mapping[command_])
+            url = url.format(ride_id_)
+
+            # header
+            token = get_token(user_id_)
+            if token is None:
+                return
+            headers = { 'Authorization': 'Token {0}'.format(token) }
+
 
     elif command_ == 'cancel':
         if len(args) != 3:

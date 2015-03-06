@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
+from cabbie.apps.drive.signals import post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
@@ -212,15 +212,18 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         update_fields = ['ratings_by_category', 'comment']
 
         # state 
-        if self.state != self.RATED:
+        is_new  = self.state != self.RATED
+        if is_new:
             self.state = self.RATED
             update_fields.extend(['state'])
 
         self.save(update_fields=update_fields)
 
-        # stat
+        # signal for stat, point
         post_ride_rated.send(sender=self.__class__, ride=self)
 
+        if is_new:
+            post_ride_first_rated.send(sender=self.__class__, ride=self)
 
     def transit(self, **data):
 

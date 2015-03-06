@@ -419,7 +419,8 @@ POINTS_BY_TYPE = {
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
-    'mileage': 100,                 # For passenger
+    'ride_point': 1000,                 # For passenger
+    'rate_point': 500,                 # For passenger
     'rebate': 2000                  # For driver
 }
 COUPON_THRESHOLDS = (

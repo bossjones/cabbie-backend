@@ -33,8 +33,7 @@ admin.site.unregister(import_('django_ses.models.SESStat'))
 
 # unregister payment admin
 admin.site.unregister(import_('cabbie.apps.payment.models.DriverBill'))
-admin.site.unregister(import_('cabbie.apps.payment.models.Transaction'))
-admin.site.unregister(import_('cabbie.apps.payment.models.PassengerReturn'))
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverCoupon'))
 admin.site.unregister(import_('cabbie.apps.payment.models.DriverReturn'))
 
 # unregister recommend admin
@@ -60,6 +59,8 @@ urlpatterns += patterns('',
 
 router = routers.DefaultRouter(trailing_slash=False)
 
+router.register(r'passengers/point/return',
+                import_('cabbie.apps.payment.views.PassengerReturnViewSet'))
 router.register(r'passengers',
                 import_('cabbie.apps.account.views.PassengerViewSet'))
 router.register(r'drivers/bills',

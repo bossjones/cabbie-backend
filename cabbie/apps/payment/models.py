@@ -60,15 +60,23 @@ class DriverCoupon(AbstractTimestampModel):
 
 
 class Transaction(IncrementMixin, AbstractTimestampModel):
-    MILEAGE, RECOMMEND, RECOMMENDED, GRANT, RETURN = (
-        'mileage', 'recommend', 'recommended', 'grant', 'return')
+    RIDE_POINT, RATE_POINT, RECOMMEND, RECOMMENDED, GRANT, RETURN = (
+        'ride_point', 'rate_point', 'recommend', 'recommended', 'grant', 'return')
 
     TRANSACTION_TYPES = (
-        (MILEAGE, u'마일리지'),
+        (RIDE_POINT, u'탑승 포인트'),
+        (RATE_POINT, u'평가 포인트'),
         (RECOMMEND, u'추천'),
         (RECOMMENDED, u'피추천'),
         (GRANT, u'지급'),
         (RETURN, u'환급'),
+    )
+
+    PLANNED, DONE = ('planned', 'done')
+
+    TRANSACTION_STATES = (
+        (PLANNED, u'예정'),
+        (DONE, u'완료'),
     )
 
     user = models.ForeignKey(User, related_name='transactions',
@@ -81,6 +89,7 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     transaction_type = models.CharField(u'종류', max_length=100, db_index=True,
                                         choices=TRANSACTION_TYPES)
     amount = models.IntegerField(u'금액')
+    state = models.CharField(u'상태', max_length=30, choices=TRANSACTION_STATES, default=PLANNED)
     note = models.CharField(u'메모', max_length=1000, blank=True)
 
     class Meta(AbstractTimestampModel.Meta):
@@ -97,6 +106,7 @@ class AbstractReturn(AbstractTimestampModel):
     is_requested = models.BooleanField(u'환급요청여부', default=False)
     is_processed = models.BooleanField(u'환급완료여부', default=False)
     processed_at = models.DateTimeField(u'환급시점', null=True, blank=True)
+    note = models.CharField(u'메모', max_length=1000, blank=True)
 
     class Meta(AbstractTimestampModel.Meta):
         abstract = True
