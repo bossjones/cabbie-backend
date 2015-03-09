@@ -1,4 +1,5 @@
 from collections import defaultdict
+import operator
 import time
 import operator
 
@@ -98,14 +99,21 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
             self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
+        self.debug('candidates: {0}'.format(candidates_with_state))
+
         # [id, ... ]
         candidates = map(operator.itemgetter(0), candidates_with_state)
 
         # [state, ... ]
         states = map(operator.itemgetter(1), candidates_with_state)
 
+        self.debug('candidates: {0}'.format(candidates))
+        self.debug('states: {0}'.format(states))
+
         # [location, ... ]
         locations = map(self.get_driver_location, candidates)
+
+        self.debug('locations: {0}'.format(locations))
 
         estimates = yield self._cached_estimate([(
             (passenger_id, candidates[i]),
@@ -114,13 +122,15 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         drivers = ModelManager().get_driver_all(candidates)
 
-        raise gen.Return([{
+        ret = [{
             'driver': drivers[driver_id],
             'location': locations[i],
             'estimate': estimates[i],
             'charge_type': self._driver_charge_types[driver_id],
             'state': states[i],
-        } for i, driver_id in enumerate(candidates)])
+        } for i, driver_id in enumerate(candidates)]
+
+        raise gen.Return(ret)
 
     @gen.coroutine
     def _cached_estimate(self, pairs):
@@ -172,10 +182,14 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
     def get_nearest_drivers(self, location, count=None, max_distance=None,
                             charge_type=None):
+        
         # Heuristic
         pseudo_count = count * 3
         ids = self._driver_index.nearest(location, count=pseudo_count,
                                          max_distance=max_distance)
+
+        self.debug('Nearest: {0} {1} {2} {3} {4}'.format(location, count, max_distance, charge_type, ids))
+
         ids = [
             (id_, state_) for id_, state_ in ids
             if int(self._driver_charge_types[id_]) <= int(charge_type)]

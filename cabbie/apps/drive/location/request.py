@@ -18,6 +18,7 @@ from cabbie.utils.log import LoggableMixin
 from cabbie.utils.push import send_push_notification
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
+from cabbie.utils.rand import Dice, random_int
 
 
 class RequestProxyManager(LoggableMixin, SingletonMixin, PubsubMixin):
@@ -73,7 +74,10 @@ class RequestProxyManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         # notify to driver
         proxy.request()
-        proxy.approve(request.get_contact_detail(driver_id))     # send push this timing
+
+        candidate = request.get_contact_detail(driver_id)
+        self.debug('Approved candidate: {0}'.format(candidate))
+        proxy.approve(candidate)     # send push at this timing
 
         return True, proxy._ride_id
         
@@ -164,10 +168,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         print self._updatee()
 
     def set_contact_detail(self, driver_id, data):
-        self._contacts_detail[driver_id] = data
+        self._contacts_detail[str(driver_id)] = data
+
+        self.debug('Contact detail: {0}'.format(self._contacts_detail))
 
     def get_contact_detail(self, driver_id):
-        return self._contacts_detail.get(driver_id, None)
+        return self._contacts_detail.get(str(driver_id), None)
 
     def remove_contact(self, driver_id):
         try:
@@ -263,12 +269,15 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         # find
         candidates = yield DriverManager().get_driver_candidates(self._passenger.id, self._source['location'], self.candidate_count, 
                                                         self.max_distance, self.charge_type) 
+
+        self.debug('Candidates: {0}'.format(candidates))
         
         push_targets = []
 
         for candidate in candidates:
-            id_ = candidate['driver'].id
+            id_ = candidate['driver']['id']
             state_ = candidate['state']
+            candidate['estimate'] = candidate['estimate'].for_json()
 
             self.debug('Driver {id}, {state} found'.format(id=id_, state=state_))
 
@@ -322,5 +331,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         # start timer
         for id_ in driver_ids:
+            #self._timers[str(id_)] = delay(random_int(5,30), partial(self.reject, id_))
             self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.reject, id_))
 

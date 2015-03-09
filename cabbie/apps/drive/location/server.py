@@ -176,7 +176,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
             self.ride_proxy.update_driver_location(location)
         else:
             # Otherwise, report to the location manager
-            self.debug('Updating location to {0}'.format(location))
+            #self.debug('Updating location to {0}'.format(location))
             DriverManager().update_location(self._user_id, location,
                                             charge_type)
 
