@@ -366,6 +366,9 @@ PUSH_CHANNEL_PREFIX = None
 MESSAGE_RIDE_REQUEST_TITLE = u'콜요청!'
 MESSAGE_RIDE_REQUEST_ALERT = u'콜이 요청되었습니다. (30초 이내 수락/거절)'
 
+MESSAGE_RIDE_EXPIRED_TITLE = u'콜이 이미 수락됨'
+MESSAGE_RIDE_EXPIRED_ALERT = u'콜이 다른 기사님에 의해 수락되었습니다.'
+
 MESSAGE_RIDE_APPROVE_TITLE = u'콜수락'
 MESSAGE_RIDE_APPROVE_ALERT = u'콜이 수락되었습니다.'
 

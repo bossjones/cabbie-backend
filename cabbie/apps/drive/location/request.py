@@ -234,7 +234,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         for id_ in self._contacts:
             DriverManager().mark_standby(id_)
 
-            # TODO:notify
+        # notify expired to others
+        self.send_expired(self._contacts) 
             
         self.approved = True        
         return self.approved
@@ -333,4 +334,20 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         for id_ in driver_ids:
             #self._timers[str(id_)] = delay(random_int(5,30), partial(self.reject, id_))
             self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.reject, id_))
+
+
+    def send_expired(self, driver_ids):
+        message = {
+            'alert': settings.MESSAGE_RIDE_EXPIRED_ALERT,
+            'title': settings.MESSAGE_RIDE_EXPIRED_TITLE,
+            'push_type': 'ride_expired',
+            'data': {
+                'request_id': self._request_id,
+            }
+        }
+
+        channels = ['driver_{id}'.format(id=id_) for id_ in driver_ids]
+
+        send_push_notification(message, channels, False)
+
 
