@@ -19,7 +19,8 @@ admin.site.login_form = AdminAuthenticationForm
 admin.site.unregister(import_('django.contrib.auth.models.Group'))
 
 # unregister authtoken admin
-admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
+if not settings.DEBUG:
+    admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
 
 # unregister django celery admin
 admin.site.unregister(import_('djcelery.models.CrontabSchedule'))

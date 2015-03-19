@@ -33,7 +33,7 @@ def on_post_create_recommend(sender, instance, **kwargs):
             amount=amount,
         )
 
-
+# deprecated 
 def on_post_create_transaction(sender, instance, **kwargs):
     transaction = instance
     if transaction.transaction_type == Transaction.RETURN:
@@ -75,6 +75,7 @@ def on_return_processed(sender, return_, **kwargs):
         transaction_type=Transaction.RETURN,
         amount=-1 * return_.amount,
         state=Transaction.DONE,
+        note=Transaction.get_transaction_type_text(Transaction.RETURN)
     )
     send_sms('sms/return_processed.txt', return_.user.phone,
              {'return_': return_})
@@ -89,8 +90,6 @@ def on_coupon_processed(sender, coupon, **kwargs):
 
 
 post_create.connect(on_post_create_recommend, sender=Recommend,
-                    dispatch_uid='from_payment')
-post_create.connect(on_post_create_transaction, sender=Transaction,
                     dispatch_uid='from_payment')
 post_ride_board.connect(on_post_ride_board, dispatch_uid='from_payment')
 post_ride_first_rated.connect(on_post_ride_first_rated, dispatch_uid='from_payment')

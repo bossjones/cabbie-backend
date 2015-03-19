@@ -99,7 +99,10 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     def get_incrementer(self, reverse=False):
         return (super(Transaction, self).get_incrementer(reverse)
                 .add(self.user.__class__, self.user_id, 'point', self.amount))
-
+    
+    @staticmethod
+    def get_transaction_type_text(transaction_type):
+        return dict(TRANSACTION_TYPES).get(transaction_type)
 
 class AbstractReturn(AbstractTimestampModel):
     amount = models.PositiveIntegerField(u'환급액', default=0)

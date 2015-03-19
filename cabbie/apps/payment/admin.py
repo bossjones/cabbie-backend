@@ -69,11 +69,18 @@ class TransactionAdmin(AbstractAdmin):
 class AbstractReturnAdmin(AbstractAdmin):
     list_filter = ('is_requested', 'is_processed', 'processed_at',
                    'created_at')
-    list_display = ('user', 'phone', 'bank_account', 'amount',
-                    'is_requested', 'is_processed', 'processed_at',
-                    'created_at')
-    readonly_fields = ('user', 'amount', 'is_requested', 'is_processed',
-                       'processed_at', 'created_at')
+    list_display = ('id', 'user', 'phone', 'bank_account', 'amount',
+                    'is_requested', 'is_processed', 
+                    'created_at', 'processed_at')
+    readonly_fields = ('user', 'created_at', 'processed_at')
+    fieldsets = (
+        (None, {
+            'fields': (
+                'user', 'amount', 'is_requested', 'is_processed',
+            ),
+        }),
+    )
+
     search_fields = (
         '=id',
         '^user__phone',

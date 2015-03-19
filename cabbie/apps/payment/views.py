@@ -3,12 +3,12 @@ from rest_framework import viewsets
 from cabbie.apps.payment.models import PassengerReturn, Transaction, DriverBill, DriverCoupon
 from cabbie.apps.payment.serializers import (
     PassengerReturnSerializer, TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
-
+from cabbie.common.views import CsrfExcempt
 
 # REST
 # ----
 
-class PassengerReturnViewSet(viewsets.ModelViewSet):
+class PassengerReturnViewSet(CsrfExcempt, viewsets.ModelViewSet):
     queryset = (PassengerReturn.objects
                 .prefetch_related('user')
                 .all()) 
