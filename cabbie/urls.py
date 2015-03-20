@@ -16,7 +16,8 @@ urlpatterns = patterns('')
 admin.site.login_form = AdminAuthenticationForm
 
 # unregister django group admin
-admin.site.unregister(import_('django.contrib.auth.models.Group'))
+if not settings.DEBUG:
+    admin.site.unregister(import_('django.contrib.auth.models.Group'))
 
 # unregister authtoken admin
 if not settings.DEBUG:

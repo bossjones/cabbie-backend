@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 from rest_framework import viewsets
 
 from cabbie.apps.payment.models import PassengerReturn, Transaction, DriverBill, DriverCoupon
 from cabbie.apps.payment.serializers import (
     PassengerReturnSerializer, TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
 from cabbie.common.views import CsrfExcempt
+from cabbie.utils.email import send_email
 
 # REST
 # ----
@@ -15,6 +17,18 @@ class PassengerReturnViewSet(CsrfExcempt, viewsets.ModelViewSet):
     serializer_class = PassengerReturnSerializer
     filter_fields = ('is_processed',)
     ordering = ('-created_at',)
+
+    def create(self, request):
+        # send apply form email
+        user = request.user.concrete
+        send_email('mail/point/return_apply.txt', user.email, {
+            'subject': u'[백기사] 포인트 환급 신청 안내 드립니다.',
+            'message': u'http://goo.gl/forms/zfzfspdrLY 입니다.', 
+        })        
+       
+        return super(PassengerReturnViewSet, self).create(request)
+
+        
 
     def pre_save(self, obj):
         obj.user = self.request.user.get_role('passenger')

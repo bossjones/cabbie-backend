@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.drive.models import Ride
-from cabbie.apps.payment.signals import return_processed, coupon_processed
+from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
 from cabbie.apps.recommend.models import Recommend
 from cabbie.common.models import IncrementMixin, AbstractTimestampModel
 
@@ -102,11 +102,11 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     
     @staticmethod
     def get_transaction_type_text(transaction_type):
-        return dict(TRANSACTION_TYPES).get(transaction_type)
+        return dict(Transaction.TRANSACTION_TYPES).get(transaction_type)
 
 class AbstractReturn(AbstractTimestampModel):
     amount = models.PositiveIntegerField(u'환급액', default=0)
-    is_requested = models.BooleanField(u'환급요청여부', default=False)
+    is_requested = models.BooleanField(u'환급요청정보 기입여부', default=False)
     is_processed = models.BooleanField(u'환급완료여부', default=False)
     processed_at = models.DateTimeField(u'환급시점', null=True, blank=True)
     note = models.CharField(u'메모', max_length=1000, blank=True)
@@ -123,6 +123,14 @@ class AbstractReturn(AbstractTimestampModel):
         return self.user.bank_account
     bank_account.short_description = u'은행계좌'
     bank_account = property(bank_account)
+
+    def mark_as_requested(self):
+        if self.is_requested:
+            return
+        self.is_requested = True
+        self.save(update_fields=['is_requested'])
+
+        return_apply_completed.send(sender=self.__class__, return_=self)
 
     def process(self):
         if self.is_processed:

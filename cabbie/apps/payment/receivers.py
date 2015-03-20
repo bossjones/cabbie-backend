@@ -4,10 +4,11 @@ from django.conf import settings
 
 from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.payment.models import Transaction, DriverCoupon
-from cabbie.apps.payment.signals import return_processed, coupon_processed
+from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
 from cabbie.apps.drive.signals import post_ride_board, post_ride_first_rated
 from cabbie.common.signals import post_create
 from cabbie.utils.sms import send_sms
+from cabbie.utils.email import send_email
 
 
 def on_post_create_recommend(sender, instance, **kwargs):
@@ -70,6 +71,15 @@ def on_post_ride_first_rated(sender, ride, **kwargs):
             state=Transaction.DONE,
         )
 
+def on_return_apply_completed(sender, return_, **kwargs):
+    user = return_.user.concrete
+
+    if isinstance(user, Passenger):
+        send_email('mail/point/return_apply_completed.txt', user.email, {
+            'subject': u'[백기사] 포인트 환급 신청 접수 완료',
+            'message': u'{created_at} 요청하신 환급 신청 접수가 완료되었습니다. {amount}포인트 환급완료'
+                        .format(created_at=return_.created_at, amount=return_.amount),
+
 def on_return_processed(sender, return_, **kwargs):
     return_.user.transactions.create(
         transaction_type=Transaction.RETURN,
@@ -77,8 +87,15 @@ def on_return_processed(sender, return_, **kwargs):
         state=Transaction.DONE,
         note=Transaction.get_transaction_type_text(Transaction.RETURN)
     )
-    send_sms('sms/return_processed.txt', return_.user.phone,
-             {'return_': return_})
+    
+    user = return_.user.concrete
+
+    if isinstance(user, Passenger):
+        send_email('mail/point/return_processed.txt', user.email, {
+            'subject': u'[백기사] 포인트가 환급 완료되었습니다.',
+            'message': u'{created_at} 요청하신 {amount}포인트 환급완료'
+                        .format(created_at=return_.created_at, amount=return_.amount),
+        })
 
 
 def on_coupon_processed(sender, coupon, **kwargs):
@@ -94,4 +111,5 @@ post_create.connect(on_post_create_recommend, sender=Recommend,
 post_ride_board.connect(on_post_ride_board, dispatch_uid='from_payment')
 post_ride_first_rated.connect(on_post_ride_first_rated, dispatch_uid='from_payment')
 return_processed.connect(on_return_processed, dispatch_uid='from_payment')
+return_apply_completed.connect(on_return_apply_completed, dispatch_uid='from_payment')
 coupon_processed.connect(on_coupon_processed, dispatch_uid='from_payment')

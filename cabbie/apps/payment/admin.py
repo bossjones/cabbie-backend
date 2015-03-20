@@ -87,8 +87,17 @@ class AbstractReturnAdmin(AbstractAdmin):
         'user__name',
     )
     actions = (
+        'mark_as_requested',
         'process',
     )
+
+    def mark_as_requested(self, request, queryset):
+        returns = list(queryset.all())
+        for return_ in returns:
+            return_.mark_as_requested()
+        msg = u'{0}개의 요청정보 기입여부 처리를 완료하였습니다.'.format(len(returns))
+        self.message_user(request, msg)
+    mark_as_requested.short_description = u'환급요청정보 기입처리'
 
     def process(self, request, queryset):
         returns = list(queryset.all())
