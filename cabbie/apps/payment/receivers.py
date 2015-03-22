@@ -49,7 +49,6 @@ def on_post_create_transaction(sender, instance, **kwargs):
 
 def on_post_ride_board(sender, ride, **kwargs):
     amount = settings.POINTS_BY_TYPE.get(Transaction.RIDE_POINT)
-    amount = 1000
     if amount:
         Transaction.objects.create(
             user=ride.passenger,
@@ -57,11 +56,11 @@ def on_post_ride_board(sender, ride, **kwargs):
             transaction_type=Transaction.RIDE_POINT,
             amount=amount,
             state=Transaction.DONE,
+            note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
         )
 
 def on_post_ride_first_rated(sender, ride, **kwargs):
     amount = settings.POINTS_BY_TYPE.get(Transaction.RATE_POINT)
-    amount = 500
     if amount:
         Transaction.objects.create(
             user=ride.passenger,
@@ -69,6 +68,7 @@ def on_post_ride_first_rated(sender, ride, **kwargs):
             transaction_type=Transaction.RATE_POINT,
             amount=amount,
             state=Transaction.DONE,
+            note=Transaction.get_transaction_type_text(Transaction.RATE_POINT)
         )
 
 def on_return_apply_completed(sender, return_, **kwargs):
