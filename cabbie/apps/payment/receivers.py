@@ -79,6 +79,7 @@ def on_return_apply_completed(sender, return_, **kwargs):
             'subject': u'[백기사] 포인트 환급 신청 접수 완료',
             'message': u'{created_at} 요청하신 환급 신청 접수가 완료되었습니다. {amount}포인트 환급완료'
                         .format(created_at=return_.created_at, amount=return_.amount),
+        })
 
 def on_return_processed(sender, return_, **kwargs):
     return_.user.transactions.create(
