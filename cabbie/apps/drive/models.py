@@ -176,7 +176,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         count = 0
 
         for key, value in self.ratings_by_category.iteritems():
-            total_rating += value
+            total_rating += int(value)
             if value > 0:
                 count += 1
 
