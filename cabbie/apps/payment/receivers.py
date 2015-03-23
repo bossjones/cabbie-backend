@@ -61,7 +61,7 @@ def on_post_ride_board(sender, ride, **kwargs):
 
 def on_post_ride_first_rated(sender, ride, **kwargs):
     amount = settings.POINTS_BY_TYPE.get(Transaction.RATE_POINT)
-    if amount:
+    if amount and amount > 0:
         Transaction.objects.create(
             user=ride.passenger,
             ride=ride,
