@@ -419,9 +419,10 @@ POINTS_BY_TYPE = {
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
+    'signup_point': 20000,              # For passenger
     'ride_point': 1000,                 # For passenger
-    'rate_point': 500,                 # For passenger
-    'rebate': 2000                  # For driver
+    'rate_point': 500,                  # For passenger
+    'rebate': 2000                      # For driver
 }
 COUPON_THRESHOLDS = (
     (100, 100000),    # (board_count, amount)
