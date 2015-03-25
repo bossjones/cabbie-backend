@@ -2,6 +2,7 @@
 
 from django.conf import settings
 
+from cabbie.apps.account.models import Passenger
 from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.payment.models import Transaction, DriverCoupon
 from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
