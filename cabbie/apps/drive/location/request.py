@@ -183,16 +183,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         else:
             self.debug('Driver {0} removed from contact'.format(driver_id))
 
-        print self._updatee()
-
     def add_reject(self, driver_id):
         self.info('Rejected driver {0}'.format(driver_id))
 
         # add to rejects
         self.remove_contact(driver_id)
         self._rejects.append(driver_id)
-
-        print self._updatee()
 
         if self.no_contacts and self.refresh_count == 0:
             self.terminate()
@@ -258,8 +254,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         # state rejected
         self._state = Request.REJECTED        
         self.update(state=Request.REJECTED)
-
-        # mark all as standby
 
     @gen.coroutine
     def request(self):
