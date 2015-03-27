@@ -174,6 +174,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
         
         if self.driver_session:
             self.driver_session.notify_driver_cancel()
+        
+        # send push
+        self.send_cancel_push()
+
         self._transition_to(Ride.CANCELED)
         self._destroy('cancel')
 
@@ -266,7 +270,23 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
                 # destroy ride
                 self._destroy('destination reached') 
-                 
+                  
+    def send_cancel_push(self):
+        # For passenger, send approve 
+        driver = self.driver
+
+        message = {
+            'alert': settings.MESSAGE_RIDE_CANCEL_ALERT,
+            'title': settings.MESSAGE_RIDE_CANCEL_TITLE,
+            'push_type': 'ride_canceled',
+            'data': {
+                'ride_id': self._ride_id,
+            }
+        }
+        send_push_notification(message, ['driver_{0}'.format(driver['id'])], False)
+
+
+        
     def send_approve_push(self, candidate):
         # For passenger, send approve 
         passenger = self.passenger

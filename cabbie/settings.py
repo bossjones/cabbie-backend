@@ -378,6 +378,9 @@ MESSAGE_RIDE_PROGRESS_ALERT = u'기사님이 픽업장소로 이동중입니다.
 MESSAGE_RIDE_REJECT_TITLE = u'콜거절'
 MESSAGE_RIDE_REJECT_ALERT = u'콜이 거절되었습니다.'
 
+MESSAGE_RIDE_CANCEL_TITLE = u'콜취소'
+MESSAGE_RIDE_CANCEL_ALERT = u'승객이 콜을 취소하였습니다.'
+
 MESSAGE_RIDE_ARRIVE_TITLE = u'백기사 도착'
 MESSAGE_RIDE_ARRIVE_ALERT = u'백기사가 픽업장소에 도착하였습니다.'
 
