@@ -313,7 +313,7 @@ SESSION_CLOSE_TIMEOUT = 5               # seconds
 MAX_DISTANCE = 5 * 1000                 # meters
 RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters
-CANDIDATE_COUNT = 50
+CANDIDATE_COUNT = 200
 REASSIGN_COUNT = 50
 
 REQUEST_TIMEOUT = 32                    # seconds
