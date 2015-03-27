@@ -13,6 +13,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from cabbie.apps.account import messages
 from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout, DriverDropout, DriverReservation
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
@@ -22,6 +23,7 @@ from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.sms import send_sms
+from cabbie.utils.email import send_email
 from cabbie.utils.validator import is_valid_phone
 from cabbie.utils import json
 
@@ -295,7 +297,7 @@ class PasswordResetView(GenericAPIView):
             PasswordResetSessionManager().reset(request.DATA['phone'])
 
             # send email
-            send_email('mail/password_changed.html', user.email, {
+            send_email('mail/password_changed.html', user.concrete.email, {
                 # common
                 'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
                 'email_font': settings.EMAIL_DEFAULT_FONT,
@@ -304,7 +306,7 @@ class PasswordResetView(GenericAPIView):
                 'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
                 'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
-                'subject': messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION,
+                'subject': messages.ACCOUNT_EMAIL_SUBJECT_PASSWORD_CHANGED,
                 'changed_at': datetime.datetime.now(),
             })
             
