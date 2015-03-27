@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from rest_framework import viewsets
 
 from cabbie.apps.payment.models import PassengerReturn, Transaction, DriverBill, DriverCoupon
 from cabbie.apps.payment.serializers import (
     PassengerReturnSerializer, TransactionSerializer, DriverBillSerializer, DriverCouponSerializer)
+from cabbie.apps.payment import messages
 from cabbie.common.views import CsrfExcempt
 from cabbie.utils.email import send_email
 
@@ -21,9 +23,17 @@ class PassengerReturnViewSet(CsrfExcempt, viewsets.ModelViewSet):
     def create(self, request):
         # send apply form email
         user = request.user.concrete
-        send_email('mail/point/return_apply.txt', user.email, {
-            'subject': u'[백기사] 포인트 환급 신청 안내 드립니다.',
-            'message': u'http://goo.gl/forms/zfzfspdrLY 입니다.', 
+        send_email('mail/point/point_application.html', user.email, {
+            # common
+            'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+            'email_font': settings.EMAIL_DEFAULT_FONT,
+            'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+            'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+            'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+            'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+
+            'subject': messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION,
+            'point_application_url': settings.POINT_APPLICATION_URL,
         })        
        
         return super(PassengerReturnViewSet, self).create(request)

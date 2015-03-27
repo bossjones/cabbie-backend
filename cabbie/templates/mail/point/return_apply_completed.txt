@@ -1,3 +1,0 @@
-{{ subject }}
-{{ settings.EMAIL_DELIMITER }}
-{{ message }}

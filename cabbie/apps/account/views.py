@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import re
+import datetime
 
 from django.conf import settings
 from rest_framework import viewsets, status
@@ -293,6 +294,20 @@ class PasswordResetView(GenericAPIView):
             # clear session
             PasswordResetSessionManager().reset(request.DATA['phone'])
 
+            # send email
+            send_email('mail/password_changed.html', user.email, {
+                # common
+                'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+                'email_font': settings.EMAIL_DEFAULT_FONT,
+                'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+                'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+                'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+                'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+
+                'subject': messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION,
+                'changed_at': datetime.datetime.now(),
+            })
+            
         except InvalidSession:
             return self.render_error(
                 u'비밀번호 재설정 세션이 만료되었습니다. 처음부터 다시 시작해주세요.')

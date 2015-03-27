@@ -1,3 +1,68 @@
-{% block subject %}{% endblock %}
+{{ subject }}
 {{ settings.EMAIL_DELIMITER }}
-{% block message %}{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="UTF-8">
+  <title>{{ title }}</title>
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+</head>
+<body style="font-family: {{ email_font }};color: #000; margin: 0; padding: 0;">
+  <style type="text/css">
+    a:visited {
+      font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0;
+    }
+    a:hover {
+      text-decoration: none;
+    }
+    a:active {
+      text-decoration: none;
+    }
+    a:focus {
+      text-decoration: none;
+    }
+    ul.nav a:visited {
+      padding: 5px 5px 5px 15px; display: block; width: 160px; text-decoration: none; background-color: #C6D580;
+    }
+    ul.nav a:hover {
+      background-color: #ADB96E; color: #FFF;
+    }
+    ul.nav a:active {
+      background-color: #ADB96E; color: #FFF;
+    }
+    ul.nav a:focus {
+      background-color: #ADB96E; color: #FFF;
+    }
+  </style>
+  <section style="display: block;">
+    <div id="container" style="width: 700px; background: #FFFFFF; margin: 0 auto;">
+      <div id="header"> <img src="{{ cdn_url }}/IMG/upper bar.png" width="700" height="58" id="Insert_logo" style="display: block; vertical-align: middle; background: #C6D580; margin: 0; padding: 0; border: 0;">
+      </div>
+      {% block content %}{% endblock %}
+      <!-- content --> 
+      <div id="footer" align="center" style="position: relative; clear: both; vertical-align: top; background: #FFFFFF; margin: 0; padding: 0;"> 
+        <!-- 줄긋기 -->
+        <hr width="100%" style="height: 1px; background: #282828; margin: 0; border: none;">
+        <table style="margin: 12px 0 0; padding: 0;"><tr>
+            <td style="text-align: left; vertical-align: top; margin: 0; padding: 0 0 0 0px;" align="left" valign="top"><a href="{{ bktaxi_web_url }}" target="_blank" style="font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;"><img src="{{ cdn_url }}/IMG/homepage.png" width="35" height="35" border="0" align="middle" style="vertical-align: middle; margin: 0; padding: 0; border: 0 none;"></a></td>
+            <td style="text-align: left; vertical-align: top; margin: 0; padding: 0 0 0 4px;" align="left" valign="top"><a href="{{ bktaxi_facebook_url }}" target="_blank" style="font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;"><img src="{{ cdn_url }}/IMG/facebook.png" width="35" height="35" border="0" align="middle" style="vertical-align: middle; margin: 0; padding: 0; border: 0 none;"></a></td>
+            <td style="text-align: left; vertical-align: top; margin: 0; padding: 0 0 0 4px;" align="left" valign="top"><a href="{{ bktaxi_instagram_url }}" target="_blank" style="font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;"><img src="{{ cdn_url }}/IMG/instagram.png" width="35" height="35" border="0" align="middle" style="vertical-align: middle; margin: 0; padding: 0; border: 0 none;"></a></td>
+            <td style="text-align: left; vertical-align: top; margin: 0; padding: 0 0 0 4px;" align="left" valign="top"><a href="{{ bktaxi_naver_blog_url }}" target="_blank" style="font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;"><img src="{{ cdn_url }}/IMG/blog.png" width="35" height="35" border="0" align="middle" style="vertical-align: middle; margin: 0; padding: 0; border: 0 none;"></a></td>
+            <td style="text-align: left; vertical-align: top; margin: 0; padding: 0 0 0 8px;" align="left" valign="top"><p class="textShortcut" style="font-size: 9px; font-weight: normal; color: #282828; margin: 0; padding: 0;">
+              본 이메일은 발신전용으로 회신되지 않습니다. 포인트 관련 궁금하신 사항은 <a href="mailto:point@bktaxi.com" class="textLink" style="font-size: 9px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;">point@bktaxi.com</a>으로 <br> 문의주시기 바랍니다.<br>
+              ©2015 백기사 서울특별시 종로구 종로1가 24 르메이에르종로타운 A동 903호 </p></td>
+            </tr>
+        </table>
+        <div id="gap-30px" style="height: 30px; margin: 0;"></div>
+      </div>
+      <!-- footer --> 
+    </div>
+    <!-- container --> 
+
+  </section>
+</body>
+</html>
+

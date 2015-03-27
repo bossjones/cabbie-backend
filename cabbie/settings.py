@@ -205,14 +205,26 @@ LOCATION_WEB_SERVER_PORT = 7777
 # -----
 
 CONTACT_EMAIL = '백기사 <support@{host}>'.format(host=HOST)
-ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com']
+ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com', 'kokookko1@naver.com']
 EMAIL_DELIMITER = '=====CABBIE====='
 EMAIL_BACKEND = 'django_ses.SESBackend'
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
 EMAIL_HOST_USER = 'AKIAJD3WYLRGE5C2HKVA'
 EMAIL_HOST_PASSWORD = 'Ala4bqSfpgYFFHi966Ys4eUINKH058fZ85nZYqLKC3yt'
+EMAIL_DEFAULT_FONT = 'Arial, Helvetica, sans-serif'     # http://www.w3schools.com/cssref/css_websafe_fonts.asp
 
+# Cloudfront
+WEB_CDN_DOMAIN_NAME = 'http://d3qhjk1lhj60db.cloudfront.net'
+EMAIL_CDN_DOMAIN_NAME = 'http://d2vgtxzoj7hyhq.cloudfront.net'
+
+# Point
+POINT_APPLICATION_URL = 'http://goo.gl/forms/zfzfspdrLY'
+
+# Bktaxi urls
+BKTAXI_WEB_URL = 'https://bktaxi.com'
+BKTAXI_FACEBOOK_URL = 'https://www.facebook.com/baekkisa'
+BKTAXI_INSTAGRAM_URL = 'https://instagram.com/baekkisa'
+BKTAXI_NAVER_BLOG_URL = 'http://blog.naver.com/bktaxi0624'
 
 
 # Jinja2

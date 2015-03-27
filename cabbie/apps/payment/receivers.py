@@ -6,6 +6,7 @@ from cabbie.apps.account.models import Passenger
 from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.payment.models import Transaction, DriverCoupon
 from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
+from cabbie.apps import payment
 from cabbie.apps.drive.signals import post_ride_board, post_ride_first_rated
 from cabbie.common.signals import post_create
 from cabbie.utils.sms import send_sms
@@ -76,10 +77,17 @@ def on_return_apply_completed(sender, return_, **kwargs):
     user = return_.user.concrete
 
     if isinstance(user, Passenger):
-        send_email('mail/point/return_apply_completed.txt', user.email, {
-            'subject': u'[백기사] 포인트 환급 신청 접수 완료',
-            'message': u'{created_at} 요청하신 환급 신청 접수가 완료되었습니다. {amount}포인트 환급완료'
-                        .format(created_at=return_.created_at, amount=return_.amount),
+        send_email('mail/point/point_application_completed.html', user.email, {
+            # common
+            'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+            'email_font': settings.EMAIL_DEFAULT_FONT,
+            'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+            'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+            'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+            'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+
+            'subject': payment.messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_COMPLETED, 
+            'return': return_, 
         })
 
 def on_return_processed(sender, return_, **kwargs):
@@ -93,10 +101,17 @@ def on_return_processed(sender, return_, **kwargs):
     user = return_.user.concrete
 
     if isinstance(user, Passenger):
-        send_email('mail/point/return_processed.txt', user.email, {
-            'subject': u'[백기사] 포인트가 환급 완료되었습니다.',
-            'message': u'{created_at} 요청하신 {amount}포인트 환급완료'
-                        .format(created_at=return_.created_at, amount=return_.amount),
+        send_email('mail/point/point_application_processed.html', user.email, {
+            # common
+            'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+            'email_font': settings.EMAIL_DEFAULT_FONT,
+            'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+            'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+            'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+            'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+
+            'subject': payment.messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_PROCESSED, 
+            'return': return_, 
         })
 
 
