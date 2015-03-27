@@ -205,7 +205,7 @@ LOCATION_WEB_SERVER_PORT = 7777
 # -----
 
 CONTACT_EMAIL = '백기사 <support@{host}>'.format(host=HOST)
-ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com', 'kokookko1@naver.com']
+ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com', 'kokookko1@naver.com', 'yousang.lee@bktaxi.com']
 EMAIL_DELIMITER = '=====CABBIE====='
 EMAIL_BACKEND = 'django_ses.SESBackend'
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
