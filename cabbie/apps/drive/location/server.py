@@ -162,7 +162,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
         SessionBufferManager().remove(self._user_id)
 
         # start heartbeating
-        self._ping()
+ #       self._ping()
 
     # Driver-side
     # -----------
