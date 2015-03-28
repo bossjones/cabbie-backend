@@ -297,18 +297,19 @@ class PasswordResetView(GenericAPIView):
             PasswordResetSessionManager().reset(request.DATA['phone'])
 
             # send email
-            send_email('mail/password_changed.html', user.concrete.email, {
-                # common
-                'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
-                'email_font': settings.EMAIL_DEFAULT_FONT,
-                'bktaxi_web_url': settings.BKTAXI_WEB_URL,
-                'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
-                'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
-                'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+            if user.is_email_agreed:
+                send_email('mail/password_changed.html', user.concrete.email, {
+                    # common
+                    'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+                    'email_font': settings.EMAIL_DEFAULT_FONT,
+                    'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+                    'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+                    'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+                    'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
-                'subject': messages.ACCOUNT_EMAIL_SUBJECT_PASSWORD_CHANGED,
-                'changed_at': datetime.datetime.now(),
-            })
+                    'subject': messages.ACCOUNT_EMAIL_SUBJECT_PASSWORD_CHANGED,
+                    'changed_at': datetime.datetime.now(),
+                })
             
         except InvalidSession:
             return self.render_error(

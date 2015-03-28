@@ -23,6 +23,7 @@ class PassengerReturnViewSet(CsrfExcempt, viewsets.ModelViewSet):
     def create(self, request):
         # send apply form email
         user = request.user.concrete
+        
         send_email('mail/point/point_application.html', user.email, {
             # common
             'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,

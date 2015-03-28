@@ -76,7 +76,7 @@ def on_post_ride_first_rated(sender, ride, **kwargs):
 def on_return_apply_completed(sender, return_, **kwargs):
     user = return_.user.concrete
 
-    if isinstance(user, Passenger):
+    if user.is_email_agreed and isinstance(user, Passenger):
         send_email('mail/point/point_application_completed.html', user.email, {
             # common
             'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
@@ -100,7 +100,7 @@ def on_return_processed(sender, return_, **kwargs):
     
     user = return_.user.concrete
 
-    if isinstance(user, Passenger):
+    if user.is_email_agreed and isinstance(user, Passenger):
         send_email('mail/point/point_application_processed.html', user.email, {
             # common
             'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,

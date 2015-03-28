@@ -38,7 +38,7 @@ def on_post_create_passenger(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
 
     # send email to passenger
-    if sender is Passenger and instance.is_email_agreed and True:
+    if sender is Passenger and instance.is_email_agreed:
         send_email('mail/signup_completed.html', instance.email, {
             # common
             'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
