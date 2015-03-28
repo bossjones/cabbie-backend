@@ -170,6 +170,11 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
     def cancel(self):
         # cancel timed out reject
+        
+        if self._state == Ride.CANCELED:
+            self.debug('Already canceled')
+            return
+
         self._cancel_timeout_reject()
         
         if self.driver_session:
