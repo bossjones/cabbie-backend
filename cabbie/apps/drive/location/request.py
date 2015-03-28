@@ -194,15 +194,15 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
             cancel(v)
 
-        # remove from index
-        DriverManager().deactivate(driver_id)
-
         # remove from contacts
         self.remove_contact(driver_id)
         
         # Fetch the last driver info before deactivating
         driver_location = DriverManager().get_driver_location(driver_id)
         driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
+
+        # remove from index
+        DriverManager().deactivate(driver_id)
 
         # Create a new ride proxy instance from information in approved request
         proxy = RideProxyManager().create(self._passenger.id, self._source, self._destination, self._additional_message)
