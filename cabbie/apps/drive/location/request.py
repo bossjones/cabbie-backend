@@ -59,27 +59,7 @@ class RequestProxyManager(LoggableMixin, SingletonMixin, PubsubMixin):
             self.info('Request {0} gone, approval by {1} failed'.format(request_id, driver_id))
             return False, None
 
-        # Fetch the last driver info before deactivating
-        driver_location = DriverManager().get_driver_location(driver_id)
-        driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
-
-        approved = request.approve(driver_id)
-
-        if not approved:
-            return False, None
-
-        # Create a new ride proxy instance from information in approved request
-        proxy = RideProxyManager().create(request._passenger.id, request._source, request._destination, request._additional_message)
-        proxy.set_driver(driver_id, driver_location, driver_charge_type)
-
-        # notify to driver
-        proxy.request()
-
-        candidate = request.get_contact_detail(driver_id)
-        self.debug('Approved candidate: {0}'.format(candidate))
-        proxy.approve(candidate)     # send push at this timing
-
-        return True, proxy._ride_id
+        return request.approve(driver_id)
         
     def reject(self, request_id, driver_id):
         request = self._requests.get(str(request_id), None)
@@ -198,21 +178,21 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return len(self._contacts) == 0
 
     def approve(self, driver_id):
+        # return (approved, ride_id)        
+
 
         if self.approved:
             self.info('Request {0} already approved, trial by {1} failed'.format(self._request_id, driver_id))
-            return False
+            return (False, None)
 
         if driver_id in self._rejects:
             self.info('Request {0} already rejected by {1}'.format(self._request_id, driver_id))
-            return False
+            return (False, None)
 
         # cancel all timers 
         for k,v in self._timers.iteritems():
 
             cancel(v)
-
-        self._approval = driver_id
 
         # remove from index
         DriverManager().deactivate(driver_id)
@@ -220,8 +200,25 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         # remove from contacts
         self.remove_contact(driver_id)
         
+        # Fetch the last driver info before deactivating
+        driver_location = DriverManager().get_driver_location(driver_id)
+        driver_charge_type = DriverManager().get_driver_charge_type(driver_id)
+
+        # Create a new ride proxy instance from information in approved request
+        proxy = RideProxyManager().create(self._passenger.id, self._source, self._destination, self._additional_message)
+        proxy.set_driver(driver_id, driver_location, driver_charge_type)
+
+        # notify to driver
+        proxy.request()
+
+        candidate = self.get_contact_detail(driver_id)
+        self.debug('Approved candidate: {0}'.format(candidate))
+        proxy.approve(candidate)     # send push at this timing
+
+
         # state approved
         self.info('Approve request {0}'.format(self._request_id))
+        self._approval = proxy._ride_id 
         self._state = Request.APPROVED        
         self.update(state=Request.APPROVED)
 
@@ -234,7 +231,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self.send_expired(self._contacts) 
             
         self.approved = True        
-        return self.approved
+        return (self.approved, proxy._ride_id)
 
     def reject(self, driver_id):
         # add to rejects

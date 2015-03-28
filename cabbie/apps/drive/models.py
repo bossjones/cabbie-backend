@@ -28,7 +28,7 @@ class Request(AbstractTimestampModel):
     state = models.CharField(u'상태', max_length=50, choices=STATES)
     contacts = JSONField(u'보낸기사 리스트', default='[]')
     rejects = JSONField(u'거절기사 리스트', default='[]')
-    approval = models.ForeignKey(Driver, blank=True, null=True, related_name='approved_requests', verbose_name=u'승인기사')
+    approval = models.ForeignKey(Ride, blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
       
     objects = models.GeoManager()
 
