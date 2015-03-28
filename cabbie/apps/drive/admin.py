@@ -16,7 +16,7 @@ class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
-    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval')
+    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval', 'updated_at', 'created_at')
 
 class RideAdmin(AbstractAdmin):
     deletable = True 
