@@ -4,7 +4,7 @@ from django.db.models import F
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
-from cabbie.apps import account
+from cabbie.apps.account import messages
 from cabbie.apps.account.models import Passenger, Driver, DriverReservation
 from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
@@ -48,7 +48,7 @@ def on_post_create_passenger(sender, instance, **kwargs):
             'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
             'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
-            'subject': account.messages.ACCOUNT_EMAIL_SUBJECT_SIGNUP_COMPLETED,
+            'subject': messages.ACCOUNT_EMAIL_SUBJECT_SIGNUP_COMPLETED,
             'user': instance,
         })
 
