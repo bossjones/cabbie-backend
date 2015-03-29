@@ -77,6 +77,8 @@ router.register(r'drivers/stats/day',
                 import_('cabbie.apps.stats.views.DriverRideStatDayViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
+router.register(r'requests',
+                import_('cabbie.apps.drive.views.RequestViewSet'))
 router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
 router.register(r'favorites',

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
-    RideSerializer, FavoriteSerializer, HotspotSerializer)
+    RequestSerializer, RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.apps.drive.receivers import post_ride_requested
 from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
@@ -19,6 +19,26 @@ from cabbie.utils.date import week_of_month
 
 # REST
 # ----
+
+class RequestViewSet(APIMixin, viewsets.ModelViewSet):
+    queryset = Request.objects.prefetch_related('passenger', 'approval').all()
+    serializer_class = RequestSerializer
+    filter_fields = ('state', 'passenger', 'approval', 'created_at',
+                     'updated_at')
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = self.queryset
+
+        if user.is_superuser:
+            return qs
+
+        if user.has_role('passenger'):
+            qs = qs.filter(passenger=user)
+
+        return qs
+
 
 class RideViewSet(APIMixin, viewsets.ModelViewSet):
     queryset = Ride.objects.prefetch_related('passenger', 'driver').all()
