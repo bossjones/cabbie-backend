@@ -107,13 +107,8 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         # [state, ... ]
         states = map(operator.itemgetter(1), candidates_with_state)
 
-        self.debug('candidates: {0}'.format(candidates))
-        self.debug('states: {0}'.format(states))
-
         # [location, ... ]
         locations = map(self.get_driver_location, candidates)
-
-        self.debug('locations: {0}'.format(locations))
 
         estimates = yield self._cached_estimate([(
             (passenger_id, candidates[i]),
