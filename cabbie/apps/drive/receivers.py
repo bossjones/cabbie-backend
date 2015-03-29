@@ -4,9 +4,26 @@ from django.db.models import Sum
 from rest_framework.renderers import JSONRenderer
 
 from cabbie.apps.account.serializers import PassengerSerializer, DriverSerializer
-from cabbie.apps.drive.signals import post_ride_requested, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
+from cabbie.apps.drive.signals import post_request_rejected, post_ride_requested, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
 from cabbie.utils.push import send_push_notification
 from cabbie.utils import json
+
+def on_post_request_rejected(sender, request, **kwargs):
+    # send reject push
+    passenger = request.passenger
+
+    message = {
+        'alert': settings.MESSAGE_RIDE_REJECT_ALERT,
+        'title': settings.MESSAGE_RIDE_REJECT_TITLE,
+        'push_type': 'request_rejected',
+        'data': {
+            'request_id': request.id,
+        }
+    }
+    send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
+
+
+post_request_rejected.connect(on_post_request_rejected, dispatch_uid='from_drive')
 
 def on_post_ride_requested(sender, ride, **kwargs):
     # Send to driver
@@ -35,18 +52,7 @@ def on_post_ride_requested(sender, ride, **kwargs):
 
 
 def on_post_ride_approve(sender, ride, **kwargs):
-    # For passenger, send approve 
-    passenger = ride.passenger
-
-    message = {
-        'alert': settings.MESSAGE_RIDE_APPROVE_ALERT,
-        'title': settings.MESSAGE_RIDE_APPROVE_TITLE,
-        'push_type': 'ride_approved',
-        'data': {
-            'ride_id': ride.id
-        }
-    }
-    send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
+    pass
 
 
 def on_post_ride_reject(sender, ride, **kwargs):

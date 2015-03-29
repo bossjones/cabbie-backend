@@ -8,13 +8,48 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.signals import post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
+from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
+class Request(AbstractTimestampModel):
+    STANDBY, APPROVED, REJECTED,  = 'standby', 'approved', 'rejected'
+
+    STATES = (
+        (STANDBY, _('standby')),
+        (APPROVED, _('approved')),
+        (REJECTED, _('rejected')),
+    )
+    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객')
+    source_location = models.PointField(u'출발지 좌표')
+    state = models.CharField(u'상태', max_length=50, choices=STATES)
+    contacts = JSONField(u'보낸기사 리스트', default='[]')
+    rejects = JSONField(u'거절기사 리스트', default='[]')
+    approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
+      
+    objects = models.GeoManager()
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'배차 요청'
+        verbose_name_plural = u'배차 요청'
+
+
+    def update(self, **data):
+        for field in ('state', 'contacts', 'rejects', 'approval_id'): 
+            value = data.get(field)
+            if value:
+                setattr(self, field, value)
+    
+        self.save()
+
+        if self.state == self.REJECTED:
+            post_request_rejected.send(sender=self.__class__, request=self)
+
+ 
+    
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
@@ -65,7 +100,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     }
 
     passenger = models.ForeignKey(Passenger, related_name='rides',
-                                  verbose_name=u'승객')
+                                  verbose_name=u'승객', null=True, on_delete=models.SET_NULL)
     driver = models.ForeignKey(Driver, blank=True, null=True,
                                related_name='rides', verbose_name=u'기사')
 
@@ -146,7 +181,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         count = 0
 
         for key, value in self.ratings_by_category.iteritems():
-            total_rating += value
+            total_rating += int(value)
             if value > 0:
                 count += 1
 
@@ -182,15 +217,18 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         update_fields = ['ratings_by_category', 'comment']
 
         # state 
-        if self.state != self.RATED:
+        is_new  = self.state != self.RATED
+        if is_new:
             self.state = self.RATED
             update_fields.extend(['state'])
 
         self.save(update_fields=update_fields)
 
-        # stat
+        # signal for stat, point
         post_ride_rated.send(sender=self.__class__, ride=self)
 
+        if is_new:
+            post_ride_first_rated.send(sender=self.__class__, ride=self)
 
     def transit(self, **data):
 

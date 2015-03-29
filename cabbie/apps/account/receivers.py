@@ -4,6 +4,7 @@ from django.db.models import F
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
 
+from cabbie.apps.account import messages
 from cabbie.apps.account.models import Passenger, Driver, DriverReservation
 from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
@@ -37,9 +38,31 @@ def on_post_create_passenger(sender, instance, **kwargs):
     Token.objects.create(user=instance.user_ptr)
 
     # send email to passenger
-    if sender is Passenger and instance.is_email_agreed and False:
-        send_email('mail/passenger_signup.txt', instance.email, {'subject': '{name}님 환영합니다'.format(name=instance.name), 'message': '백기사에 가입해 주셔서 감사합니다.'})
+    if sender is Passenger and instance.is_email_agreed:
+        send_email('mail/signup_completed.html', instance.email, {
+            # common
+            'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+            'email_font': settings.EMAIL_DEFAULT_FONT,
+            'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+            'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+            'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+            'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
+            'subject': messages.ACCOUNT_EMAIL_SUBJECT_SIGNUP_COMPLETED,
+            'user': instance,
+        })
+
+    # signup point
+    transaction_type = Transaction.SIGNUP_POINT
+    amount = settings.POINTS_BY_TYPE.get(transaction_type)
+    if amount:
+        Transaction.objects.create(
+            user=instance,
+            transaction_type=transaction_type,
+            amount=amount,
+            state=Transaction.DONE,
+            note=Transaction.get_transaction_type_text(transaction_type)
+        )
 
 
 

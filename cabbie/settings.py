@@ -188,8 +188,8 @@ ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
-APP_HOST = 'location.{0}'.format(HOST)
-API_HOST = 'api.{0}'.format(HOST)
+APP_HOST = 'location-new.{0}'.format(HOST)
+API_HOST = 'api-new.{0}'.format(HOST)
 
 WEB_SERVER_HOST = API_HOST
 WEB_SERVER_PORT = 443 
@@ -205,14 +205,26 @@ LOCATION_WEB_SERVER_PORT = 7777
 # -----
 
 CONTACT_EMAIL = '백기사 <support@{host}>'.format(host=HOST)
-ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com']
+ALLOWED_DEBUG_EMAIL = ['kokookko1@gmail.com', 'kokookko1@naver.com', 'yousang.lee@bktaxi.com']
 EMAIL_DELIMITER = '=====CABBIE====='
 EMAIL_BACKEND = 'django_ses.SESBackend'
-#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'email-smtp.us-east-1.amazonaws.com'
 EMAIL_HOST_USER = 'AKIAJD3WYLRGE5C2HKVA'
 EMAIL_HOST_PASSWORD = 'Ala4bqSfpgYFFHi966Ys4eUINKH058fZ85nZYqLKC3yt'
+EMAIL_DEFAULT_FONT = 'Arial, Helvetica, sans-serif'     # http://www.w3schools.com/cssref/css_websafe_fonts.asp
 
+# Cloudfront
+WEB_CDN_DOMAIN_NAME = 'http://d3qhjk1lhj60db.cloudfront.net'
+EMAIL_CDN_DOMAIN_NAME = 'http://d2vgtxzoj7hyhq.cloudfront.net'
+
+# Point
+POINT_APPLICATION_URL = 'http://goo.gl/forms/zfzfspdrLY'
+
+# Bktaxi urls
+BKTAXI_WEB_URL = 'https://bktaxi.com'
+BKTAXI_FACEBOOK_URL = 'https://www.facebook.com/baekkisa'
+BKTAXI_INSTAGRAM_URL = 'https://instagram.com/baekkisa'
+BKTAXI_NAVER_BLOG_URL = 'http://blog.naver.com/bktaxi0624'
 
 
 # Jinja2
@@ -310,10 +322,10 @@ LOCATION_REFRESH_INTERVAL = 3           # seconds
 RIDE_ESTIMATE_REFRESH_INTERVAL = 10     # seconds
 OBJECT_CACHE_TIMEOUT = 10 * 60          # seconds
 SESSION_CLOSE_TIMEOUT = 5               # seconds
-MAX_DISTANCE = 2 * 1000                 # meters
+MAX_DISTANCE = 5 * 1000                 # meters
 RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters
-CANDIDATE_COUNT = 50
+CANDIDATE_COUNT = 200
 REASSIGN_COUNT = 50
 
 REQUEST_TIMEOUT = 32                    # seconds
@@ -360,9 +372,14 @@ PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
 from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
 
+PUSH_CHANNEL_PREFIX = None
+
 
 MESSAGE_RIDE_REQUEST_TITLE = u'콜요청!'
 MESSAGE_RIDE_REQUEST_ALERT = u'콜이 요청되었습니다. (30초 이내 수락/거절)'
+
+MESSAGE_RIDE_EXPIRED_TITLE = u'콜이 이미 수락됨'
+MESSAGE_RIDE_EXPIRED_ALERT = u'콜이 다른 기사님에 의해 수락되었습니다.'
 
 MESSAGE_RIDE_APPROVE_TITLE = u'콜수락'
 MESSAGE_RIDE_APPROVE_ALERT = u'콜이 수락되었습니다.'
@@ -372,6 +389,9 @@ MESSAGE_RIDE_PROGRESS_ALERT = u'기사님이 픽업장소로 이동중입니다.
 
 MESSAGE_RIDE_REJECT_TITLE = u'콜거절'
 MESSAGE_RIDE_REJECT_ALERT = u'콜이 거절되었습니다.'
+
+MESSAGE_RIDE_CANCEL_TITLE = u'콜취소'
+MESSAGE_RIDE_CANCEL_ALERT = u'승객이 콜을 취소하였습니다.'
 
 MESSAGE_RIDE_ARRIVE_TITLE = u'백기사 도착'
 MESSAGE_RIDE_ARRIVE_ALERT = u'백기사가 픽업장소에 도착하였습니다.'
@@ -388,7 +408,7 @@ MESSAGE_RIDE_BOARD_ALERT = u'백기사를 이용해 주셔서 감사합니다. �
 ALLOWED_DEBUG_PHONE = ['01026254319', '01038919027']
 DRIVER_ACCOUNT_MANAGER = ['01045676685', '01032301742', '01093400443', '01091857090', '01038919027']
 SMS_API_KEY = 'MTc1Ni0xNDA4MzYwNDM0MzI0LWMxMjM5YmU3LWNiOWUtNDZkZC1hMzliLWU3Y2I5ZTQ2ZGRkZg=='
-SMS_FROM = '027202036'
+SMS_FROM = '18991391'
 
 # Etc
 # ---
@@ -414,8 +434,10 @@ POINTS_BY_TYPE = {
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
-    'mileage': 100,                 # For passenger
-    'rebate': 2000                  # For driver
+    'signup_point': 10000,              # For passenger
+    'ride_point': 1000,                 # For passenger
+    'rate_point': 0,                    # For passenger
+    'rebate': 2000                      # For driver
 }
 COUPON_THRESHOLDS = (
     (100, 100000),    # (board_count, amount)

@@ -169,15 +169,25 @@ class RideProxy(LoggableMixin, PubsubMixin):
             cancel(self._timeout_reject)
 
     def cancel(self):
+        
+        if self._state in [Ride.CANCELED, Ride.REJECTED]:
+            self.debug('Already canceled or rejected')
+            self._transition_to(Ride.CANCELED)
+            return
+
         # cancel timed out reject
         self._cancel_timeout_reject()
         
         if self.driver_session:
             self.driver_session.notify_driver_cancel()
+        
+        # send push
+        self.send_cancel_push()
+
         self._transition_to(Ride.CANCELED)
         self._destroy('cancel')
 
-    def approve(self):
+    def approve(self, candidate):
         # cancel timed out reject
         self._cancel_timeout_reject()
 
@@ -188,7 +198,16 @@ class RideProxy(LoggableMixin, PubsubMixin):
         # Start periodic refreshing
         self._refresh_estimate()
 
+        # send push 
+        self.send_approve_push(candidate) 
+
     def reject(self, reason):
+
+        if self._state in [Ride.CANCELED, Ride.REJECTED]:
+            self.debug('Already canceled or rejected')
+            self._transition_to(Ride.REJECTED, reason=reason)
+            return
+
         # cancel timed out reject
         self._cancel_timeout_reject()
 
@@ -263,39 +282,76 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
                 # destroy ride
                 self._destroy('destination reached') 
-                 
+                  
+    def send_cancel_push(self):
+        # For passenger, send approve 
+        driver = self.driver
+
+        if driver:
+            message = {
+                'alert': settings.MESSAGE_RIDE_CANCEL_ALERT,
+                'title': settings.MESSAGE_RIDE_CANCEL_TITLE,
+                'push_type': 'ride_canceled',
+                'data': {
+                    'ride_id': self._ride_id,
+                }
+            }
+            send_push_notification(message, ['driver_{0}'.format(driver['id'])], False)
+
+
+        
+    def send_approve_push(self, candidate):
+        # For passenger, send approve 
+        passenger = self.passenger
+
+        if passenger:
+            message = {
+                'alert': settings.MESSAGE_RIDE_APPROVE_ALERT,
+                'title': settings.MESSAGE_RIDE_APPROVE_TITLE,
+                'push_type': 'ride_approved',
+                'data': {
+                    'ride_id': self._ride_id,
+                    'candidate': candidate, 
+                }
+            }
+            send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+
+
+
     def send_location_progress_push(self):
         if self._estimate:
             # send push notification to passenger for location progress  
             passenger = self.passenger
 
-            # point
-            message = {
-                'alert': settings.MESSAGE_RIDE_PROGRESS_ALERT,
-                'title': settings.MESSAGE_RIDE_PROGRESS_TITLE,
-                'push_type': 'ride_progress', 
-                'data': {
-                    'location': self._driver_location,
-                    'estimate': self._estimate.for_json(),
+            if passenger:
+                # point
+                message = {
+                    'alert': settings.MESSAGE_RIDE_PROGRESS_ALERT,
+                    'title': settings.MESSAGE_RIDE_PROGRESS_TITLE,
+                    'push_type': 'ride_progress', 
+                    'data': {
+                        'location': self._driver_location,
+                        'estimate': self._estimate.for_json(),
+                    }
                 }
-            }
-            send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+                send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
 
                
     def send_rate_push(self):
         # send push notification to passenger for rating
         passenger = self.passenger
 
-        # point
-        message = {
-            'alert': settings.MESSAGE_RIDE_COMPLETE_ALERT,
-            'title': settings.MESSAGE_RIDE_COMPLETE_TITLE,
-            'push_type': 'ride_completed', 
-            'data': {
-                'ride_id': self._ride_id
+        if passenger:
+            # point
+            message = {
+                'alert': settings.MESSAGE_RIDE_COMPLETE_ALERT,
+                'title': settings.MESSAGE_RIDE_COMPLETE_TITLE,
+                'push_type': 'ride_completed', 
+                'data': {
+                    'ride_id': self._ride_id
+                }
             }
-        }
-        send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+            send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
 
     def passenger_disconnect(self):
         # cancel timed out reject

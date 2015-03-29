@@ -48,6 +48,12 @@ def send_push_notification(message, channels, async=True, **kwargs):
     if not getattr(_local, 'push_enabled', True):
         return
 
+    if isinstance(channels, basestring):
+        channels = [channels]
+
+    if settings.PUSH_CHANNEL_PREFIX:
+        channels = ['{prefix}{channel}'.format(prefix=settings.PUSH_CHANNEL_PREFIX, channel=c) for c in channels] 
+
     if settings.DEBUG:
         logger.info(u'Ignore sending push to channels {0}'.format(channels))
         return

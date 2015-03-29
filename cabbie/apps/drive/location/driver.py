@@ -1,5 +1,7 @@
 from collections import defaultdict
+import operator
 import time
+import operator
 
 from django.conf import settings
 from tornado import gen
@@ -58,6 +60,12 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         self.publish('location_update', driver_id, location)
 
+    def mark_requested(self, driver_id):
+        self._driver_index.update(driver_id, 'requested')
+
+    def mark_standby(self, driver_id):
+        self._driver_index.update(driver_id, None)
+
     def deactivate(self, driver_id):
         try:
             self._driver_index.remove(driver_id)
@@ -85,11 +93,21 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         `passenger_id` is only need for caching.
         """
-
-        candidates = list(
+        
+        # [(id, state), ... ]
+        candidates_with_state = list(
             self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
+        self.debug('candidates: {0}'.format(candidates_with_state))
+
+        # [id, ... ]
+        candidates = map(operator.itemgetter(0), candidates_with_state)
+
+        # [state, ... ]
+        states = map(operator.itemgetter(1), candidates_with_state)
+
+        # [location, ... ]
         locations = map(self.get_driver_location, candidates)
 
         estimates = yield self._cached_estimate([(
@@ -99,12 +117,15 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
         drivers = ModelManager().get_driver_all(candidates)
 
-        raise gen.Return([{
+        ret = [{
             'driver': drivers[driver_id],
             'location': locations[i],
             'estimate': estimates[i],
             'charge_type': self._driver_charge_types[driver_id],
-        } for i, driver_id in enumerate(candidates)])
+            'state': states[i],
+        } for i, driver_id in enumerate(candidates)]
+
+        raise gen.Return(ret)
 
     @gen.coroutine
     def _cached_estimate(self, pairs):
@@ -156,12 +177,16 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
 
     def get_nearest_drivers(self, location, count=None, max_distance=None,
                             charge_type=None):
+        
         # Heuristic
         pseudo_count = count * 3
         ids = self._driver_index.nearest(location, count=pseudo_count,
                                          max_distance=max_distance)
+
+        self.debug('Nearest: {0} {1} {2} {3} {4}'.format(location, count, max_distance, charge_type, ids))
+
         ids = [
-            id_ for id_ in ids
+            (id_, state_) for id_, state_ in ids
             if int(self._driver_charge_types[id_]) <= int(charge_type)]
 
         return ids[:count]

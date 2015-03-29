@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.apps.drive.models import Ride
-from cabbie.apps.payment.signals import return_processed, coupon_processed
+from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
 from cabbie.apps.recommend.models import Recommend
 from cabbie.common.models import IncrementMixin, AbstractTimestampModel
 
@@ -60,15 +60,24 @@ class DriverCoupon(AbstractTimestampModel):
 
 
 class Transaction(IncrementMixin, AbstractTimestampModel):
-    MILEAGE, RECOMMEND, RECOMMENDED, GRANT, RETURN = (
-        'mileage', 'recommend', 'recommended', 'grant', 'return')
+    SIGNUP_POINT, RIDE_POINT, RATE_POINT, RECOMMEND, RECOMMENDED, GRANT, RETURN = (
+        'signup_point', 'ride_point', 'rate_point', 'recommend', 'recommended', 'grant', 'return')
 
     TRANSACTION_TYPES = (
-        (MILEAGE, u'마일리지'),
+        (SIGNUP_POINT, u'신규가입 포인트'),
+        (RIDE_POINT, u'탑승 포인트'),
+        (RATE_POINT, u'평가 포인트'),
         (RECOMMEND, u'추천'),
         (RECOMMENDED, u'피추천'),
         (GRANT, u'지급'),
         (RETURN, u'환급'),
+    )
+
+    PLANNED, DONE = ('planned', 'done')
+
+    TRANSACTION_STATES = (
+        (PLANNED, u'예정'),
+        (DONE, u'완료'),
     )
 
     user = models.ForeignKey(User, related_name='transactions',
@@ -81,6 +90,7 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     transaction_type = models.CharField(u'종류', max_length=100, db_index=True,
                                         choices=TRANSACTION_TYPES)
     amount = models.IntegerField(u'금액')
+    state = models.CharField(u'상태', max_length=30, choices=TRANSACTION_STATES, default=PLANNED)
     note = models.CharField(u'메모', max_length=1000, blank=True)
 
     class Meta(AbstractTimestampModel.Meta):
@@ -90,13 +100,17 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     def get_incrementer(self, reverse=False):
         return (super(Transaction, self).get_incrementer(reverse)
                 .add(self.user.__class__, self.user_id, 'point', self.amount))
-
+    
+    @staticmethod
+    def get_transaction_type_text(transaction_type):
+        return dict(Transaction.TRANSACTION_TYPES).get(transaction_type)
 
 class AbstractReturn(AbstractTimestampModel):
     amount = models.PositiveIntegerField(u'환급액', default=0)
-    is_requested = models.BooleanField(u'환급요청여부', default=False)
+    is_requested = models.BooleanField(u'환급요청정보 기입여부', default=False)
     is_processed = models.BooleanField(u'환급완료여부', default=False)
     processed_at = models.DateTimeField(u'환급시점', null=True, blank=True)
+    note = models.CharField(u'메모', max_length=1000, blank=True)
 
     class Meta(AbstractTimestampModel.Meta):
         abstract = True
@@ -110,6 +124,14 @@ class AbstractReturn(AbstractTimestampModel):
         return self.user.bank_account
     bank_account.short_description = u'은행계좌'
     bank_account = property(bank_account)
+
+    def mark_as_requested(self):
+        if self.is_requested:
+            return
+        self.is_requested = True
+        self.save(update_fields=['is_requested'])
+
+        return_apply_completed.send(sender=self.__class__, return_=self)
 
     def process(self):
         if self.is_processed:

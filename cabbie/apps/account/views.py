@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import re
+import datetime
 
 from django.conf import settings
 from rest_framework import viewsets, status
@@ -12,6 +13,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from cabbie.apps.account import messages
 from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout, DriverDropout, DriverReservation
 from cabbie.apps.account.serializers import (
     AuthTokenSerializer, PassengerSerializer, DriverSerializer)
@@ -21,6 +23,7 @@ from cabbie.apps.recommend.models import Recommend
 from cabbie.common.views import APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.sms import send_sms
+from cabbie.utils.email import send_email
 from cabbie.utils.validator import is_valid_phone
 from cabbie.utils import json
 
@@ -293,6 +296,21 @@ class PasswordResetView(GenericAPIView):
             # clear session
             PasswordResetSessionManager().reset(request.DATA['phone'])
 
+            # send email
+            if user.is_email_agreed:
+                send_email('mail/password_changed.html', user.concrete.email, {
+                    # common
+                    'cdn_url': settings.EMAIL_CDN_DOMAIN_NAME,
+                    'email_font': settings.EMAIL_DEFAULT_FONT,
+                    'bktaxi_web_url': settings.BKTAXI_WEB_URL,
+                    'bktaxi_facebook_url': settings.BKTAXI_FACEBOOK_URL,
+                    'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
+                    'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
+
+                    'subject': messages.ACCOUNT_EMAIL_SUBJECT_PASSWORD_CHANGED,
+                    'changed_at': datetime.datetime.now(),
+                })
+            
         except InvalidSession:
             return self.render_error(
                 u'비밀번호 재설정 세션이 만료되었습니다. 처음부터 다시 시작해주세요.')

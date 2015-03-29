@@ -16,10 +16,12 @@ urlpatterns = patterns('')
 admin.site.login_form = AdminAuthenticationForm
 
 # unregister django group admin
-admin.site.unregister(import_('django.contrib.auth.models.Group'))
+if not settings.DEBUG:
+    admin.site.unregister(import_('django.contrib.auth.models.Group'))
 
 # unregister authtoken admin
-admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
+if not settings.DEBUG:
+    admin.site.unregister(import_('rest_framework.authtoken.models.Token'))
 
 # unregister django celery admin
 admin.site.unregister(import_('djcelery.models.CrontabSchedule'))
@@ -33,8 +35,7 @@ admin.site.unregister(import_('django_ses.models.SESStat'))
 
 # unregister payment admin
 admin.site.unregister(import_('cabbie.apps.payment.models.DriverBill'))
-admin.site.unregister(import_('cabbie.apps.payment.models.Transaction'))
-admin.site.unregister(import_('cabbie.apps.payment.models.PassengerReturn'))
+admin.site.unregister(import_('cabbie.apps.payment.models.DriverCoupon'))
 admin.site.unregister(import_('cabbie.apps.payment.models.DriverReturn'))
 
 # unregister recommend admin
@@ -60,6 +61,8 @@ urlpatterns += patterns('',
 
 router = routers.DefaultRouter(trailing_slash=False)
 
+router.register(r'passengers/point/return',
+                import_('cabbie.apps.payment.views.PassengerReturnViewSet'))
 router.register(r'passengers',
                 import_('cabbie.apps.account.views.PassengerViewSet'))
 router.register(r'drivers/bills',
@@ -74,6 +77,8 @@ router.register(r'drivers/stats/day',
                 import_('cabbie.apps.stats.views.DriverRideStatDayViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
+router.register(r'requests',
+                import_('cabbie.apps.drive.views.RequestViewSet'))
 router.register(r'rides',
                 import_('cabbie.apps.drive.views.RideViewSet'))
 router.register(r'favorites',
