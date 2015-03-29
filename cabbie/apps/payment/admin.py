@@ -69,19 +69,35 @@ class TransactionAdmin(AbstractAdmin):
 class AbstractReturnAdmin(AbstractAdmin):
     list_filter = ('is_requested', 'is_processed', 'processed_at',
                    'created_at')
-    list_display = ('user', 'phone', 'bank_account', 'amount',
-                    'is_requested', 'is_processed', 'processed_at',
-                    'created_at')
-    readonly_fields = ('user', 'amount', 'is_requested', 'is_processed',
-                       'processed_at', 'created_at')
+    list_display = ('id', 'user', 'phone', 'bank_account', 'amount',
+                    'is_requested', 'is_processed', 
+                    'created_at', 'processed_at')
+    readonly_fields = ('user', 'created_at', 'processed_at')
+    fieldsets = (
+        (None, {
+            'fields': (
+                'user', 'amount', 'is_requested', 'is_processed',
+            ),
+        }),
+    )
+
     search_fields = (
         '=id',
         '^user__phone',
         'user__name',
     )
     actions = (
+        'mark_as_requested',
         'process',
     )
+
+    def mark_as_requested(self, request, queryset):
+        returns = list(queryset.all())
+        for return_ in returns:
+            return_.mark_as_requested()
+        msg = u'{0}개의 요청정보 기입여부 처리를 완료하였습니다.'.format(len(returns))
+        self.message_user(request, msg)
+    mark_as_requested.short_description = u'환급요청정보 기입처리'
 
     def process(self, request, queryset):
         returns = list(queryset.all())

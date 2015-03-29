@@ -70,7 +70,7 @@ class AbstractRideStatModel(AbstractTimestampModel):
         for rating in self.ratings.itervalues():
             point = rating.get(category, None)
             if point:
-                value += point
+                value += int(point)
                 count += 1
         
         return (value, count)

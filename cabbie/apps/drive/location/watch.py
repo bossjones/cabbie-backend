@@ -158,7 +158,7 @@ class WatchManager(LoggableMixin, SingletonMixin):
             'passenger(s) nearby'.format(
                 driver=driver_id, count=len(passengers)))
 
-        for passenger_id in passengers:
+        for passenger_id, state in passengers:
             self.assign(passenger_id)
 
     def on_driver_deactivated(self, driver_id, location):

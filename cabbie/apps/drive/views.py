@@ -6,9 +6,9 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from cabbie.apps.drive.models import Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
-    RideSerializer, FavoriteSerializer, HotspotSerializer)
+    RequestSerializer, RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.apps.drive.receivers import post_ride_requested
 from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
@@ -19,6 +19,26 @@ from cabbie.utils.date import week_of_month
 
 # REST
 # ----
+
+class RequestViewSet(APIMixin, viewsets.ModelViewSet):
+    queryset = Request.objects.prefetch_related('passenger', 'approval').all()
+    serializer_class = RequestSerializer
+    filter_fields = ('state', 'passenger', 'approval', 'created_at',
+                     'updated_at')
+    ordering = ('-created_at',)
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = self.queryset
+
+        if user.is_superuser:
+            return qs
+
+        if user.has_role('passenger'):
+            qs = qs.filter(passenger=user)
+
+        return qs
+
 
 class RideViewSet(APIMixin, viewsets.ModelViewSet):
     queryset = Ride.objects.prefetch_related('passenger', 'driver').all()
@@ -188,9 +208,6 @@ class InternalRideCreateView(InternalView):
             additional_message=data['additional_message'],
         )
 
-        if ride.state == Ride.REQUESTED:
-            post_ride_requested.send(sender=Ride, ride=ride)
-
         ride.histories.create(
             driver=ride.driver,
             state=ride.state,
@@ -225,3 +242,32 @@ class InternalRideFetchView(InternalView):
     def post(self, request, pk=None):
         ride = self._get_ride(pk)
         return self.render_json({'state': ride.state})
+
+class InternalRequestCreateView(InternalView):
+    def post(self, request):
+        data = json.loads(request.body)
+        
+        print 'DATA:', data
+        
+        req = Request.objects.create(
+            passenger_id=data['passenger_id'],
+            source_location=Point(*data['source_location']),
+            state=Request.STANDBY,
+        )
+
+        return self.render_json({'id': req.id}) 
+
+class InternalRequestUpdateView(InternalView):
+    def _get_request(self, pk):
+        try:
+            return Request.objects.get(pk=pk)
+        except Request.DoesNotExist:
+            raise Http404
+
+    def post(self, request, pk=None):
+        data = json.loads(request.body)
+        req = self._get_request(pk)
+        req.update(**data)
+        return self.render_json()
+
+

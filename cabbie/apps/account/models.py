@@ -299,7 +299,9 @@ class Driver(NullableImageMixin, User):
         from cabbie.apps.stats.models import DriverRideStatMonth
         from cabbie.apps.drive.models import Ride 
 
-        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.RATED):
+        now = datetime.datetime.now()
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, year=now.year, month=now.month, state=Ride.RATED):
             total_count += stat.count
         
         return total_count 
@@ -312,7 +314,9 @@ class Driver(NullableImageMixin, User):
         from cabbie.apps.stats.models import DriverRideStatMonth
         from cabbie.apps.drive.models import Ride 
 
-        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+        now = datetime.datetime.now()
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, year=now.year, month=now.month, state=Ride.BOARDED):
             total_count += stat.count
         
         return total_count 

@@ -1,0 +1,23 @@
+{% extends "mail/base.html" %}
+
+{% block content %}
+  <div id="content" style="padding-left: 55px; padding-right: 55px; float: left; width: 590px; background: #FFFFFF; margin: 0px;">
+    <div id="gap-46px" style="height: 46px; margin: 0;"></div>
+    <div class="subtitleSignup" style="font-size: 23px; font-weight: bold; color: #51c69e; margin-top: 0px; display: block;"> 백기사 가입이 완료되었습니다. </div>
+    <div id="gap-30px" style="height: 30px; margin: 0;"></div>
+    <div class="text" style="font-size: 16px; color: #282828; line-height: 1.8em; display: block; margin: 0;"> {{ user.name }}님({{ user.email }}) <br>
+      백기사의 가입을 진심으로 환영합니다. <br>
+      터치 한 번으로 간편하게 <a class="pointtext" style="font-size: 16px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;">프리미엄 콜택시 서비스</a>를<br>
+      만나보세요.<br>
+      백기사가 제공하는 <a class="pointtext" style="font-size: 16px; font-weight: bold; color: #51c69e; text-decoration: none; margin: 0; padding: 0; border: 0;">Exciting Premium Experience!</a><br>
+      많이 기대해 주세요. </div>
+    <div id="gap-60px" style="height: 60px; margin: 0;"></div>
+
+    <iframe width="590" height="368" src="https://www.youtube.com/embed/Hivr0-fjr3w" frameborder="0" allowfullscreen></iframe>
+
+    <div id="gap-50px" style="height: 50px; margin: 0;"></div>
+  
+  </div>
+  <!-- content --> 
+  
+{% endblock %}

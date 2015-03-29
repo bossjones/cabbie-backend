@@ -82,12 +82,13 @@ class DriverBot(Bot):
         self.info('Requested from {0}, ride id {1}'.format(passenger, ride_id))
 
         if self._reject_dice.roll():
-            delay(self.gentle_delay, self._reject)
+            #delay(self.gentle_delay, self._reject)
+            pass
         else:
             self._source = source
             self._destination = destination
             self._additional_message = additional_message
-            delay(self.gentle_delay, self._approve)
+            #delay(self.gentle_delay, self._approve)
 
     def handle_driver_canceled(self):
         self.info('Canceled')
