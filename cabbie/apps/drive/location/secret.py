@@ -11,7 +11,7 @@ from cabbie.utils import json
 
 @gen.coroutine
 def fetch(path, data=None):
-    url = urlparse.urljoin('http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT), path)
+    url = urlparse.urljoin('https://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT), path)
 
     body = json.dumps(data or {})
     headers = {'SECRET': settings.SECRET_KEY}
@@ -25,7 +25,7 @@ def fetch(path, data=None):
 
 def post(path, data=None):
 
-    url = urlparse.urljoin('http://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT), path)
+    url = urlparse.urljoin('https://{0}:{1}'.format(settings.WEB_SERVER_HOST, settings.WEB_SERVER_PORT), path)
 
     httpmethod = 'POST'
 

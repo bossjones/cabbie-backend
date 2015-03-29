@@ -188,8 +188,8 @@ ALLOWED_HOSTS = ['*']
 
 # Web
 # ---
-APP_HOST = 'location.{0}'.format(HOST)
-API_HOST = 'api.{0}'.format(HOST)
+APP_HOST = 'location-new.{0}'.format(HOST)
+API_HOST = 'api-new.{0}'.format(HOST)
 
 WEB_SERVER_HOST = API_HOST
 WEB_SERVER_PORT = 443 
