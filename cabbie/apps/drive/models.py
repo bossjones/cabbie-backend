@@ -100,7 +100,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     }
 
     passenger = models.ForeignKey(Passenger, related_name='rides',
-                                  verbose_name=u'승객')
+                                  verbose_name=u'승객', null=True, on_delete=models.SET_NULL)
     driver = models.ForeignKey(Driver, blank=True, null=True,
                                related_name='rides', verbose_name=u'기사')
 
