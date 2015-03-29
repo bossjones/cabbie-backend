@@ -16,7 +16,11 @@ class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
-    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval', 'updated_at', 'created_at')
+    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
+
+    def approved_driver(self, obj):
+        return obj.approval.driver if obj.approval else None
+    approved_driver.short_description = u'승인기사'
 
 class RideAdmin(AbstractAdmin):
     deletable = True 
