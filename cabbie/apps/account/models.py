@@ -227,10 +227,14 @@ class Driver(NullableImageMixin, User):
         self.save(update_fields=['total_ratings_by_category'])
 
     def _ratings_by_category(self, category):
-        return self.total_ratings_by_category.get(category, [None, None])
+        return self.total_ratings_by_category.get(category, [0, 0])
 
     # property : rating (total)
     def _rating(self):
+
+        # update rating
+        self._update_rating()
+
         total_rating = 0
         total_count = 0
 
