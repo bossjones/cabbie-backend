@@ -114,7 +114,13 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
     def create(self):
         url = self.create_path
-        data = { 'passenger_id': self._passenger.id, 'source_location': self._source['location'] }
+        data = { 
+            'passenger_id': self._passenger.id, 
+            'source': self._source,
+            'source_location': self._source['location'],
+            'destination': self._destination,
+            'destination_location': self._destination['location'],
+        }
 
         # synchronous
         payload = post(url, data)
