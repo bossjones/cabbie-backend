@@ -13,7 +13,7 @@ from cabbie.apps.drive.receivers import post_ride_requested
 from cabbie.apps.stats.models import DriverRideStatWeek
 from cabbie.common.views import InternalView, APIView, APIMixin
 from cabbie.utils import json
-from cabbie.utils.geo import TMap, TMapError
+from cabbie.utils.geo import distance, TMap, TMapError
 from cabbie.utils.date import week_of_month
 
 
@@ -247,11 +247,22 @@ class InternalRequestCreateView(InternalView):
     def post(self, request):
         data = json.loads(request.body)
         
-        print 'DATA:', data
-        
+        source = data['source']
+        destination = data['destination']
+
+        # distance
+        source_location = source['location']
+        destination_location = destination['location']        
+
+        distance_ = distance(source_location, destination_location)
+
         req = Request.objects.create(
             passenger_id=data['passenger_id'],
-            source_location=Point(*data['source_location']),
+            source=source,
+            source_location=Point(*source['location']),
+            destination=destination,
+            destination_location=Point(*destination['location']),
+            distance=distance_,
             state=Request.STANDBY,
         )
 
