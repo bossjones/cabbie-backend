@@ -56,12 +56,12 @@ class DriverAdmin(AbstractAdmin):
 
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'name', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
+    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'current_month_board_count', 'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
-                    'is_freezed', 'is_super', 'is_dormant', 'date_joined',
+                    'is_freezed', 'is_educated', 'date_joined',
                     'link_to_rides')
     fieldsets = (
         (None, {
@@ -78,7 +78,7 @@ class DriverAdmin(AbstractAdmin):
                 'board_count', 'passenger_recommend_count',
                 'driver_recommend_count', 'recommended_count',
                 'verification_code', 'is_verified', 'is_accepted',
-                'is_freezed', 'is_super', 'is_dormant', 'date_joined',
+                'is_freezed', 'is_educated', 'date_joined',
                 'last_active_at',
             ),
         }),
@@ -92,7 +92,7 @@ class DriverAdmin(AbstractAdmin):
         'board_count', 'passenger_recommend_count', 
         'driver_recommend_count', 'recommended_count', 
         'verification_code', 'is_verified', 'is_accepted',
-        'is_freezed', 'is_super', 'is_dormant', 'date_joined',
+        'is_freezed', 'is_educated', 'date_joined',
         'last_active_at',
     )
     list_filter = (
@@ -101,17 +101,19 @@ class DriverAdmin(AbstractAdmin):
         'is_verified',
         'is_accepted',
         'is_freezed',
-        'is_super',
-        'is_dormant',
+        'is_educated',
         ('date_joined', DateRangeFilter),
     )
 
     actions = (
         'send_verification_code',
+        'mark_as_educated',
+        'mark_as_uneducated',
         'freeze',
         'unfreeze',
         'force_verify',
         'force_accept',
+        'clear_image',
         'dropout',
     )
 
@@ -125,6 +127,23 @@ class DriverAdmin(AbstractAdmin):
             len(drivers))
         self.message_user(request, msg)
     send_verification_code.short_description = u'인증코드 전송'
+
+    def mark_as_educated(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.mark_as_educated()
+        msg = u'{0}명의 기사가 교육이수로 처리되었습니다.'.format(len(drivers))
+        self.message_user(request, msg)
+    mark_as_educated.short_description = u'교육이수'
+
+    def mark_as_uneducated(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.mark_as_educated(False)
+        msg = u'{0}명의 기사가 교육이수에서 해제되었습니다.'.format(len(drivers))
+        self.message_user(request, msg)
+    mark_as_uneducated.short_description = u'교육이수 해제'
+
 
     def freeze(self, request, queryset):
         drivers = list(queryset.all())
@@ -163,6 +182,14 @@ class DriverAdmin(AbstractAdmin):
             len(drivers))
         self.message_user(request, msg)
     force_accept.short_description = u'약관동의 처리'
+
+    def clear_image(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.clear_image()
+        msg = u'{0}명의 기사의 프로필 사진을 삭제하였습니다.'.format(len(drivers)) 
+        self.message_user(request, msg)
+    clear_image.short_description = u'프로필사진 삭제'
 
     def dropout(self, request, queryset):
         drivers = list(queryset.all())

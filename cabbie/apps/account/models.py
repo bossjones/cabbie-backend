@@ -174,6 +174,8 @@ class Driver(NullableImageMixin, User):
     is_super = models.BooleanField(u'우수기사', default=False)
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
+    is_educated = models.BooleanField(u'교육이수여부', default=False)
+
     # Rating
     total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
@@ -201,6 +203,12 @@ class Driver(NullableImageMixin, User):
 
     def unfreeze(self):
         self.freeze(False)
+
+    def mark_as_educated(self, is_educated = True):
+        if self.is_educated == is_educated:
+            return
+        self.is_educated = is_educated
+        self.save(update_fields=['is_educated'])
 
     def _generate_rating(self):
         _dict = {
@@ -325,6 +333,19 @@ class Driver(NullableImageMixin, User):
         
         return total_count 
 
+
+    def profile_image_link(self):
+        return '<a href="%s" target="_blank">사진보기</a>' % (self.url,) if self.image else ''
+    profile_image_link.allow_tags = True
+    profile_image_link.short_description = u'프로필사진'
+
+
+    def clear_image(self):
+        self.image = ''
+        self.image_key = ''
+        self.image_width = None
+        self.image_height = None
+        self.save(update_fields=['image', 'image_key', 'image_width', 'image_height'])
 
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(

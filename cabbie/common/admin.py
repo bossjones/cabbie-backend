@@ -7,6 +7,9 @@ class AbstractAdmin(ExportMixin, admin.ModelAdmin):
     deletable = False
     addable = True
 
+    actions_on_top = True
+    actions_on_bottom = False 
+
     def get_actions(self, request):
         actions = super(AbstractAdmin, self).get_actions(request)
         if not self.deletable and 'delete_selected' in actions:
