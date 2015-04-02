@@ -112,6 +112,7 @@ class DriverAdmin(AbstractAdmin):
         'unfreeze',
         'force_verify',
         'force_accept',
+        'clear_image',
         'dropout',
     )
 
@@ -163,6 +164,14 @@ class DriverAdmin(AbstractAdmin):
             len(drivers))
         self.message_user(request, msg)
     force_accept.short_description = u'약관동의 처리'
+
+    def clear_image(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.clear_image()
+        msg = u'{0}명의 기사의 프로필 사진을 삭제하였습니다.'.format(len(drivers)) 
+        self.message_user(request, msg)
+    clear_image.short_description = u'프로필사진 삭제'
 
     def dropout(self, request, queryset):
         drivers = list(queryset.all())

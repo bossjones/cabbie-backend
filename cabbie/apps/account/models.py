@@ -332,6 +332,13 @@ class Driver(NullableImageMixin, User):
     profile_image_link.short_description = u'프로필사진'
 
 
+    def clear_image(self):
+        self.image = ''
+        self.image_key = ''
+        self.image_width = None
+        self.image_height = None
+        self.save(update_fields=['image', 'image_key', 'image_width', 'image_height'])
+
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(
             user_id=self.id, dropout_type=dropout_type, note=note or '')
