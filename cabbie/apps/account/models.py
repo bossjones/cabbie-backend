@@ -326,6 +326,12 @@ class Driver(NullableImageMixin, User):
         return total_count 
 
 
+    def profile_image_link(self):
+        return '<a href="%s" target="_blank">사진보기</a>' % (self.url,) if self.image else ''
+    profile_image_link.allow_tags = True
+    profile_image_link.short_description = u'프로필사진'
+
+
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(
             user_id=self.id, dropout_type=dropout_type, note=note or '')

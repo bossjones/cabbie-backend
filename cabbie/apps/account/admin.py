@@ -56,7 +56,7 @@ class DriverAdmin(AbstractAdmin):
 
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'name', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
+    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'car_model', 'company',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'current_month_board_count', 'previous_month_board_count', 'board_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
