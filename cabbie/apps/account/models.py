@@ -174,6 +174,8 @@ class Driver(NullableImageMixin, User):
     is_super = models.BooleanField(u'우수기사', default=False)
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
+    is_educated = models.BooleanField(u'교육이수여부', default=False)
+
     # Rating
     total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
@@ -201,6 +203,12 @@ class Driver(NullableImageMixin, User):
 
     def unfreeze(self):
         self.freeze(False)
+
+    def mark_as_educated(self, is_educated = True):
+        if self.is_educated == is_educated:
+            return
+        self.is_educated = is_educated
+        self.save(update_fields=['is_educated'])
 
     def _generate_rating(self):
         _dict = {
