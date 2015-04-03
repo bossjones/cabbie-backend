@@ -176,6 +176,9 @@ class Driver(NullableImageMixin, User):
 
     is_educated = models.BooleanField(u'교육이수여부', default=False)
 
+    province = models.CharField(u'시도', max_length=10, default='')
+    region = models.CharField(u'지역', max_length=20, default='', blank=True)
+
     # Rating
     total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
