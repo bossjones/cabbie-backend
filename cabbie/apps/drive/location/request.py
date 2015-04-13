@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from collections import defaultdict
 from functools import partial
 
@@ -78,11 +79,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
     
     create_path = '/_/drive/request/create'
     update_path = '/_/drive/request/{pk}/update'
-    refresh_interval = settings.LOCATION_REFRESH_INTERVAL
-    refresh_count = 10
+    refresh_interval = settings.REQUEST_REFRESH_INTERVAL
+    refresh_count = settings.REQUEST_REFRESH_COUNT
     candidate_count = settings.CANDIDATE_COUNT
     reassign_count = settings.REASSIGN_COUNT
     max_distance = settings.MAX_DISTANCE
+    request_distance_unit = settings.REQUEST_DISTANCE_UNIT
     charge_type = 1000
     approved = False
 
@@ -96,13 +98,16 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self._request_id = None
         self._state = None
         self._contacts = [] 
-        self._contacts_detail = {}
+        self._contacts_detail = {}          # candidate information
+        self._contacts_by_distance = {}     # by distance 
         self._rejects = []
         self._approval = None
 
         self._timers = {}
 
         self._update_queue = []
+
+        self._request_distance_loop_count = 1
 
     def __unicode__(self):
         return u'RequestProxy {0}'.format(self._passenger)
@@ -145,15 +150,22 @@ class RequestProxy(LoggableMixin, PubsubMixin):
     def add_contact(self, driver_id):
         self._contacts.append(driver_id)
 
-        print self._updatee()
-
     def set_contact_detail(self, driver_id, data):
-        self._contacts_detail[str(driver_id)] = data
-
-        self.debug('Contact detail: {0}'.format(self._contacts_detail))
+        driver_id = str(driver_id)
+        self._contacts_detail[driver_id] = data
 
     def get_contact_detail(self, driver_id):
-        return self._contacts_detail.get(str(driver_id), None)
+        driver_id = str(driver_id)
+        return self._contacts_detail.get(driver_id, None)
+
+
+    def add_contact_by_distance(self, target_distance, driver_id):
+        if self._contacts_by_distance.get(target_distance):
+            self._contacts_by_distance[target_distance].append(driver_id)
+        else:
+            self._contacts_by_distance[target_distance] = [driver_id]
+
+        self.info('Contacts by distance: {0}'.format(self._contacts_by_distance))
 
     def remove_contact(self, driver_id):
         try:
@@ -246,11 +258,19 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return True
 
     def terminate(self):
-        self.info('Terminate request {0}'.format(self._request_id))
 
-        # state rejected
-        self._state = Request.REJECTED        
-        self.update(state=Request.REJECTED)
+        if self._request_distance_loop_count == settings.REQUEST_DISTANCE_LOOP_MAX_COUNT:
+            # terminate
+            self.info('Terminate request {0}'.format(self._request_id))
+
+            # state rejected
+            self._state = Request.REJECTED        
+            self.update(state=Request.REJECTED)
+
+        else:
+            self._request_distance_loop_count += 1
+            self.refresh_count = settings.REQUEST_REFRESH_COUNT 
+            self.request()
 
     @gen.coroutine
     def request(self):
@@ -258,11 +278,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.info('Request {0} approved, no more request'.format(self._request_id))
             return
 
+        # distance
+        target_distance = self._request_distance_loop_count * self.request_distance_unit
+
         # find
         candidates = yield DriverManager().get_driver_candidates(self._passenger.id, self._source['location'], self.candidate_count, 
-                                                        self.max_distance, self.charge_type) 
+                                                        target_distance, self.charge_type) 
 
-        self.debug('Candidates: {0}'.format(candidates))
+        self.info('Candidates in {0}m: {1}'.format(target_distance, candidates))
         
         push_targets = []
 
@@ -277,6 +300,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
                 self.info('Driver {driver_id} sent in request {request_id}'.format(driver_id=id_, request_id=self._request_id))
 
                 self.add_contact(id_)
+
+                self.add_contact_by_distance(target_distance, id_)
 
                 # cache contact info
                 self.set_contact_detail(id_, candidate)
