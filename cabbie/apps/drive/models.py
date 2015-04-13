@@ -32,6 +32,7 @@ class Request(AbstractTimestampModel):
     distance = models.PositiveIntegerField(u'요청거리', default=0)
     state = models.CharField(u'상태', max_length=50, choices=STATES)
     contacts = JSONField(u'보낸기사 리스트', default='[]')
+    contacts_by_distance = JSONField(u'거리별 보낸기사 리스트', default='{}')
     rejects = JSONField(u'거절기사 리스트', default='[]')
     approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
       
@@ -77,7 +78,7 @@ class Request(AbstractTimestampModel):
     
 
     def update(self, **data):
-        for field in ('state', 'contacts', 'rejects', 'approval_id'): 
+        for field in ('state', 'contacts', 'contacts_by_distance', 'rejects', 'approval_id'): 
             value = data.get(field)
             if value:
                 setattr(self, field, value)

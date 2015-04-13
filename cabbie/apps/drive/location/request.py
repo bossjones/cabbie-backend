@@ -135,6 +135,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return {
             'state': self._state,
             'contacts': self._contacts,
+            'contacts_by_distance': self._contacts_by_distance,
             'rejects': self._rejects,
             'approval_id': self._approval,
         }
