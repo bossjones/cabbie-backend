@@ -75,6 +75,16 @@ class Request(AbstractTimestampModel):
         return self.destination_poi + u'<br />' + self.destination_address if self.destination_poi and self.destination_address else ''
     destination_information.short_description = u'도착지 정보'
     destination_information.allow_tags = True
+
+    def description_for_contacts_by_distance(self):
+        ret = str()
+        for distance_, contacts_ in self.contacts_by_distance.iteritems():
+            desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(str(v) for v in contacts_))
+            desc += u'<br />'
+            ret += desc
+        return ret
+    description_for_contacts_by_distance.short_description = u'거리별 콜요청 리스트'
+    description_for_contacts_by_distance.allow_tags = True
     
 
     def update(self, **data):

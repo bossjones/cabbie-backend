@@ -17,7 +17,7 @@ class RequestAdmin(AbstractAdmin):
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
     list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance', 
-            'state', 'contacts', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
+            'state', 'description_for_contacts_by_distance', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
 
     def approved_driver(self, obj):
         return obj.approval.driver if obj.approval else None
