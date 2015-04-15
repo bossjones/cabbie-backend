@@ -23,10 +23,17 @@ class Request(AbstractTimestampModel):
         (APPROVED, _('approved')),
         (REJECTED, _('rejected')),
     )
-    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객')
+    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객'
+                                            , null=True, on_delete=models.SET_NULL)
+    source = JSONField(u'출발지', default='{}')
     source_location = models.PointField(u'출발지 좌표')
+    destination = JSONField(u'도착지', default='{}')
+    destination_location = models.PointField(u'도착지 좌표', blank=True,
+                                             null=True)
+    distance = models.PositiveIntegerField(u'요청거리', default=0)
     state = models.CharField(u'상태', max_length=50, choices=STATES)
     contacts = JSONField(u'보낸기사 리스트', default='[]')
+    contacts_by_distance = JSONField(u'거리별 보낸기사 리스트', default='{}')
     rejects = JSONField(u'거절기사 리스트', default='[]')
     approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
       
@@ -36,9 +43,53 @@ class Request(AbstractTimestampModel):
         verbose_name = u'배차 요청'
         verbose_name_plural = u'배차 요청'
 
+    # source
+    def source_address(self):
+        return self.source.get('address', '')
+    source_address.short_description = u'출발지 주소'
+    source_address = property(source_address)
+
+    def source_poi(self):
+        return self.source.get('poi', '')
+    source_poi.short_description = u'출발지 POI'
+    source_poi = property(source_poi)
+
+    # for admin
+    def source_information(self):
+        return self.source_poi + u'<br />' + self.source_address if self.source_poi and self.source_address else '' 
+    source_information.short_description = u'출발지 정보'
+    source_information.allow_tags = True
+
+    # destination
+    def destination_address(self):
+        return self.destination.get('address', '')
+    destination_address.short_description = u'도착지 주소'
+    destination_address = property(destination_address)
+
+    def destination_poi(self):
+        return self.destination.get('poi', '')
+    destination_poi.short_description = u'도착지 POI'
+    destination_poi = property(destination_poi)
+
+    # for admin
+    def destination_information(self):
+        return self.destination_poi + u'<br />' + self.destination_address if self.destination_poi and self.destination_address else ''
+    destination_information.short_description = u'도착지 정보'
+    destination_information.allow_tags = True
+
+    def description_for_contacts_by_distance(self):
+        ret = str()
+        for distance_, contacts_ in self.contacts_by_distance.iteritems():
+            desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(str(v) for v in contacts_))
+            desc += u'<br />'
+            ret += desc
+        return ret
+    description_for_contacts_by_distance.short_description = u'거리별 콜요청 리스트'
+    description_for_contacts_by_distance.allow_tags = True
+    
 
     def update(self, **data):
-        for field in ('state', 'contacts', 'rejects', 'approval_id'): 
+        for field in ('state', 'contacts', 'contacts_by_distance', 'rejects', 'approval_id'): 
             value = data.get(field)
             if value:
                 setattr(self, field, value)
