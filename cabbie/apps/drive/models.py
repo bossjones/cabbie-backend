@@ -32,9 +32,9 @@ class Request(AbstractTimestampModel):
                                              null=True)
     distance = models.PositiveIntegerField(u'요청거리', default=0)
     state = models.CharField(u'상태', max_length=50, choices=STATES)
-    contacts = JSONField(u'보낸기사 리스트', default='[]')
-    contacts_by_distance = JSONField(u'거리별 보낸기사 리스트', default='{}')
-    rejects = JSONField(u'거절기사 리스트', default='[]')
+    contacts = JSONField(u'보낸기사', default='[]')
+    contacts_by_distance = JSONField(u'거리별 보낸기사', default='{}')
+    rejects = JSONField(u'거절기사', default='[]')
     approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
       
     objects = models.GeoManager()
