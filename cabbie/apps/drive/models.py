@@ -23,7 +23,8 @@ class Request(AbstractTimestampModel):
         (APPROVED, _('approved')),
         (REJECTED, _('rejected')),
     )
-    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객')
+    passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객'
+                                            , null=True, on_delete=models.SET_NULL)
     source = JSONField(u'출발지', default='{}')
     source_location = models.PointField(u'출발지 좌표')
     destination = JSONField(u'도착지', default='{}')
