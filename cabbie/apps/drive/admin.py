@@ -17,12 +17,26 @@ class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
-    list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance', 
-            'state', 'contacts', 'description_for_contacts_by_distance', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
+    list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance_in_kilometer', 
+            'state', 'contacts', 'description_for_contacts_by_distance', 'rejects', 'link_to_ride', 'approved_driver', 'updated_at', 'created_at')
 
     def approved_driver(self, obj):
         return obj.approval.driver if obj.approval else None
     approved_driver.short_description = u'승인기사'
+
+    def distance_in_kilometer(self, obj):
+        return "%.1fkm" % (float(obj.distance) / 1000)
+    distance_in_kilometer.short_description = u'요청거리'
+
+
+    def link_to_ride(self, obj):
+        if obj.approval:
+            url = u'/admin/drive/ride/?id={0}'.format(obj.approval.id)
+            return u'<a href="{0}">{1}</a>'.format(url, obj.approval.id)
+        return None
+    link_to_ride.short_description = u'승인된 배차'
+    link_to_ride.allow_tags = True
+
 
 class RideAdmin(AbstractAdmin):
     deletable = True 

@@ -79,7 +79,11 @@ class Request(AbstractTimestampModel):
 
     def description_for_contacts_by_distance(self):
         ret = str()
-        for distance_, contacts_ in self.contacts_by_distance.iteritems():
+
+        sorted_keys = sorted(int(key) for key in self.contacts_by_distance.keys())
+
+        for distance_ in sorted_keys:
+            contacts_ = self.contacts_by_distance.get(str(distance_))
             desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(str(v) for v in contacts_))
             desc += u'<br />'
             ret += desc
