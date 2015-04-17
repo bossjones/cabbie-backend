@@ -102,6 +102,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self._contacts_by_distance = {}     # by distance 
         self._rejects = []
         self._approval = None
+        self._approved_candidate = None
 
         self._timers = {}
 
@@ -138,6 +139,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             'contacts_by_distance': self._contacts_by_distance,
             'rejects': self._rejects,
             'approval_id': self._approval,
+            'approval_driver_json': self._approved_candidate,
         }
 
     @gen.coroutine 
@@ -239,6 +241,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self.info('Approve request {0}'.format(self._request_id))
         self._approval = proxy._ride_id 
         self._state = Request.APPROVED        
+        self._approved_candidate = candidate
         self.update(state=Request.APPROVED)
 
            
