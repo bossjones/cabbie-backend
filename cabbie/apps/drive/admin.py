@@ -2,6 +2,7 @@
 
 from django import forms
 from django.contrib import admin
+from django.db.models import Q
 
 from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
@@ -16,7 +17,8 @@ class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
-    list_display = ('id', 'passenger', 'state', 'contacts', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
+    list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance', 
+            'state', 'contacts', 'description_for_contacts_by_distance', 'rejects', 'approval', 'approved_driver', 'updated_at', 'created_at')
 
     def approved_driver(self, obj):
         return obj.approval.driver if obj.approval else None
@@ -58,35 +60,71 @@ class RideAdmin(AbstractAdmin):
 
     actions = (
         'transit_to_completed',
+        'rollback_to_rejected',
+        'rollback_to_canceled',
     )
+
+    def rollback_to_rejected(self, request, queryset):
+        rides = list(queryset.all())
+        for ride in rides:
+            # if already rejected, ignore
+            if ride.state == Ride.REJECTED:
+                continue
+
+            # remove boarded, completed state if any
+            ride.histories.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED)).delete()
+
+            # transit to rejected state
+            data = ride.histories.latest('id').data
+            data.update({'state': Ride.REJECTED, 'admin': True })
+            ride.transit(**data)
+    rollback_to_rejected.short_description = u'기사취소처리'
+
+
+    def rollback_to_canceled(self, request, queryset):
+        rides = list(queryset.all())
+        for ride in rides:
+            # if already canceled, ignore
+            if ride.state == Ride.CANCELED:
+                continue
+
+            # remove boarded, completed state if any
+            ride.histories.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED)).delete()
+
+            # transit to canceled state
+            data = ride.histories.latest('id').data
+            data.update({'state': Ride.CANCELED, 'admin': True })
+            ride.transit(**data)
+    rollback_to_canceled.short_description = u'승객취소처리'
+
 
     def transit_to_completed(self, request, queryset):
         rides = list(queryset.all())
         for ride in rides:
             transit_states = None
-            if ride.state == 'boarded':
-                transit_states = ['completed']
+            if ride.state == Ride.BOARDED:
+                transit_states = [Ride.COMPLETED]
 
-            elif ride.state == 'requested':
-                transit_states = ['approved', 'boarded', 'completed']
+            elif ride.state == Ride.REQUESTED:
+                transit_states = [Ride.APPROVED, Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'approved':
-                transit_states = ['boarded', 'completed']
+            elif ride.state == Ride.APPROVED:
+                transit_states = [Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'arrived':
-                transit_states = ['boarded', 'completed']
+            elif ride.state == Ride.ARRIVED:
+                transit_states = [Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'rejected':
-                transit_states = ['approved', 'boarded', 'completed']
+            elif ride.state == Ride.REJECTED:
+                transit_states = [Ride.APPROVED, Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'canceled':
-                transit_states = ['approved', 'boarded', 'completed']
+            elif ride.state == Ride.CANCELED:
+                transit_states = [Ride.APPROVED, Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'disconnected':
-                transit_states = ['approved', 'boarded', 'completed']
+            elif ride.state == Ride.DISCONNECTED:
+                transit_states = [Ride.APPROVED, Ride.BOARDED, Ride.COMPLETED]
 
-            elif ride.state == 'rated':
-                transit_states = ['approved', 'boarded', 'completed']
+            elif ride.state == Ride.RATED:
+                transit_states = [Ride.APPROVED, Ride.BOARDED, Ride.COMPLETED]
             
 
             if transit_states:

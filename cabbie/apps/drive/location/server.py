@@ -700,8 +700,9 @@ class LocationServer(LoggableMixin, SingletonMixin):
         rides = Ride.objects.filter(Q(state=Ride.APPROVED) | Q(state=Ride.ARRIVED)) 
 
         for ride in rides.all():
-            proxy = RideProxyManager().create(ride.passenger.id, ride.source, ride.destination, ride.additional_message)
-            proxy._recover(ride)
+            if ride.passenger:
+                proxy = RideProxyManager().create(ride.passenger.id, ride.source, ride.destination, ride.additional_message)
+                proxy._recover(ride)
 
     def start(self):
         self.recover_ride_proxies()
