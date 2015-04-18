@@ -295,8 +295,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         candidates = yield DriverManager().get_driver_candidates(self._passenger.id, self._source['location'], self.candidate_count, 
                                                         target_distance, self.charge_type) 
 
-        self.info('Candidates in {0}m: {1}'.format(target_distance, candidates))
-        
         push_targets = []
 
         for candidate in candidates:

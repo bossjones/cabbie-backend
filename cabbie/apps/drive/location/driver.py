@@ -183,8 +183,6 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         ids = self._driver_index.nearest(location, count=pseudo_count,
                                          max_distance=max_distance)
 
-        self.debug('Nearest: {0} {1} {2} {3} {4}'.format(location, count, max_distance, charge_type, ids))
-
         ids = [
             (id_, state_) for id_, state_ in ids
             if int(self._driver_charge_types[id_]) <= int(charge_type)]
