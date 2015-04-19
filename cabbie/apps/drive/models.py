@@ -36,7 +36,8 @@ class Request(AbstractTimestampModel):
     contacts_by_distance = JSONField(u'거리별 보낸기사', default='{}')
     rejects = JSONField(u'거절기사', default='[]')
     approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
-      
+    approval_driver_json = JSONField(u'승인기사 데이터', blank=True, null=True)
+
     objects = models.GeoManager()
 
     class Meta(AbstractTimestampModel.Meta):
@@ -79,7 +80,11 @@ class Request(AbstractTimestampModel):
 
     def description_for_contacts_by_distance(self):
         ret = str()
-        for distance_, contacts_ in self.contacts_by_distance.iteritems():
+
+        sorted_keys = sorted(int(key) for key in self.contacts_by_distance.keys())
+
+        for distance_ in sorted_keys:
+            contacts_ = self.contacts_by_distance.get(str(distance_))
             desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(str(v) for v in contacts_))
             desc += u'<br />'
             ret += desc
@@ -89,7 +94,7 @@ class Request(AbstractTimestampModel):
     
 
     def update(self, **data):
-        for field in ('state', 'contacts', 'contacts_by_distance', 'rejects', 'approval_id'): 
+        for field in ('state', 'contacts', 'contacts_by_distance', 'rejects', 'approval_id', 'approval_driver_json'): 
             value = data.get(field)
             if value:
                 setattr(self, field, value)

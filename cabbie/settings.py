@@ -327,8 +327,8 @@ MAX_DISTANCE = 5 * 1000                 # meters
 # dispatch request
 REQUEST_REFRESH_INTERVAL = 3           # seconds
 REQUEST_REFRESH_COUNT = 4              # seconds
-REQUEST_DISTANCE_UNIT = 500             # meters
-REQUEST_DISTANCE_LOOP_MAX_COUNT = 4     # meters
+REQUEST_DISTANCE_UNIT = 1000            # meters
+REQUEST_DISTANCE_LOOP_MAX_COUNT = 2     # meters
 
 RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters
