@@ -332,6 +332,12 @@ class RideProxy(LoggableMixin, PubsubMixin):
                     'data': {
                         'location': self._driver_location,
                         'estimate': self._estimate.for_json(),
+                    },
+                    # for ios to ignore this message
+                    'aps': {
+                        'badge': '7',
+                        'content-available': '1',
+                        'priority': '5',
                     }
                 }
                 send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
