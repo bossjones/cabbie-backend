@@ -268,6 +268,9 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return True
 
     def terminate(self):
+        if self._state == Request.REJECTED:
+            self.info('Terminate request {0} but already terminated'.format(self._request_id))
+            return
 
         if self._request_distance_loop_count == settings.REQUEST_DISTANCE_LOOP_MAX_COUNT:
             # terminate
