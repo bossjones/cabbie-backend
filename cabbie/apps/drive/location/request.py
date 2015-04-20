@@ -301,7 +301,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         push_targets = []
 
         for candidate in candidates:
-            id_ = candidate['driver']['id']
+            driver_ = candidate['driver']
+            id_ = driver_['id']
+            is_freezed = driver_['is_freezed']
+
+            if is_freezed:
+                self.info('Ignore driver {id} since it\'s freezed'.format(id=id_))
+                continue
+
             state_ = candidate['state']
             candidate['estimate'] = candidate['estimate'].for_json()
 
