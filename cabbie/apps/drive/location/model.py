@@ -39,6 +39,7 @@ class ModelManager(LoggableMixin, SingletonMixin):
             })
         if isinstance(user, Driver):
             serialized.update({
+                'is_freezed': user.is_freezed,
                 'license_number': user.license_number,
                 'car_number': user.car_number,
                 'car_model': user.car_model,
