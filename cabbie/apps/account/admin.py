@@ -74,8 +74,7 @@ class DriverAdmin(AbstractAdmin):
         ('읽기전용', {
             'fields': (
                 'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-                'board_count', 'passenger_recommend_count',
-                'driver_recommend_count', 'recommended_count',
+                'board_count', 
                 'verification_code', 'is_verified', 'is_accepted',
                 'is_freezed', 'is_educated', 'date_joined',
                 'last_active_at',
@@ -87,8 +86,7 @@ class DriverAdmin(AbstractAdmin):
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-        'board_count', 'passenger_recommend_count', 
-        'driver_recommend_count', 'recommended_count', 
+        'board_count', 
         'verification_code', 'is_verified', 'is_accepted',
         'is_freezed', 'is_educated', 'date_joined',
         'last_active_at',
@@ -212,8 +210,8 @@ class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
-                    'board_count', 'passenger_recommend_count',
-                    'recommended_count', 'date_joined', 'link_to_rides')
+                    'board_count',
+                    'date_joined', 'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
@@ -223,7 +221,6 @@ class PassengerAdmin(AbstractAdmin):
         ('읽기전용', {
             'fields': (
                 'recommend_code', 'point', 'board_count',
-                'passenger_recommend_count', 'recommended_count'
             ),
         }),
     )
@@ -232,7 +229,6 @@ class PassengerAdmin(AbstractAdmin):
     )
     readonly_fields = (
         'recommend_code', 'point', 'board_count',
-        'passenger_recommend_count', 'recommended_count'
     )
     list_filter = (
         'app_version',
