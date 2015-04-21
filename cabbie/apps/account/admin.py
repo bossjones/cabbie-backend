@@ -58,7 +58,7 @@ class DriverAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'province', 'region', 'car_model', 'company',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
-                    'board_count',
+                    'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
                     'is_freezed', 'is_educated', 'date_joined',
@@ -74,7 +74,7 @@ class DriverAdmin(AbstractAdmin):
         ('읽기전용', {
             'fields': (
                 'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-                'board_count', 
+                'ride_count', 'total_ride_count',
                 'verification_code', 'is_verified', 'is_accepted',
                 'is_freezed', 'is_educated', 'date_joined',
                 'last_active_at',
@@ -86,7 +86,7 @@ class DriverAdmin(AbstractAdmin):
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-        'board_count', 
+        'ride_count', 'total_ride_count',
         'verification_code', 'is_verified', 'is_accepted',
         'is_freezed', 'is_educated', 'date_joined',
         'last_active_at',
