@@ -65,6 +65,11 @@ class TransactionAdmin(AbstractAdmin):
               'amount', 'note',)
     raw_id_fields = ('user',)
 
+    search_fields = (
+        '=id',
+        '^user__phone',
+        'user__name',
+    )
 
 class AbstractReturnAdmin(AbstractAdmin):
     list_filter = ('is_requested', 'is_processed', 'processed_at',
