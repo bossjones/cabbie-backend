@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -136,6 +136,19 @@ class Passenger(User):
                 'state': latest.state 
             }
         return None
+
+    # in total
+    def _total_ride_count(self):
+        from cabbie.apps.drive.models import Ride 
+
+        qs = Ride.objects.filter(passenger=self) 
+        qs = qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED))
+        
+        return len(qs)
+    _total_ride_count.short_description = u'총탑승횟수'
+    total_ride_count = property(_total_ride_count)
+
+
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)

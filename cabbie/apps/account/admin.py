@@ -210,7 +210,7 @@ class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
-                    'board_count',
+                    'total_ride_count',
                     'date_joined', 'link_to_rides')
     fieldsets = (
         (None, {
@@ -220,7 +220,7 @@ class PassengerAdmin(AbstractAdmin):
         }),
         ('읽기전용', {
             'fields': (
-                'recommend_code', 'point', 'board_count',
+                'recommend_code', 'point', 'total_ride_count',
             ),
         }),
     )
@@ -228,7 +228,7 @@ class PassengerAdmin(AbstractAdmin):
         'phone', 'name', '=email', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', 'board_count',
+        'recommend_code', 'point', 'total_ride_count',
     )
     list_filter = (
         'app_version',
