@@ -58,6 +58,8 @@ class DriverCouponAdmin(AbstractAdmin):
     process.short_description = u'지급완료 처리'
 
 class TransactionAdmin(AbstractAdmin):
+    deletable = True
+
     list_filter = ('transaction_type', 'created_at')
     list_display = ('id', 'user', 'transaction_type', 'amount', 'note',
                     'created_at')
