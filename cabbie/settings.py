@@ -418,6 +418,7 @@ DRIVER_ACCOUNT_MANAGER = [
     '01045676685',  # Jangwoo Park 
     '01032301742',  # Yuchan Hwang
     '01093400443',  # Joonyoung Yoon
+    '01099911711',  # Soonghyun Kim
     '01091857090',  # Yusang Lee
     '01038919027',  # Juno Kim
     '01099532036'   # Sunghwan Choi
