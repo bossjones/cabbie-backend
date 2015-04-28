@@ -240,14 +240,14 @@ class PassengerAdmin(AbstractAdmin):
     list_max_show_all = 1000
 
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
+    list_display = ('id', 'phone', 'email', 'name', 'is_affiliated', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
                     'total_ride_count',
                     'date_joined', 'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
-                'phone', 'name', 'bank_account', 'email',
+                'phone', 'name', 'bank_account', 'email', 'is_affiliated',
             ),
         }),
         ('읽기전용', {
@@ -260,7 +260,7 @@ class PassengerAdmin(AbstractAdmin):
         'phone', 'name', '=email', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', 'total_ride_count',
+        'recommend_code', 'point', 'total_ride_count', 'is_affiliated',
     )
     list_filter = (
         'app_version',

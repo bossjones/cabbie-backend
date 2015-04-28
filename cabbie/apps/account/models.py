@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from cabbie.apps.education.models import Education
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
+from cabbie.apps.affiliation.models import Affiliation
 from cabbie.common.fields import SeparatedField, JSONField
 from cabbie.common.models import (ActiveMixin, NullableImageMixin,
                                   AbstractTimestampModel)
@@ -107,6 +108,10 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
 class Passenger(User):
     email = models.EmailField(u'이메일', unique=True)
+    
+    # partnership
+    affiliation = models.ForeignKey(Affiliation, related_name='passengers', verbose_name=u'제휴사'
+                                    , null=True, on_delete=models.SET_NULL)
 
     objects = PassengerManager()
 
@@ -116,6 +121,10 @@ class Passenger(User):
 
     def __unicode__(self):
         return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
+
+    @property
+    def is_affiliated(self):
+        return self.affiliation is not None
 
     @property
     def is_promotion_applicable(self):

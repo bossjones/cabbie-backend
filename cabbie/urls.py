@@ -75,6 +75,8 @@ router.register(r'drivers/stats/week',
                 import_('cabbie.apps.stats.views.DriverRideStatWeekViewSet'))
 router.register(r'drivers/stats/day',
                 import_('cabbie.apps.stats.views.DriverRideStatDayViewSet'))
+router.register(r'affiliations',
+                import_('cabbie.apps.affiliation.views.AffiliationViewSet'))
 router.register(r'drivers',
                 import_('cabbie.apps.account.views.DriverViewSet'))
 router.register(r'requests',
@@ -142,7 +144,10 @@ urlpatterns += patterns('',
     
     url(r'^api/user/update_push_id',
         import_('cabbie.apps.account.views.UserUpdatePushIdView').as_view()), 
-    
+
+    url(r'^api/affiliations/check',
+        import_('cabbie.apps.affiliation.views.CheckAffiliationView').as_view()), 
+
     url(r'^api/', include(router.urls)),
 )
 

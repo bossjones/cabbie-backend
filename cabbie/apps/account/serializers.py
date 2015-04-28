@@ -33,10 +33,11 @@ class UserSerializer(AbstractSerializer):
 
 class PassengerSerializer(UserSerializer):
     latest_ride = JSONField(source='latest_ride', read_only=True) 
+    is_affiliated = serializers.Field(source='is_affiliated')
 
     class Meta(UserSerializer.Meta):
         model = Passenger
-        fields = UserSerializer.Meta.fields + ('email', 'latest_ride') 
+        fields = UserSerializer.Meta.fields + ('email', 'latest_ride', 'is_affiliated') 
 
 
 class DriverSerializer(UserSerializer):
