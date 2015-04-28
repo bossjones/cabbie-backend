@@ -58,6 +58,8 @@ class DriverCouponAdmin(AbstractAdmin):
     process.short_description = u'지급완료 처리'
 
 class TransactionAdmin(AbstractAdmin):
+    deletable = True
+
     list_filter = ('transaction_type', 'created_at')
     list_display = ('id', 'user', 'transaction_type', 'amount', 'note',
                     'created_at')
@@ -65,6 +67,11 @@ class TransactionAdmin(AbstractAdmin):
               'amount', 'note',)
     raw_id_fields = ('user',)
 
+    search_fields = (
+        '=id',
+        '^user__phone',
+        'user__name',
+    )
 
 class AbstractReturnAdmin(AbstractAdmin):
     list_filter = ('is_requested', 'is_processed', 'processed_at',

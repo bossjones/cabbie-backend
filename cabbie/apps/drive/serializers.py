@@ -23,14 +23,12 @@ class RideSerializer(AbstractSerializer):
 
 
 class RequestSerializer(AbstractSerializer):
-    passenger = PassengerSerializer(read_only=True)
     approval = RideSerializer(read_only=True)
-    contacts = JSONField(source='contacts')
-    rejects = JSONField(source='rejects')
+    approval_driver_json = JSONField(source='approval_driver_json')
 
     class Meta:
         model = Request
-        fields = ('id', 'passenger', 'approval', 'contacts', 'rejects', 'state')
+        fields = ('id', 'state', 'approval', 'approval_driver_json')
 
 class FavoriteSerializer(AbstractSerializer):
     location = PointField(source='location')

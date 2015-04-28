@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -136,6 +136,19 @@ class Passenger(User):
                 'state': latest.state 
             }
         return None
+
+    # in total
+    def _total_ride_count(self):
+        from cabbie.apps.drive.models import Ride 
+
+        qs = Ride.objects.filter(passenger=self) 
+        qs = qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED))
+        
+        return len(qs)
+    _total_ride_count.short_description = u'총탑승횟수'
+    total_ride_count = property(_total_ride_count)
+
+
 
 class Driver(NullableImageMixin, User):
     IMAGE_TYPES = ('100s',)
@@ -307,8 +320,8 @@ class Driver(NullableImageMixin, User):
 
         return ret
 
-    @property
-    def rated_count(self):
+    # current month
+    def _rated_count(self):
         total_count = 0
 
         from cabbie.apps.stats.models import DriverRideStatMonth
@@ -320,10 +333,12 @@ class Driver(NullableImageMixin, User):
             total_count += stat.count
         
         return total_count 
+    _rated_count.short_description = u'당월평가횟수'
+    rated_count = property(_rated_count)
 
 
-    @property
-    def ride_count(self):
+    # current month
+    def _ride_count(self):
         total_count = 0
 
         from cabbie.apps.stats.models import DriverRideStatMonth
@@ -335,6 +350,38 @@ class Driver(NullableImageMixin, User):
             total_count += stat.count
         
         return total_count 
+    _ride_count.short_description = u'당월콜횟수'
+    ride_count = property(_ride_count)
+
+
+    # in total
+    def _total_rated_count(self):
+        total_count = 0
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.RATED):
+            total_count += stat.count
+        
+        return total_count 
+    _total_rated_count.short_description = u'총평가횟수'
+    total_rated_count = property(_total_rated_count)
+
+
+    # in total
+    def _total_ride_count(self):
+        total_count = 0
+
+        from cabbie.apps.stats.models import DriverRideStatMonth
+        from cabbie.apps.drive.models import Ride 
+
+        for stat in DriverRideStatMonth.objects.filter(driver=self, state=Ride.BOARDED):
+            total_count += stat.count
+        
+        return total_count 
+    _total_ride_count.short_description = u'총콜횟수'
+    total_ride_count = property(_total_ride_count)
 
 
     def profile_image_link(self):

@@ -58,7 +58,7 @@ class DriverAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'province', 'region', 'car_model', 'company',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
-                    'current_month_board_count', 'previous_month_board_count', 'board_count',
+                    'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
                     'is_freezed', 'is_educated', 'date_joined',
@@ -74,9 +74,7 @@ class DriverAdmin(AbstractAdmin):
         ('읽기전용', {
             'fields': (
                 'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-                'current_month_board_count', 'previous_month_board_count',
-                'board_count', 'passenger_recommend_count',
-                'driver_recommend_count', 'recommended_count',
+                'ride_count', 'total_ride_count',
                 'verification_code', 'is_verified', 'is_accepted',
                 'is_freezed', 'is_educated', 'date_joined',
                 'last_active_at',
@@ -88,9 +86,7 @@ class DriverAdmin(AbstractAdmin):
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
-        'current_month_board_count', 'previous_month_board_count', 
-        'board_count', 'passenger_recommend_count', 
-        'driver_recommend_count', 'recommended_count', 
+        'ride_count', 'total_ride_count',
         'verification_code', 'is_verified', 'is_accepted',
         'is_freezed', 'is_educated', 'date_joined',
         'last_active_at',
@@ -214,9 +210,8 @@ class PassengerAdmin(AbstractAdmin):
     ordering = ('-date_joined',)
     list_display = ('id', 'phone', 'email', 'name', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
-                    'current_month_board_count', 'previous_month_board_count',
-                    'board_count', 'passenger_recommend_count',
-                    'recommended_count', 'date_joined', 'link_to_rides')
+                    'total_ride_count',
+                    'date_joined', 'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
@@ -225,9 +220,7 @@ class PassengerAdmin(AbstractAdmin):
         }),
         ('읽기전용', {
             'fields': (
-                'recommend_code', 'point', 'current_month_board_count',
-                'previous_month_board_count', 'board_count',
-                'passenger_recommend_count', 'recommended_count'
+                'recommend_code', 'point', 'total_ride_count',
             ),
         }),
     )
@@ -235,9 +228,7 @@ class PassengerAdmin(AbstractAdmin):
         'phone', 'name', '=email', '=id',
     )
     readonly_fields = (
-        'recommend_code', 'point', 'current_month_board_count',
-        'previous_month_board_count', 'board_count',
-        'passenger_recommend_count', 'recommended_count'
+        'recommend_code', 'point', 'total_ride_count',
     )
     list_filter = (
         'app_version',
