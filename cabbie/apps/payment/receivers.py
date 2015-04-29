@@ -50,16 +50,30 @@ def on_post_create_transaction(sender, instance, **kwargs):
 
 
 def on_post_ride_board(sender, ride, **kwargs):
-    amount = settings.POINTS_BY_TYPE.get(Transaction.RIDE_POINT)
-    if amount:
+    # affiliated
+    passenger = ride.passenger
+    if passenger.is_affiliated:
+        # amount
+        amount = passenger.affiliation.ride_mileage
         Transaction.objects.create(
-            user=ride.passenger,
+            user=passenger,
             ride=ride,
             transaction_type=Transaction.RIDE_POINT,
             amount=amount,
             state=Transaction.DONE,
-            note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
+            note=u'제휴사 회원 탑승 포인트'
         )
+    else: 
+        amount = settings.POINTS_BY_TYPE.get(Transaction.RIDE_POINT)
+        if amount:
+            Transaction.objects.create(
+                user=ride.passenger,
+                ride=ride,
+                transaction_type=Transaction.RIDE_POINT,
+                amount=amount,
+                state=Transaction.DONE,
+                note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
+            )
 
 def on_post_ride_first_rated(sender, ride, **kwargs):
     amount = settings.POINTS_BY_TYPE.get(Transaction.RATE_POINT)
