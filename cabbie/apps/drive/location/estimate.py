@@ -81,6 +81,14 @@ class HaversineEstimator(AbstractEstimator):
         time = int(distance / speed)
         return Estimate(distance, time)
 
+class HaversineSynchronousEstimator(HaversineEstimator):
+    def estimate(self, source, destination):
+        return self.compute(source, destination)
+
+    def bulk_estimate(self, pairs):
+        return [self.compute(source, destination)
+                           for source, destination in pairs]
+
 
 class TmapEstimator(AbstractEstimator):
     url = 'https://apis.skplanetx.com/tmap/routes?version=1'
