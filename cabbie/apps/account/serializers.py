@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.authtoken.serializers import (
     AuthTokenSerializer as BaseAuthTokenSerializer)
 
+from cabbie.apps.affiliation.serializers import AffiliationSerializer
+
 from cabbie.apps.account.models import User, Passenger, Driver
 from cabbie.common.serializers import AbstractSerializer, SeparatedField, JSONField
 
@@ -33,11 +35,11 @@ class UserSerializer(AbstractSerializer):
 
 class PassengerSerializer(UserSerializer):
     latest_ride = JSONField(source='latest_ride', read_only=True) 
-    is_affiliated = serializers.Field(source='is_affiliated')
+    affiliation = AffiliationSerializer(read_only=True)
 
     class Meta(UserSerializer.Meta):
         model = Passenger
-        fields = UserSerializer.Meta.fields + ('email', 'latest_ride', 'is_affiliated') 
+        fields = UserSerializer.Meta.fields + ('email', 'latest_ride', 'affiliation') 
 
 
 class DriverSerializer(UserSerializer):

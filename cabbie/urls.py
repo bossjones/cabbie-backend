@@ -148,6 +148,9 @@ urlpatterns += patterns('',
     url(r'^api/affiliations/check',
         import_('cabbie.apps.affiliation.views.CheckAffiliationView').as_view()), 
 
+    url(r'^api/affiliations/register',
+        import_('cabbie.apps.affiliation.views.RegisterAffiliationView').as_view()), 
+
     url(r'^api/', include(router.urls)),
 )
 

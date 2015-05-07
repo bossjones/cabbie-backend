@@ -50,9 +50,9 @@ def on_post_create_transaction(sender, instance, **kwargs):
 
 
 def on_post_ride_board(sender, ride, **kwargs):
-    # affiliated
+    # if affiliated and in event period
     passenger = ride.passenger
-    if passenger.is_affiliated:
+    if passenger.is_affiliated and passenger.affiliation.is_active:
         # amount
         amount = passenger.affiliation.ride_mileage
         Transaction.objects.create(

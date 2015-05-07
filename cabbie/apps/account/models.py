@@ -11,9 +11,9 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.education.models import Education
+from cabbie.apps.affiliation.models import Affiliation
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
-from cabbie.apps.affiliation.models import Affiliation
 from cabbie.common.fields import SeparatedField, JSONField
 from cabbie.common.models import (ActiveMixin, NullableImageMixin,
                                   AbstractTimestampModel)

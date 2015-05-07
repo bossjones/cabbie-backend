@@ -9,6 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('account', '0008_auto_20150403_1514'),
+        ('affiliation', '__first__'),
     ]
 
     operations = [
