@@ -4,7 +4,7 @@ from functools import partial
 from django.conf import settings
 from tornado import gen
 
-from cabbie.apps.drive.location.estimate import HaversineEstimator
+from cabbie.apps.drive.location.estimate import HaversineEstimator, HaversineSynchronousEstimator
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.secret import fetch, post
 from cabbie.apps.drive.location.session import SessionManager, SessionBufferManager
@@ -67,7 +67,6 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._state = ride.state
         self._ride_id = ride.id
         self.set_driver(ride.driver.id, None, 1000)
-        self._refresh_estimate()
         RideProxyManager().set_ride_proxy_by_ride_id(ride.id, self)
         self.info('Ride proxy recovered: {id} {state}'.format(id=self._ride_id, state=self._state))
 
@@ -195,8 +194,8 @@ class RideProxy(LoggableMixin, PubsubMixin):
             self.passenger_session.notify_passenger_approve()
         self._transition_to(Ride.APPROVED)
 
-        # Start periodic refreshing
-        self._refresh_estimate()
+        # deprecate estimation polling
+        #self._refresh_estimate()
 
         # send push 
         self.send_approve_push(candidate) 
@@ -260,6 +259,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._driver_location = location
 
         if self._state == Ride.APPROVED:
+            # update estimate
+            self._estimate = HaversineSynchronousEstimator().estimate(self._driver_location, self._passenger_location)
+
             if self.passenger_session:
                 self.passenger_session.notify_passenger_progress(self._driver_location, self._estimate)
             # send push
