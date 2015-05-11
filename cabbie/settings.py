@@ -50,6 +50,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'cabbie.common.middleware.DelayMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -78,6 +79,7 @@ INSTALLED_APPS = (
     'storages',
     'django_ses',
     'django_extensions',
+    'debug_toolbar',
 
     # Admin
     'suit',
@@ -308,6 +310,10 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Django debug toolbar
+# --------------------
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INTERNAL_IPS = '127.0.0.1'
 
 # Location
 # --------
