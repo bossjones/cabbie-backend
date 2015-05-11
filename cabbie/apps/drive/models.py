@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
+from cabbie.apps.drive.managers import TimezoneManager
 from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
@@ -39,6 +40,8 @@ class Request(AbstractTimestampModel):
     approval_driver_json = JSONField(u'승인기사 데이터', blank=True, null=True)
 
     objects = models.GeoManager()
+
+    objects_with_tz_normalizer = TimezoneManager()
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차 요청'
@@ -182,6 +185,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     comment = models.CharField(u'코멘트', max_length=100, blank=True)
 
     objects = models.GeoManager()
+
+    objects_with_tz_normalizer = TimezoneManager()
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차'
