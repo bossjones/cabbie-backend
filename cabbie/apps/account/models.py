@@ -188,7 +188,7 @@ class Driver(NullableImageMixin, User):
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
     is_educated = models.BooleanField(u'교육이수여부', default=False)
-    education = models.ForeignKey(Education, related_name='attendees', verbose_name=u'교육', null=True, on_delete=models.SET_NULL)
+    education = models.ForeignKey(Education, related_name='attendees', verbose_name=u'교육', blank=True, null=True, on_delete=models.SET_NULL)
 
     province = models.CharField(u'시도', max_length=10, default='')
     region = models.CharField(u'지역', max_length=20, default='', blank=True)
