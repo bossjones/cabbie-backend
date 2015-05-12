@@ -36,7 +36,8 @@ class Request(AbstractTimestampModel):
     contacts = JSONField(u'보낸기사', default='[]')
     contacts_by_distance = JSONField(u'거리별 보낸기사', default='{}')
     rejects = JSONField(u'거절기사', default='[]')
-    approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
+    approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차'
+                                                            , on_delete=models.SET_NULL)
     approval_driver_json = JSONField(u'승인기사 데이터', blank=True, null=True)
 
     objects = models.GeoManager()
@@ -161,7 +162,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     passenger = models.ForeignKey(Passenger, related_name='rides',
                                   verbose_name=u'승객', null=True, on_delete=models.SET_NULL)
     driver = models.ForeignKey(Driver, blank=True, null=True,
-                               related_name='rides', verbose_name=u'기사')
+                               related_name='rides', verbose_name=u'기사', on_delete=models.SET_NULL)
 
     state = models.CharField(u'상태', max_length=100, choices=STATES)
 
