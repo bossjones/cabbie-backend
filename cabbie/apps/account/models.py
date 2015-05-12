@@ -10,6 +10,7 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from cabbie.apps.education.models import Education
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField, JSONField
@@ -187,6 +188,7 @@ class Driver(NullableImageMixin, User):
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
     is_educated = models.BooleanField(u'교육이수여부', default=False)
+    education = models.ForeignKey(Education, related_name='attendees', verbose_name=u'교육', null=True, on_delete=models.SET_NULL)
 
     province = models.CharField(u'시도', max_length=10, default='')
     region = models.CharField(u'지역', max_length=20, default='', blank=True)

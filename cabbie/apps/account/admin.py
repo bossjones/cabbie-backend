@@ -61,14 +61,16 @@ class DriverAdmin(AbstractAdmin):
                     'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
-                    'is_freezed', 'is_educated', 'date_joined',
+                    'is_freezed', 
+                    'is_educated', 'education',
+                    'date_joined',
                     'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'province', 'region', 'car_model',
                 'company', 'bank_account', 'max_capacity',
-                'taxi_type', 'about', 'image',
+                'taxi_type', 'is_educated', 'education', 'about', 'image',
             ),
         }),
         ('읽기전용', {
@@ -76,19 +78,19 @@ class DriverAdmin(AbstractAdmin):
                 'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
                 'ride_count', 'total_ride_count',
                 'verification_code', 'is_verified', 'is_accepted',
-                'is_freezed', 'is_educated', 'date_joined',
+                'is_freezed', 'date_joined',
                 'last_active_at',
             ),
         }),
     )
     search_fields = (
-        'phone', 'name', '=id',
+        'phone', 'name', '=id', 'car_model', 'education__name',
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
         'ride_count', 'total_ride_count',
         'verification_code', 'is_verified', 'is_accepted',
-        'is_freezed', 'is_educated', 'date_joined',
+        'is_freezed', 'date_joined',
         'last_active_at',
     )
     list_filter = (
@@ -100,6 +102,7 @@ class DriverAdmin(AbstractAdmin):
         'is_educated',
         'province',
         'region',
+        'education',
         ('date_joined', DateRangeFilter),
     )
 

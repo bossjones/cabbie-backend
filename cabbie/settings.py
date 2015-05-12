@@ -89,6 +89,7 @@ INSTALLED_APPS = (
     'daterange_filter',
 
     # Project apps
+    'cabbie.apps.education',
     'cabbie.apps.account',
     'cabbie.apps.drive',
     'cabbie.apps.payment',
