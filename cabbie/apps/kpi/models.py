@@ -26,6 +26,7 @@ class PassengerKpiModel(AbstractKpiModel):
     ride_rejected = models.PositiveIntegerField(u'기사거절')
     ride_completed = models.PositiveIntegerField(u'운행완료')
     ride_rated = models.PositiveIntegerField(u'평가완료')
+    ride_rate_sum = models.PositiveIntegerField(u'합산평점')
     ride_satisfied = models.PositiveIntegerField(u'4.5이상')
 
     class Meta(AbstractKpiModel.Meta):

@@ -80,12 +80,15 @@ class KpiGenerateDateRangeFilter(DateRangeFilter):
             ride_qs_rated = ride_qs.filter(state=Ride.RATED)
             data['ride_rated'] = ride_qs_rated.count()
 
-            # satisfied
+            # rate_point, satisfied
+            ride_rate_sum = 0
             satisfied = 0
             for ride in ride_qs_rated:
                 total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
+                ride_rate_sum += total
                 satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
 
+            data['ride_rate_sum'] = ride_rate_sum
             data['ride_satisfied'] = satisfied 
 
             PassengerKpiModel.objects.all().delete()
@@ -107,7 +110,7 @@ class PassengerKpiAdmin(AbstractAdmin):
                     'subscriber', 'active_user',
                     'ride_requested', 'ride_approved', 'approval_rate',
                     'ride_canceled', 'ride_rejected',
-                    'ride_completed', 'ride_rated', 'ride_satisfied',
+                    'ride_completed', 'ride_rated', 'average_rate', 'satisfied_ratio',
                     )
 
     list_filter = (
@@ -120,5 +123,14 @@ class PassengerKpiAdmin(AbstractAdmin):
 
     def approval_rate(self, obj):
         return "%.1f" % (100.0 * obj.ride_approved / obj.ride_requested if obj.ride_requested > 0 else 0.0) 
+    approval_rate.short_description = u'배차성공율(%)'
+
+    def average_rate(self, obj):
+        return "%.1f" % (1.0 * obj.ride_rate_sum / obj.ride_rated if obj.ride_rated > 0 else 0.0)
+    average_rate.short_description = u'평균평점'
+
+    def satisfied_ratio(self, obj):
+        return "%.1f" % (100.0 * obj.ride_satisfied / obj.ride_rated if obj.ride_rated > 0 else 0.0)
+    satisfied_ratio.short_description = u'4.5이상 비율(%)'
 
 admin.site.register(PassengerKpiModel, PassengerKpiAdmin)
