@@ -126,7 +126,7 @@ class PassengerKpiAdmin(AbstractAdmin):
     approval_rate.short_description = u'배차성공율(%)'
 
     def average_rate(self, obj):
-        return "%.1f" % (1.0 * obj.ride_rate_sum / obj.ride_rated if obj.ride_rated > 0 else 0.0)
+        return "%.1f" % (1.0 * obj.ride_rate_sum / obj.ride_rated / 3 if obj.ride_rated > 0 else 0.0)
     average_rate.short_description = u'평균평점'
 
     def satisfied_ratio(self, obj):
