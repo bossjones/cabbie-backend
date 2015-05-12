@@ -3,6 +3,7 @@ import datetime
 
 from django.contrib import admin
 from django.contrib.admin.helpers import ActionForm
+from django.conf import settings
 from django.db.models import Count, Q
 from django import forms
 
@@ -28,6 +29,9 @@ class KpiGenerateDateRangeFilter(DateRangeFilter):
             if end_filter:
                 end_filter = end_filter + datetime.timedelta(days=1)
 
+            # launch_date
+            launch_date = datetime.datetime.strptime(settings.BKTAXI_GRAND_LAUNCH_DATE, "%Y-%m-%d").date()
+
             # generate
             data = {}
             if start_filter:
@@ -49,6 +53,9 @@ class KpiGenerateDateRangeFilter(DateRangeFilter):
 
             # active_user
             _filter.clear()
+            if not start_filter or start_filter < launch_date:
+                start_filter = launch_date
+
             if start_filter:
                 _filter['created_at__gte'] = start_filter
 
