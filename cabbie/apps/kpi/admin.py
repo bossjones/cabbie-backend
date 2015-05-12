@@ -119,6 +119,6 @@ class PassengerKpiAdmin(AbstractAdmin):
         self.list_display_links = (None, )
 
     def approval_rate(self, obj):
-        return "%.1f%" % (100.0 * obj.ride_requested / obj.ride_approved if obj.ride_approved > 0 else 0.0) 
+        return "%.1f" % (100.0 * obj.ride_approved / obj.ride_requested if obj.ride_requested > 0 else 0.0) 
 
 admin.site.register(PassengerKpiModel, PassengerKpiAdmin)
