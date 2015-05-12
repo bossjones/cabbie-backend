@@ -105,7 +105,7 @@ class PassengerKpiAdmin(AbstractAdmin):
     deletable = False
     list_display = (
                     'subscriber', 'active_user',
-                    'ride_requested', 'ride_approved',
+                    'ride_requested', 'ride_approved', 'approval_rate',
                     'ride_canceled', 'ride_rejected',
                     'ride_completed', 'ride_rated', 'ride_satisfied',
                     )
@@ -117,5 +117,8 @@ class PassengerKpiAdmin(AbstractAdmin):
     def __init__(self, *args, **kwargs):
         super(PassengerKpiAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
+
+    def approval_rate(self, obj):
+        return "%.1f%" % (100.0 * obj.ride_requested / obj.ride_approved if obj.ride_approved > 0 else 0.0) 
 
 admin.site.register(PassengerKpiModel, PassengerKpiAdmin)
