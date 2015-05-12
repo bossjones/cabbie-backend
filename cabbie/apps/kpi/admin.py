@@ -115,9 +115,9 @@ class PassengerKpiAdmin(AbstractAdmin):
     deletable = False
     list_display = (
                     'subscriber', 'active_user',
-                    'ride_requested', 'ride_approved', 'approval_rate',
-                    'ride_canceled', 'ride_rejected',
-                    'ride_completed', 'ride_rated', 'average_rate', 'satisfied_ratio',
+                    '_ride_requested', '_ride_approved', 
+                    '_ride_canceled', '_ride_rejected',
+                    '_ride_completed', '_complete_rate', '_ride_rated', '_rated_ratio', '_average_rate', '_satisfied_ratio',
                     )
 
     list_filter = (
@@ -128,16 +128,44 @@ class PassengerKpiAdmin(AbstractAdmin):
         super(PassengerKpiAdmin, self).__init__(*args, **kwargs)
         self.list_display_links = (None, )
 
-    def approval_rate(self, obj):
-        return "%.1f" % (100.0 * obj.ride_approved / obj.ride_requested if obj.ride_requested > 0 else 0.0) 
-    approval_rate.short_description = u'배차성공율(%)'
+    def _ride_requested(self, obj):
+        return obj.ride_requested
+    _ride_requested.short_description = u'콜요청(A)'
 
-    def average_rate(self, obj):
+    def _ride_approved(self, obj):
+        return obj.ride_approved
+    _ride_approved.short_description = u'수락'
+
+    def _ride_canceled(self, obj):
+        return obj.ride_canceled
+    _ride_canceled.short_description = u'승객취소'
+
+    def _ride_rejected(self, obj):
+        return obj.ride_rejected
+    _ride_rejected.short_description = u'기사거절'
+
+    def _ride_completed(self, obj):
+        return obj.ride_completed
+    _ride_completed.short_description = u'운행완료(B)'
+
+    def _complete_rate(self, obj):
+        return "%.1f" % (100.0 * obj.ride_completed / obj.ride_requested if obj.ride_requested > 0 else 0.0) 
+    _complete_rate.short_description = u'운행완료율(B/A)(%)'
+
+    def _ride_rated(self, obj):
+        return obj.ride_rated
+    _ride_rated.short_description = u'평가완료(C)'
+     
+    def _rated_ratio(self, obj):
+        return "%.1f" % (100.0 * obj.ride_rated / obj.ride_completed if obj.ride_completed > 0 else 0.0) 
+    _rated_ratio.short_description = u'평가완료율(C/B)(%)'
+
+    def _average_rate(self, obj):
         return "%.1f" % (1.0 * obj.ride_rate_sum / obj.ride_rated / 3 if obj.ride_rated > 0 else 0.0)
-    average_rate.short_description = u'평균평점'
+    _average_rate.short_description = u'평균평점'
 
-    def satisfied_ratio(self, obj):
+    def _satisfied_ratio(self, obj):
         return "%.1f" % (100.0 * obj.ride_satisfied / obj.ride_rated if obj.ride_rated > 0 else 0.0)
-    satisfied_ratio.short_description = u'4.5이상 비율(%)'
+    _satisfied_ratio.short_description = u'4.5이상 비율(%)'
 
 admin.site.register(PassengerKpiModel, PassengerKpiAdmin)
