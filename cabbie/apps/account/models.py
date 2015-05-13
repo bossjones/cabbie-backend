@@ -224,11 +224,17 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def mark_as_educated(self, is_educated = True):
-        if self.is_educated == is_educated:
-            return
-        self.is_educated = is_educated
-        self.save(update_fields=['is_educated'])
+    def mark_as_educated(self, education=None):
+        if education:
+            self.is_educated = True
+            self.education = education
+        self.save(update_fields=['is_educated', 'education'])
+
+    def mark_as_uneducated(self):
+        self.is_educated = False
+        self.education = None 
+        self.save(update_fields=['is_educated', 'education'])
+
 
     def _generate_rating(self):
         _dict = {
