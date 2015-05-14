@@ -224,6 +224,11 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
 
+    def is_educated_driver(self):
+        if self.driver.education:
+            return self.created_at > self.driver.education.started_at
+        return False
+
     # property state_kor
     def _state_kor(self):
         return Ride.STATE_EXPRESSION[self.state]

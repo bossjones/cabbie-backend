@@ -33,4 +33,13 @@ class PassengerKpiModel(AbstractKpiModel):
         verbose_name = u'승객 KPI'
         verbose_name_plural = u'승객 KPI'
 
+class DriverKpiModel(AbstractKpiModel):
+    subscriber = models.PositiveIntegerField(u'신규가입자')
+    rate_sum_of_educated = models.PositiveIntegerField(u'정규교육 이수 기사 평점합계')
+    rate_count_of_educated = models.FloatField(u'정규교육 이수 기사 평점수')
+    rate_sum_of_uneducated = models.FloatField(u'교육 비이수 기사 평점합계')
+    rate_count_of_uneducated = models.FloatField(u'교육 비이수 기사 평점수')
 
+    class Meta(AbstractKpiModel.Meta):
+        verbose_name = u'기사 KPI'
+        verbose_name_plural = u'기사 KPI'

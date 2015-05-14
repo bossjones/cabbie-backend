@@ -7,15 +7,15 @@ from django.conf import settings
 from django.db.models import Count, Q
 from django import forms
 
-from cabbie.apps.account.models import Passenger
+from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.models import Request, Ride
-from cabbie.apps.kpi.models import PassengerKpiModel
+from cabbie.apps.kpi.models import PassengerKpiModel, DriverKpiModel
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
-class KpiGenerateDateRangeFilter(DateRangeFilter):
+class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
     def __init__(self, *args, **kwargs):
-        super(KpiGenerateDateRangeFilter, self).__init__(*args, **kwargs)
+        super(PassengerKpiGenerateDateRangeFilter, self).__init__(*args, **kwargs)
 
     def queryset(self, request, queryset):
         if self.form.is_valid():
@@ -121,7 +121,7 @@ class PassengerKpiAdmin(AbstractAdmin):
                     )
 
     list_filter = (
-        ('start_filter', KpiGenerateDateRangeFilter),
+        ('start_filter', PassengerKpiGenerateDateRangeFilter),
     )
 
     def __init__(self, *args, **kwargs):
@@ -168,4 +168,114 @@ class PassengerKpiAdmin(AbstractAdmin):
         return "%.1f" % (100.0 * obj.ride_satisfied / obj.ride_rated if obj.ride_rated > 0 else 0.0)
     _satisfied_ratio.short_description = u'4.5이상 비율(%)'
 
+
+# Driver
+class DriverKpiGenerateDateRangeFilter(DateRangeFilter):
+    def __init__(self, *args, **kwargs):
+        super(DriverKpiGenerateDateRangeFilter, self).__init__(*args, **kwargs)
+
+    def queryset(self, request, queryset):
+        if self.form.is_valid():
+            # get no null params
+            filter_params = dict(filter(lambda x: bool(x[1]),
+                                self.form.cleaned_data.items()))
+
+            # range
+            start_filter = filter_params.get('{0}__gte'.format(self.field_path))
+            end_filter = filter_params.get('{0}__lte'.format(self.field_path))
+            if end_filter:
+                end_filter = end_filter + datetime.timedelta(days=1)
+
+            # launch_date
+            launch_date = datetime.datetime.strptime(settings.BKTAXI_GRAND_LAUNCH_DATE, "%Y-%m-%d").date()
+
+            # generate
+            data = {}
+            if start_filter:
+                data['start_filter'] = start_filter
+
+            if end_filter:
+                data['end_filter'] = end_filter 
+            
+            # subscriber
+            _filter = {}
+            if start_filter:
+                _filter['date_joined__gte'] = start_filter
+
+            if end_filter:
+                _filter['date_joined__lte'] = end_filter
+
+            subscriber = Driver.objects.astimezone('date_joined').filter(**_filter).count() 
+            data['subscriber'] = subscriber
+
+            # active_user
+            _filter.clear()
+            if not start_filter or start_filter < launch_date:
+                start_filter = launch_date
+
+            if start_filter:
+                _filter['created_at__gte'] = start_filter
+
+            if end_filter:
+                _filter['created_at__lte'] = end_filter
+
+            _filter['state'] = Ride.RATED
+
+            ride_qs = Ride.objects_with_tz_normalizer.astimezone('created_at').filter(**_filter)
+
+            rate_sum_of_educated, rate_count_of_educated = 0,0
+            rate_sum_of_uneducated, rate_count_of_uneducated = 0,0
+
+            for ride in ride_qs:
+                total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
+
+                if ride.is_educated_driver():
+                    rate_sum_of_educated += total
+                    rate_count_of_educated += 1
+                else:
+                    rate_sum_of_uneducated += total
+                    rate_count_of_uneducated += 1
+            
+            data['rate_sum_of_educated'] = rate_sum_of_educated
+            data['rate_count_of_educated'] = rate_count_of_educated
+                    
+            data['rate_sum_of_uneducated'] = rate_sum_of_uneducated
+            data['rate_count_of_uneducated'] = rate_count_of_uneducated
+
+            DriverKpiModel.objects.all().delete()
+            DriverKpiModel.objects.create(**data) 
+        
+            qs = DriverKpiModel.objects.all()
+
+            return qs 
+
+        else:
+            return None
+        
+
+class DriverKpiAdmin(AbstractAdmin):
+    addable = False
+    deletable = False
+    list_display = (
+                    'subscriber', '_average_rate_of_educated', '_average_rate_of_uneducated',
+                    )
+
+    list_filter = (
+        ('start_filter', DriverKpiGenerateDateRangeFilter),
+    )
+
+    def _average_rate_of_educated(self, obj):
+        return "%.1f" % (1.0 * obj.rate_sum_of_educated / obj.rate_count_of_educated / 3 if obj.rate_count_of_educated else 0.0) 
+    _average_rate_of_educated.short_description = u'정규교육 이수 기사 평균평점'
+
+    def _average_rate_of_uneducated(self, obj):
+        return "%.1f" % (1.0 * obj.rate_sum_of_uneducated / obj.rate_count_of_uneducated / 3 if obj.rate_count_of_uneducated else 0.0) 
+    _average_rate_of_uneducated.short_description = u'교육 비이수 기사 평균평점'
+
+    def __init__(self, *args, **kwargs):
+        super(DriverKpiAdmin, self).__init__(*args, **kwargs)
+        self.list_display_links = (None, )
+
+
 admin.site.register(PassengerKpiModel, PassengerKpiAdmin)
+admin.site.register(DriverKpiModel, DriverKpiAdmin)
