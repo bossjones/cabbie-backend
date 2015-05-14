@@ -161,7 +161,7 @@ class PassengerKpiAdmin(AbstractAdmin):
     _rated_ratio.short_description = u'평가완료율(C/B)(%)'
 
     def _average_rate(self, obj):
-        return "%.1f" % (1.0 * obj.ride_rate_sum / obj.ride_rated / 3 if obj.ride_rated > 0 else 0.0)
+        return "%.2f" % (1.0 * obj.ride_rate_sum / obj.ride_rated / 3 if obj.ride_rated > 0 else 0.0)
     _average_rate.short_description = u'평균평점'
 
     def _satisfied_ratio(self, obj):
@@ -265,11 +265,11 @@ class DriverKpiAdmin(AbstractAdmin):
     )
 
     def _average_rate_of_educated(self, obj):
-        return "%.1f" % (1.0 * obj.rate_sum_of_educated / obj.rate_count_of_educated / 3 if obj.rate_count_of_educated else 0.0) 
+        return "%.2f" % (1.0 * obj.rate_sum_of_educated / obj.rate_count_of_educated / 3 if obj.rate_count_of_educated else 0.0) 
     _average_rate_of_educated.short_description = u'정규교육 이수 기사 평균평점'
 
     def _average_rate_of_uneducated(self, obj):
-        return "%.1f" % (1.0 * obj.rate_sum_of_uneducated / obj.rate_count_of_uneducated / 3 if obj.rate_count_of_uneducated else 0.0) 
+        return "%.2f" % (1.0 * obj.rate_sum_of_uneducated / obj.rate_count_of_uneducated / 3 if obj.rate_count_of_uneducated else 0.0) 
     _average_rate_of_uneducated.short_description = u'교육 비이수 기사 평균평점'
 
     def __init__(self, *args, **kwargs):
