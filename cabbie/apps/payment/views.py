@@ -61,6 +61,8 @@ class TransactionViewSet(viewsets.ModelViewSet):
     filter_fields = ('transaction_type', 'created_at')
     ordering = ('-created_at',)
 
+    paginate_by = 1000
+
     def get_queryset(self):
         user = self.request.user
         if user.has_role('passenger'):
