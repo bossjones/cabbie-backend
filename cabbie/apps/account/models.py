@@ -10,6 +10,7 @@ from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from cabbie.apps.education.models import Education
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField, JSONField
@@ -77,10 +78,6 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def __unicode__(self):
         if self.is_staff:
             return u'{name} 관리자 ({phone})'.format(name=self.name, phone=self.phone)
-        elif self.get_role('passenger'):
-            return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
-        elif self.get_role('driver'):
-            return u'{name} 기사 ({phone})'.format(name=self.name, phone=self.phone)
         return u'{class_}({phone})'.format(class_=self.__class__.__name__,
                                            phone=self.phone)
 
@@ -116,6 +113,9 @@ class Passenger(User):
     class Meta(User.Meta):
         verbose_name = u'승객'
         verbose_name_plural = u'승객'
+
+    def __unicode__(self):
+        return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
 
     @property
     def is_promotion_applicable(self):
@@ -188,6 +188,7 @@ class Driver(NullableImageMixin, User):
     is_dormant = models.BooleanField(u'휴면기사', default=False)
 
     is_educated = models.BooleanField(u'교육이수여부', default=False)
+    education = models.ForeignKey(Education, related_name='attendees', verbose_name=u'교육', blank=True, null=True, on_delete=models.SET_NULL)
 
     province = models.CharField(u'시도', max_length=10, default='')
     region = models.CharField(u'지역', max_length=20, default='', blank=True)
@@ -200,6 +201,9 @@ class Driver(NullableImageMixin, User):
     class Meta(NullableImageMixin.Meta, User.Meta):
         verbose_name = u'기사'
         verbose_name_plural = u'기사'
+
+    def __unicode__(self):
+        return u'{name} 기사 ({phone})'.format(name=self.name, phone=self.phone)
 
     def get_default_image_url(self, image_type):
         return ''
@@ -220,11 +224,17 @@ class Driver(NullableImageMixin, User):
     def unfreeze(self):
         self.freeze(False)
 
-    def mark_as_educated(self, is_educated = True):
-        if self.is_educated == is_educated:
-            return
-        self.is_educated = is_educated
-        self.save(update_fields=['is_educated'])
+    def mark_as_educated(self, education=None):
+        if education:
+            self.is_educated = True
+            self.education = education
+        self.save(update_fields=['is_educated', 'education'])
+
+    def mark_as_uneducated(self):
+        self.is_educated = False
+        self.education = None 
+        self.save(update_fields=['is_educated', 'education'])
+
 
     def _generate_rating(self):
         _dict = {

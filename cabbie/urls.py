@@ -165,3 +165,9 @@ if settings.DEBUG:
         url(r'^media/(?P<path>.+)$', 'serve',
             {'document_root': settings.MEDIA_DIR}),
     )
+
+    # add toolbar setting 
+    import debug_toolbar
+    urlpatterns += patterns('',
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )

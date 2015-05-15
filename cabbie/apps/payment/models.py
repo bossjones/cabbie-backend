@@ -83,10 +83,10 @@ class Transaction(IncrementMixin, AbstractTimestampModel):
     user = models.ForeignKey(User, related_name='transactions',
                              verbose_name=u'사용자')
     ride = models.ForeignKey(Ride, blank=True, null=True,
-                             related_name='transactions', verbose_name=u'콜')
+                             related_name='transactions', verbose_name=u'콜', on_delete=models.SET_NULL)
     recommend = models.ForeignKey(Recommend, blank=True, null=True,
                                   related_name='transactions',
-                                  verbose_name=u'추천')
+                                  verbose_name=u'추천', on_delete=models.SET_NULL)
     transaction_type = models.CharField(u'종류', max_length=100, db_index=True,
                                         choices=TRANSACTION_TYPES)
     amount = models.IntegerField(u'금액')

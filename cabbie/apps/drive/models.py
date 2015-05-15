@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
+from cabbie.apps.drive.managers import TimezoneManager
 from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
@@ -35,10 +36,13 @@ class Request(AbstractTimestampModel):
     contacts = JSONField(u'보낸기사', default='[]')
     contacts_by_distance = JSONField(u'거리별 보낸기사', default='{}')
     rejects = JSONField(u'거절기사', default='[]')
-    approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차')
+    approval = models.ForeignKey('Ride', blank=True, null=True, related_name='approved_request', verbose_name=u'승인된 배차'
+                                                            , on_delete=models.SET_NULL)
     approval_driver_json = JSONField(u'승인기사 데이터', blank=True, null=True)
 
     objects = models.GeoManager()
+
+    objects_with_tz_normalizer = TimezoneManager()
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차 요청'
@@ -158,7 +162,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     passenger = models.ForeignKey(Passenger, related_name='rides',
                                   verbose_name=u'승객', null=True, on_delete=models.SET_NULL)
     driver = models.ForeignKey(Driver, blank=True, null=True,
-                               related_name='rides', verbose_name=u'기사')
+                               related_name='rides', verbose_name=u'기사', on_delete=models.SET_NULL)
 
     state = models.CharField(u'상태', max_length=100, choices=STATES)
 
@@ -182,6 +186,8 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     comment = models.CharField(u'코멘트', max_length=100, blank=True)
 
     objects = models.GeoManager()
+
+    objects_with_tz_normalizer = TimezoneManager()
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차'
@@ -217,6 +223,11 @@ class Ride(IncrementMixin, AbstractTimestampModel):
     @property
     def _created_at_in_local_time(self):
         return timezone.get_current_timezone().normalize(self.created_at)
+
+    def is_educated_driver(self):
+        if self.driver.education:
+            return self.created_at > self.driver.education.started_at
+        return False
 
     # property state_kor
     def _state_kor(self):

@@ -1,12 +1,16 @@
 # encoding: utf8
 
-from django import forms
+from django import forms, template
+
+from django.http import HttpResponseRedirect
+from django.shortcuts import render_to_response
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminTextareaWidget
 
 from cabbie.apps.account.models import (
     User, Driver, Passenger, DriverReservation, PassengerDropout,
     DriverDropout)
+from cabbie.apps.account.forms import EducationSelectForm
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
@@ -61,14 +65,16 @@ class DriverAdmin(AbstractAdmin):
                     'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
-                    'is_freezed', 'is_educated', 'date_joined',
+                    'is_freezed', 
+                    'is_educated', 'education',
+                    'date_joined',
                     'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'province', 'region', 'car_model',
                 'company', 'bank_account', 'max_capacity',
-                'taxi_type', 'about', 'image',
+                'taxi_type', 'is_educated', 'education', 'about', 'image',
             ),
         }),
         ('읽기전용', {
@@ -76,19 +82,19 @@ class DriverAdmin(AbstractAdmin):
                 'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
                 'ride_count', 'total_ride_count',
                 'verification_code', 'is_verified', 'is_accepted',
-                'is_freezed', 'is_educated', 'date_joined',
+                'is_freezed', 'date_joined',
                 'last_active_at',
             ),
         }),
     )
     search_fields = (
-        'phone', 'name', '=id',
+        'phone', 'name', '=id', 'car_model', 'education__name',
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
         'ride_count', 'total_ride_count',
         'verification_code', 'is_verified', 'is_accepted',
-        'is_freezed', 'is_educated', 'date_joined',
+        'is_freezed', 'date_joined',
         'last_active_at',
     )
     list_filter = (
@@ -100,6 +106,7 @@ class DriverAdmin(AbstractAdmin):
         'is_educated',
         'province',
         'region',
+        'education',
         ('date_joined', DateRangeFilter),
     )
 
@@ -125,22 +132,6 @@ class DriverAdmin(AbstractAdmin):
             len(drivers))
         self.message_user(request, msg)
     send_verification_code.short_description = u'인증코드 전송'
-
-    def mark_as_educated(self, request, queryset):
-        drivers = list(queryset.all())
-        for driver in drivers:
-            driver.mark_as_educated()
-        msg = u'{0}명의 기사가 교육이수로 처리되었습니다.'.format(len(drivers))
-        self.message_user(request, msg)
-    mark_as_educated.short_description = u'교육이수'
-
-    def mark_as_uneducated(self, request, queryset):
-        drivers = list(queryset.all())
-        for driver in drivers:
-            driver.mark_as_educated(False)
-        msg = u'{0}명의 기사가 교육이수에서 해제되었습니다.'.format(len(drivers))
-        self.message_user(request, msg)
-    mark_as_uneducated.short_description = u'교육이수 해제'
 
 
     def freeze(self, request, queryset):
@@ -202,6 +193,47 @@ class DriverAdmin(AbstractAdmin):
         return u'<a href="{0}">조회</a>'.format(url)
     link_to_rides.short_description = u'배차이력'
     link_to_rides.allow_tags = True
+
+    def mark_as_educated(self, request, queryset):
+        form = None
+
+        if 'apply' in request.POST:
+            form = EducationSelectForm(request.POST)
+
+            if form.is_valid():
+                education = form.cleaned_data['education']
+
+                drivers = list(queryset.all())
+                for driver in drivers:
+                    driver.mark_as_educated(education)
+
+                msg = u'{0}명의 기사가 {1}(으)로 교육이수 처리되었습니다.'.format(len(drivers), education)
+                self.message_user(request, msg)
+    
+                return HttpResponseRedirect(request.get_full_path())
+
+        if not form:
+            form = EducationSelectForm(initial={'_selected_action': request.POST.getlist(admin.ACTION_CHECKBOX_NAME) })
+
+        opts = self.model._meta
+        app_label = opts.app_label
+
+        return render_to_response(
+            'admin/education_selection.html',
+            {'drivers': queryset, 'education_selection_form': form, 'opts': opts, 'app_label': app_label},
+            context_instance=template.RequestContext(request)
+        )
+    mark_as_educated.short_description = u'교육이수 처리'
+
+    def mark_as_uneducated(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.mark_as_uneducated()
+            
+        msg = u'{0}명의 기사가 교육이수에서 해제되었습니다.'.format(len(drivers))
+        self.message_user(request, msg)
+    mark_as_uneducated.short_description = u'교육이수 해제'
+
 
 
 class PassengerAdmin(AbstractAdmin):

@@ -50,6 +50,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'cabbie.common.middleware.DelayMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -78,6 +79,7 @@ INSTALLED_APPS = (
     'storages',
     'django_ses',
     'django_extensions',
+    'debug_toolbar',
 
     # Admin
     'suit',
@@ -87,11 +89,13 @@ INSTALLED_APPS = (
     'daterange_filter',
 
     # Project apps
+    'cabbie.apps.education',
     'cabbie.apps.account',
     'cabbie.apps.drive',
     'cabbie.apps.payment',
     'cabbie.apps.recommend',
     'cabbie.apps.stats',
+    'cabbie.apps.kpi',
     'cabbie.apps.appversion',
     'cabbie.apps.notification',
     'cabbie.apps.policy',
@@ -308,6 +312,10 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# Django debug toolbar
+# --------------------
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INTERNAL_IPS = '127.0.0.1'
 
 # Location
 # --------
@@ -434,6 +442,8 @@ SMS_FROM = '18991391'
 CRYPTO_KEY = 'xortldhkgkaRpwmf'
 DEFAULT_PAGE_SIZE = 20
 MASTER_VERIFICATION_CODE = '0624'
+
+BKTAXI_GRAND_LAUNCH_DATE = '2015-03-30'
 
 # Non peak hour
 PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]

@@ -1,12 +1,14 @@
 from django.contrib.auth.models import UserManager as BaseUserManager
 from django.db import models
 
+from cabbie.common.managers import TimezoneManager
+
 
 class UserQuerySet(models.QuerySet):
     pass
 
 
-class UserManager(BaseUserManager):
+class UserManager(TimezoneManager, BaseUserManager):
     def create_user(self, phone, password, **fields):
         if not phone:
             raise ValueError('Users must have a phone number')
