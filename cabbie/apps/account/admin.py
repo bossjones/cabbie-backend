@@ -88,7 +88,7 @@ class DriverAdmin(AbstractAdmin):
         }),
     )
     search_fields = (
-        'phone', 'name', '=id', 'car_model', 'education__name',
+        'phone', 'name', '=id', 'car_model', 'car_number', 'education__name',
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
