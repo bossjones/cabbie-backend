@@ -9,15 +9,7 @@ from cabbie.utils.rand import random_string
 
 def on_post_create_affiliation(sender, instance, **kwargs):
     # generate & update certificate code
-    # TODO: change rule
-    code = random_string(Affiliation.CODE_LEN)    
-
-    
-    code = '{code}{date:%m%d}'.format(code=instance.company_code, date=instance.affiliated_at)
-
-    import pdb
-    pdb.set_trace()
-
+    code = '{code}{date:%m%d}'.format(code=instance.company_code.upper(), date=instance.affiliated_at)
 
     instance.certificate_code = code
     instance.save(update_fields=['certificate_code'])
