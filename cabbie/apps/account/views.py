@@ -77,7 +77,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                 )
 
             # for affiliation
-            if model == Passenger:
+            if self.model == Passenger:
                 affiliation_certificate_code = request.DATA.get('affiliation_certificate_code')
                 if affiliation_certificate_code:
                     try:
@@ -86,6 +86,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                         pass
                     else:
                         user.affiliation = affiliation
+                        user.save(update_fields=['affiliation'])
 
             headers = self.get_success_headers(serializer.data)
 
