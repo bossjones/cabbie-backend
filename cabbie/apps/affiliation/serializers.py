@@ -9,4 +9,4 @@ class AffiliationSerializer(AbstractSerializer):
 
     class Meta:
         model = Affiliation 
-        fields = ('name', 'certificate_code', 'ride_mileage', 'is_active')
+        fields = ('name', 'certificate_code', 'ride_mileage', 'is_active', 'event_start_at', 'event_end_at')
