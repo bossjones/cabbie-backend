@@ -81,7 +81,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                 affiliation_certificate_code = request.DATA.get('affiliation_certificate_code')
                 if affiliation_certificate_code:
                     try:
-                        affiliation = Affiliation.objects.get(certificate_code=affiliation_certificate_code)
+                        affiliation = Affiliation.objects.get(certificate_code=affiliation_certificate_code.upper())
                     except Affiliation.DoesNotExist as e:
                         pass
                     else:
