@@ -60,3 +60,12 @@ class RegisterAffiliationView(APIView):
             return self.render(PassengerSerializer(user).data)
 
         return self.render_error(*ERR_003)
+
+class DropoutAffiliationView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user.concrete
+
+        user.affiliation = None
+        user.save(update_fields=['affiliation'])
+
+        return self.render()
