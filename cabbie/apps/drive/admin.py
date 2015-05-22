@@ -85,6 +85,13 @@ class RideAdmin(AbstractAdmin):
             if ride.state == Ride.REJECTED:
                 continue
 
+            # if rated, reset
+            if ride.state == Ride.RATED:
+                ride.state = Ride.REJECTED
+                ride.ratings_by_category = '{}'
+                ride.comment = ''
+                ride.save(update_fields=['state', 'ratings_by_category', 'comment'])
+
             # remove boarded, completed state if any
             ride.histories.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED)).delete()
 
@@ -101,6 +108,13 @@ class RideAdmin(AbstractAdmin):
             # if already canceled, ignore
             if ride.state == Ride.CANCELED:
                 continue
+
+            # if rated, reset
+            if ride.state == Ride.RATED:
+                ride.state = Ride.CANCELED
+                ride.ratings_by_category = '{}'
+                ride.comment = ''
+                ride.save(update_fields=['state', 'ratings_by_category', 'comment'])
 
             # remove boarded, completed state if any
             ride.histories.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED)).delete()
