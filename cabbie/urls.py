@@ -89,6 +89,10 @@ router.register(r'hotspots',
                 import_('cabbie.apps.drive.views.HotspotViewSet'))
 router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
+router.register(r'notices',
+                import_('cabbie.apps.notice.views.NoticeViewSet'))
+router.register(r'apppopups',
+                import_('cabbie.apps.notice.views.AppPopupViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
 

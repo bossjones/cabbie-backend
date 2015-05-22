@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'cabbie.apps.stats',
     'cabbie.apps.kpi',
     'cabbie.apps.appversion',
+    'cabbie.apps.notice', 
     'cabbie.apps.notification',
     'cabbie.apps.policy',
 
