@@ -183,7 +183,7 @@ class DriverAdmin(AbstractAdmin):
     def dropout(self, request, queryset):
         drivers = list(queryset.all())
         for driver in drivers:
-            driver.dropout(DriverDropout.ADMIN)
+            driver.dropout(DriverDropout.ADMIN, note=driver.name)
         msg = u'{0}명의 기사가 탈퇴 처리되었습니다.'.format(len(drivers))
         self.message_user(request, msg)
     dropout.short_description = u'탈퇴 처리'
