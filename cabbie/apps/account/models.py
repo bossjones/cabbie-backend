@@ -78,7 +78,7 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def __unicode__(self):
         if self.is_staff:
             return u'{name} 관리자 ({phone})'.format(name=self.name, phone=self.phone)
-        return u'{class_}({phone})'.format(class_=self.__class__.__name__,
+        return u'{name}({phone})'.format(name=self.name,
                                            phone=self.phone)
 
     @property
