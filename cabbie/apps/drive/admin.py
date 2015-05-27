@@ -14,7 +14,7 @@ def rating_round_off(obj):
 rating_round_off.short_description = u'평점'
 
 class RequestAdmin(AbstractAdmin):
-    list_filter = ('passenger', 'created_at') 
+    list_filter = ('passenger', 'state', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
     list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance_in_kilometer', 
