@@ -5,6 +5,8 @@ from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
 
 class NoticeAdmin(AbstractAdmin):
+    change_form_template = 'notice/admin/change_form.html'
+
     list_display = ('id', 'title', 'visible_from', 'created_at')
     search_fields = (
         'content',
@@ -15,6 +17,8 @@ class NoticeAdmin(AbstractAdmin):
     ) 
 
 class AppPopupAdmin(AbstractAdmin):
+    change_form_template = 'notice/admin/change_form.html'
+
     list_display = ('id', 'title', 'content', 'link', 'starts_at', 'ends_at', 'is_active')
     search_fields = (
         'title',

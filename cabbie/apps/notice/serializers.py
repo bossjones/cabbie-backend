@@ -12,4 +12,4 @@ class AppPopupSerializer(AbstractSerializer):
     image_url = serializers.CharField(source='url', read_only=True)
     class Meta:
         model = AppPopup
-        fields = ('id', 'title', 'content', 'image_url', 'link')
+        fields = ('id', 'title', 'content', 'image_url', 'image_width', 'image_height', 'link')
