@@ -90,6 +90,7 @@ INSTALLED_APPS = (
 
     # Project apps
     'cabbie.apps.education',
+    'cabbie.apps.affiliation',
     'cabbie.apps.account',
     'cabbie.apps.drive',
     'cabbie.apps.payment',
@@ -462,10 +463,11 @@ POINTS_BY_TYPE = {
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
     'recommended_d2d': 1000,
-    'signup_point': 10000,              # For passenger
-    'ride_point': 1000,                 # For passenger
-    'rate_point': 0,                    # For passenger
-    'rebate': 2000                      # For driver
+    'signup_point': 10000,                      # For passenger
+    'ride_point': 1000,                         # For passenger
+    'ride_point_for_the_affiliated': 2000,      # For affiliated company 
+    'rate_point': 0,                            # For passenger
+    'rebate': 2000                              # For driver
 }
 COUPON_THRESHOLDS = (
     (100, 100000),    # (board_count, amount)
