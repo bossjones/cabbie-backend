@@ -124,12 +124,12 @@ class Passenger(User):
 
     @property
     def is_affiliated(self):
-        now = datetime.datetime.now()
+        today = datetime.date.today()
 
         return self.affiliation is not None \
                 and self.affiliation.is_active \
-                and self.affiliation.event_start_at <= now \ 
-                and (self.affiliation.event_end_at + datetime.timedelta(days=1)) > now 
+                and (self.affiliation.event_start_at) <= today \ 
+                and (self.affiliation.event_end_at + datetime.timedelta(days=1)) > today 
 
     @property
     def is_promotion_applicable(self):
