@@ -13,6 +13,7 @@ from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
+from cabbie.apps.affiliation.models import Affiliation
 from cabbie.apps.account import messages
 from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout, DriverDropout, DriverReservation
 from cabbie.apps.account.serializers import (
@@ -48,7 +49,6 @@ class AbstractUserViewSet(APIMixin, viewsets.ModelViewSet):
                             headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIView):
     permission_classes = (AllowAny,)
     model = None
@@ -61,6 +61,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
             user = self.model.objects.create_user(**pick(
                 serializer.init_data, *serializer.Meta.fields))
 
+            # for recommendation
             recommenders = request.DATA.get('recommenders', [])
 
             recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders
@@ -74,6 +75,18 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                     recommender=recommender,
                     recommendee=user,
                 )
+
+            # for affiliation
+            if self.model == Passenger:
+                affiliation_certificate_code = request.DATA.get('affiliation_certificate_code')
+                if affiliation_certificate_code:
+                    try:
+                        affiliation = Affiliation.objects.get(certificate_code=affiliation_certificate_code.upper())
+                    except Affiliation.DoesNotExist as e:
+                        pass
+                    else:
+                        user.affiliation = affiliation
+                        user.save(update_fields=['affiliation'])
 
             headers = self.get_success_headers(serializer.data)
 

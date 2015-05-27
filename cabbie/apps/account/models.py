@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.education.models import Education
+from cabbie.apps.affiliation.models import Affiliation
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField, JSONField
@@ -78,7 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     def __unicode__(self):
         if self.is_staff:
             return u'{name} 관리자 ({phone})'.format(name=self.name, phone=self.phone)
-        return u'{class_}({phone})'.format(class_=self.__class__.__name__,
+        return u'{name}({phone})'.format(name=self.name,
                                            phone=self.phone)
 
     @property
@@ -107,6 +108,10 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
 class Passenger(User):
     email = models.EmailField(u'이메일', unique=True)
+    
+    # partnership
+    affiliation = models.ForeignKey(Affiliation, related_name='passengers', verbose_name=u'제휴사'
+                                    , null=True, on_delete=models.SET_NULL)
 
     objects = PassengerManager()
 
@@ -116,6 +121,15 @@ class Passenger(User):
 
     def __unicode__(self):
         return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
+
+    @property
+    def is_affiliated(self):
+        today = datetime.date.today()
+
+        return self.affiliation is not None \
+                and self.affiliation.is_active \
+                and (self.affiliation.event_start_at) <= today \ 
+                and (self.affiliation.event_end_at + datetime.timedelta(days=1)) > today 
 
     @property
     def is_promotion_applicable(self):
