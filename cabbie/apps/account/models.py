@@ -128,7 +128,7 @@ class Passenger(User):
 
         return self.affiliation is not None \
                 and self.affiliation.is_active \
-                and (self.affiliation.event_start_at) <= today \ 
+                and self.affiliation.event_start_at <= today 
                 and (self.affiliation.event_end_at + datetime.timedelta(days=1)) > today 
 
     @property
