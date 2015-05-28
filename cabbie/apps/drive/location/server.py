@@ -3,6 +3,7 @@ from django.db.models import Q
 
 import tornado.web
 import tornado.websocket
+import json,httplib
 
 from cabbie.apps.drive.models import Ride
 from cabbie.apps.drive.location.auth import Authenticator
@@ -16,6 +17,7 @@ from cabbie.utils.ioloop import start, delay
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
 from cabbie.utils.pubsub import PubsubMixin
+from cabbie.utils.parse import DriverLocationManager
 
 # Handler
 # -------
@@ -502,7 +504,11 @@ class WebSessionLocation(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHa
             self.debug('Updating location to {0} via http'.format(location))
             DriverManager().update_location(self.driver.id, json.loads(location), self.charge_type) 
 
+            # sync with parse
+            location = json.loads(location)
+            DriverLocationManager().update_location(self.driver.id, location)            
         self.write('{}')
+        
 
 class WebSessionDeactivate(LoggableMixin, DriverAuthenticatedWebHandler):
 
@@ -515,7 +521,10 @@ class WebSessionDeactivate(LoggableMixin, DriverAuthenticatedWebHandler):
         self.debug('Deactivate user {0}, remove location'.format(self.driver.id))
         DriverManager().deactivate(self.driver.id) 
 
+        DriverLocationManager().deactivate(self.driver.id)
+
         self.write('{}')
+
 
 class WebSessionRequest(LoggableMixin, PassengerAuthenticatedWebHandler):
 
@@ -706,6 +715,7 @@ class LocationServer(LoggableMixin, SingletonMixin):
 
     def start(self):
         self.recover_ride_proxies()
+        DriverLocationManager().recover()
 
         application = tornado.web.Application([
             # websocket
