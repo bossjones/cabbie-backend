@@ -83,6 +83,8 @@ INSTALLED_APPS = (
 
     # Admin
     'suit',
+    'tinymce',
+    'django_wysiwyg',
     'django.contrib.admin',
     'django.contrib.admindocs',
     'import_export',
@@ -98,6 +100,7 @@ INSTALLED_APPS = (
     'cabbie.apps.stats',
     'cabbie.apps.kpi',
     'cabbie.apps.appversion',
+    'cabbie.apps.notice', 
     'cabbie.apps.notification',
     'cabbie.apps.policy',
 
@@ -367,6 +370,9 @@ SUIT_CONFIG = {
     'MENU_EXCLUDE': ('auth', 'authtoken', 'djcelery',),
     'LIST_PER_PAGE': 100,
 }
+
+# Admin wysiwyg
+DJANGO_WYSIWYG_FLAVOR = 'tinymce_advanced'
 
 
 # Storage
