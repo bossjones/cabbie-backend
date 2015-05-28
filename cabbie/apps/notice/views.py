@@ -13,7 +13,8 @@ class NoticeViewSet(viewsets.ModelViewSet):
     ordering = ('-visible_from',)
 
     def get_queryset(self):
-        return self.queryset.filter(is_active=True)
+        now = datetime.datetime.now()
+        return self.queryset.filter(visible_from__lte=now, is_active=True)
         
 
 class AppPopupViewSet(viewsets.ModelViewSet):
