@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import random
+import json, httplib 
 
 from django.conf import settings
 
@@ -21,7 +22,7 @@ class DriverBot(Bot):
     ) = range(5)
 
     role = 'driver'
-    update_location_interval = 1
+    update_location_interval = 5
     update_direction_interval = 1
     update_charge_type_interval = 1
     move_interval = 0.5
@@ -67,6 +68,16 @@ class DriverBot(Bot):
 
     # Handlers
     # --------
+
+    def start(self):
+        self._state = self.INITIALIZED
+
+        self._update_direction()
+        self._update_charge_type()
+        self._update_location_via_web()
+        self._move()
+
+
 
     def handle_auth_succeeded(self):
         self.info('Auth succeded')
@@ -225,3 +236,27 @@ class DriverBot(Bot):
             })
 
         delay(self.update_location_interval, self._update_location)
+
+    def _update_location_via_web(self):
+        if self._stopped:
+            return
+
+        if (self._activated and self._state in (
+                self.INITIALIZED, self.APPROVED, self.BOARDED)):
+
+            self.info('Updating location')
+            
+            connection = httplib.HTTPConnection(settings.LOCATION_SERVER_HOST, settings.LOCATION_WEB_SERVER_PORT)
+            connection.connect()
+
+            method = 'POST'
+            url = '/ride/location'
+            connection.request(method, url, json.dumps({
+                'location': self._location,
+            }), {
+                'Authorization': 'Token {0}'.format(self._instance.auth_token.key)
+            })
+            
+        delay(self.update_location_interval, self._update_location)
+
+
