@@ -89,6 +89,10 @@ router.register(r'hotspots',
                 import_('cabbie.apps.drive.views.HotspotViewSet'))
 router.register(r'transactions',
                 import_('cabbie.apps.payment.views.TransactionViewSet'))
+router.register(r'notices',
+                import_('cabbie.apps.notice.views.NoticeViewSet'))
+router.register(r'apppopups',
+                import_('cabbie.apps.notice.views.AppPopupViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
 
@@ -135,6 +139,9 @@ urlpatterns += patterns('',
 
     url(r'^api/appversion/android/passenger',
         import_('cabbie.apps.appversion.views.AndroidPassengerView').as_view()),
+
+    url(r'^api/appversion/ios/passenger',
+        import_('cabbie.apps.appversion.views.IosPassengerView').as_view()),
 
     url(r'^api/drivers/reserve/(?P<reservation_id>[0-9]+)/upload_certificate',
         import_('cabbie.apps.account.views.DriverReserveUploadCertificateView').as_view()),

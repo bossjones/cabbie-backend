@@ -2,14 +2,14 @@ from django.shortcuts import render
 from rest_framework.permissions import AllowAny
 
 from cabbie.common.views import InternalView, APIView, APIMixin
-from cabbie.apps.appversion.models import AndroidDriver, AndroidPassenger
-from cabbie.apps.appversion.serializers import AndroidDriverSerializer, AndroidPassengerSerializer
+from cabbie.apps.appversion.models import AndroidDriver, AndroidPassenger, IosPassenger
+from cabbie.apps.appversion.serializers import (AndroidDriverSerializer, AndroidPassengerSerializer, IosPassengerSerializer)
 from cabbie.apps.account.models import User
 
 # REST
 # ----
 
-class AbstractAndroidApplicationVersionView(APIView):
+class AbstractApplicationVersionView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
@@ -28,7 +28,7 @@ class AbstractAndroidApplicationVersionView(APIView):
 
 
 
-class AndroidDriverView(AbstractAndroidApplicationVersionView):
+class AndroidDriverView(AbstractApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
         super(AndroidDriverView, self).get(request, *args, **kwargs)
@@ -42,7 +42,7 @@ class AndroidDriverView(AbstractAndroidApplicationVersionView):
         else:
             return self.render_error(u'No android driver app version found')
 
-class AndroidPassengerView(AbstractAndroidApplicationVersionView):
+class AndroidPassengerView(AbstractApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
         super(AndroidPassengerView, self).get(request, *args, **kwargs)
@@ -55,4 +55,18 @@ class AndroidPassengerView(AbstractAndroidApplicationVersionView):
             })
         else:
             return self.render_error(u'No android passenger app version found')
+
+class IosPassengerView(AbstractApplicationVersionView):
+
+    def get(self, request, *args, **kwargs):
+        super(IosPassengerView, self).get(request, *args, **kwargs)
+
+        ordered = IosPassenger.objects.order_by('-version_code') 
+        
+        if ordered:
+            return self.render({
+                'latest': IosPassengerSerializer(ordered[0]).data
+            })
+        else:
+            return self.render_error(u'No ios passenger app version found')
 

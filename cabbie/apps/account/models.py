@@ -209,6 +209,9 @@ class Driver(NullableImageMixin, User):
     # Rating
     total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
+    # Location Object Id in Parse
+    parse_location_object_id = models.CharField(u'Parse 위치정보 오브젝트 ID', max_length=20, blank=True, null=True)
+
     objects = DriverManager()
 
     class Meta(NullableImageMixin.Meta, User.Meta):
