@@ -140,7 +140,7 @@ urlpatterns += patterns('',
     url(r'^api/appversion/android/passenger',
         import_('cabbie.apps.appversion.views.AndroidPassengerView').as_view()),
 
-    url(r'^api/appversion/android/ios',
+    url(r'^api/appversion/ios/passenger',
         import_('cabbie.apps.appversion.views.IosPassengerView').as_view()),
 
     url(r'^api/drivers/reserve/(?P<reservation_id>[0-9]+)/upload_certificate',
