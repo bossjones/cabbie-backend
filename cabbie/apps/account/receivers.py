@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from django.conf import settings
 from django.db.models import F
 from django.utils import timezone
@@ -58,16 +60,22 @@ def on_post_create_passenger(sender, instance, **kwargs):
         })
 
     # signup point
-    transaction_type = Transaction.SIGNUP_POINT
-    amount = settings.POINTS_BY_TYPE.get(transaction_type)
-    if amount:
-        Transaction.objects.create(
-            user=instance,
-            transaction_type=transaction_type,
-            amount=amount,
-            state=Transaction.DONE,
-            note=Transaction.get_transaction_type_text(transaction_type)
-        )
+    due_date = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_SIGNUP_POINT_DUE_DATE, "%Y-%m-%d").date()
+    due_date = due_date + datetime.timedelta(days=1)
+
+    today = datetime.date.today()
+
+    if today < due_date: 
+        transaction_type = Transaction.SIGNUP_POINT
+        amount = settings.POINTS_BY_TYPE.get(transaction_type)
+        if amount:
+            Transaction.objects.create(
+                user=instance,
+                transaction_type=transaction_type,
+                amount=amount,
+                state=Transaction.DONE,
+                note=Transaction.get_transaction_type_text(transaction_type)
+            )
 
 
 

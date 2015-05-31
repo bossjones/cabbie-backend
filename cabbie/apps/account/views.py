@@ -4,6 +4,7 @@ import re
 import datetime
 
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
@@ -21,7 +22,7 @@ from cabbie.apps.account.serializers import (
 from cabbie.apps.account.session import (
     PhoneVerificationSessionManager, PasswordResetSessionManager, InvalidCode, InvalidSession)
 from cabbie.apps.recommend.models import Recommend
-from cabbie.common.views import APIMixin, APIView, GenericAPIView
+from cabbie.common.views import CsrfExcempt, APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.sms import send_sms
 from cabbie.utils.email import send_email
