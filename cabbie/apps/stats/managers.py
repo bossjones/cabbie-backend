@@ -1,15 +1,26 @@
+import datetime
+
 from django.db import models
+from django.utils import timezone
 
 from cabbie.apps.drive.models import Ride
 from cabbie.utils.date import week_of_month
 
+class DriverRideStatManager(models.Manager):
+    def normalize(self, value):
+        if value and isinstance(value, datetime.datetime) and value.tzinfo:
+            return timezone.get_current_timezone().normalize(value)
+        else:
+            return value
 
-class DriverRideStatMonthManager(models.Manager):
+class DriverRideStatMonthManager(DriverRideStatManager):
     def sync(self, ride_history):
         if not ride_history.driver:
             return
 
-        date = ride_history.ride.created_at.date()
+        # normalize
+        date = self.normalize(ride_history.ride.created_at).date()
+
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
             state=ride_history.state)
@@ -26,7 +37,8 @@ class DriverRideStatMonthManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        # normalize
+        date = self.normalize(ride.created_at).date()
 
         stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month,
             state=Ride.BOARDED)
@@ -61,7 +73,9 @@ class DriverRideStatMonthManager(models.Manager):
         if not ride_history.driver:
             return
 
-        date = ride_history.ride.created_at.date()
+        # normalize
+        date = self.normalize(ride_history.ride.created_at).date()
+
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
             state=ride_history.state)
@@ -75,12 +89,14 @@ class DriverRideStatMonthManager(models.Manager):
         stat.save(update_fields=['rides'])
     
 
-class DriverRideStatWeekManager(models.Manager):
+class DriverRideStatWeekManager(DriverRideStatManager):
     def sync(self, ride_history):
         if not ride_history.driver:
             return
 
-        date = ride_history.ride.created_at.date()
+        # normalize
+        date = self.normalize(ride_history.ride.created_at).date()
+
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
@@ -98,7 +114,8 @@ class DriverRideStatWeekManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        # normalize
+        date = self.normalize(ride.created_at).date()
         week = week_of_month(date)
 
         stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week,
@@ -128,12 +145,13 @@ class DriverRideStatWeekManager(models.Manager):
         stat_rated.save(update_fields=['rides', 'ratings'])
 
 
-class DriverRideStatDayManager(models.Manager):
+class DriverRideStatDayManager(DriverRideStatManager):
     def sync(self, ride_history):
         if not ride_history.driver:
             return
 
-        date = ride_history.ride.created_at.date()
+        # normalize
+        date = self.normalize(ride_history.ride.created_at).date()
         week = week_of_month(date)
         stat, created = self.get_or_create(
             driver=ride_history.driver, year=date.year, month=date.month,
@@ -151,7 +169,8 @@ class DriverRideStatDayManager(models.Manager):
         if not ride:
             return
         
-        date = ride.created_at.date()
+        # normalize
+        date = self.normalize(ride.created_at).date()
         week = week_of_month(date)
 
         stat_boarded, created = self.get_or_create(driver=ride.driver, year=date.year, month=date.month, week=week, day=date.day,

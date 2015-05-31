@@ -55,7 +55,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -466,6 +466,9 @@ PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]
 DRIVER_REBATE_HOUR = [23, 0, 1]
 DRIVER_REBATE_WEEKDAY = [5, 6]      # Fri, Sat
 DRIVER_REBATE_UNTIL = '201506'
+
+# Signup point
+BKTAXI_PASSENGER_SIGNUP_POINT_DUE_DATE = '2015-05-31'
 
 POINTS_BY_TYPE = {
     'recommend_p2p': 1000,
