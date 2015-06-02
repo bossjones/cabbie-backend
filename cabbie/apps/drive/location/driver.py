@@ -10,6 +10,7 @@ from cabbie.apps.drive.location.estimate import HaversineEstimator
 from cabbie.apps.drive.location.geo import Location
 from cabbie.apps.drive.location.model import ModelManager
 from cabbie.apps.drive.location.session import SessionManager
+from cabbie.apps.drive.location.estimate import Estimate
 from cabbie.utils.geo import distance, Rtree2D
 from cabbie.utils.log import LoggableMixin
 from cabbie.utils.meta import SingletonMixin
@@ -87,6 +88,28 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         self.publish('deactivated', driver_id, last_location)
 
     @gen.coroutine
+    def get_driver_detail(self, passenger_id, passenger_location, driver_id):
+        """
+        Return driver detail info, including estimation
+        """
+        driver = ModelManager().get_driver(driver_id) 
+        driver_location = self.get_driver_location(driver_id)
+        estimates = yield self._cached_estimate([(
+            (passenger_id, driver_id),
+            (driver_location, passenger_location)
+        )])
+
+        ret = {
+            'driver': driver,
+            'location': driver_location,
+            'estimate': estimates[0].for_json(),
+            'charge_type': self._driver_charge_types[driver_id],
+            'state': None,
+        }
+
+        raise gen.Return(ret)
+
+    @gen.coroutine
     def get_driver_candidates(self, passenger_id, location, count,
                               max_distance, charge_type=None):
         """Return a list of driver candidates.
@@ -99,8 +122,6 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
             self.get_nearest_drivers(location, count, max_distance,
                                      charge_type))
 
-        self.debug('candidates: {0}'.format(candidates_with_state))
-
         # [id, ... ]
         candidates = map(operator.itemgetter(0), candidates_with_state)
 
@@ -110,10 +131,8 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         # [location, ... ]
         locations = map(self.get_driver_location, candidates)
 
-        estimates = yield self._cached_estimate([(
-            (passenger_id, candidates[i]),
-            (locations[i], location)
-        ) for i in range(len(candidates))])
+        # empty estimates (because not used in app-side)
+        estimates = [Estimate(0,0) for i in range(len(candidates))]
 
         drivers = ModelManager().get_driver_all(candidates)
 
@@ -126,6 +145,31 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         } for i, driver_id in enumerate(candidates)]
 
         raise gen.Return(ret)
+
+    @gen.coroutine
+    def get_driver_candidates_for_request(self, location, count,
+                              max_distance, charge_type=None):
+        """Return a list of driver candidates.
+        """
+        
+        # [(id, state), ... ]
+        candidates_with_state = list(
+            self.get_nearest_drivers(location, count, max_distance,
+                                     charge_type))
+
+        # [id, ... ]
+        candidates = map(operator.itemgetter(0), candidates_with_state)
+        states = map(operator.itemgetter(1), candidates_with_state)
+
+        drivers = ModelManager().get_driver_all(candidates)
+
+        ret = [{
+            'driver': drivers[driver_id],
+            'state': states[i],
+        } for i, driver_id in enumerate(candidates)]
+
+        raise gen.Return(ret)
+
 
     @gen.coroutine
     def _cached_estimate(self, pairs):
