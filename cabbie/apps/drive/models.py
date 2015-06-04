@@ -305,6 +305,9 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             value = data.get(field)
             if value:
                 setattr(self, field, value)
+    
+        if self.state == self.ARRIVED:
+            return
 
         if self.state == old_state:
             return

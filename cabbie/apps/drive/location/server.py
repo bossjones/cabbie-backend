@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db.models import Q
 
 import tornado.web
-from tornado import gen
 import tornado.websocket
 
 from cabbie.apps.drive.models import Ride
@@ -228,7 +227,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     def handle_passenger_watch(self, location, charge_type):
         self.info('Watched')
-        WatchManager().watch(self._user_id, location, charge_type=charge_type)
+        WatchManager().watch(self._user_id, location, charge_type=charge_type, immediate_assign=False)
 
     def handle_passenger_unwatch(self):
         self.info('Unwatched')
@@ -588,14 +587,14 @@ class WebSessionApprove(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHan
     def __unicode__(self):
         return u'WebSessionApprove(D-{id})'.format(id=self.driver.id) if self.is_authenticated else u'WebSessionApprove'
 
-    @gen.coroutine
     def post(self, request_id):
         self.authenticate()
 
         # try approve
-        approved, ride_id = yield RequestProxyManager().approve(request_id, self.driver.id)        
+        approved, ride_id = RequestProxyManager().approve(request_id, self.driver.id)        
 
         if approved:
+            self.debug('Approve request {0}'.format(request_id))
             self.write(json.dumps({ 'ride_id': ride_id })) 
         else:
             raise tornado.web.HTTPError(403, 'cannot approve') 
