@@ -227,7 +227,7 @@ class Session(LoggableMixin, PubsubMixin, tornado.websocket.WebSocketHandler):
 
     def handle_passenger_watch(self, location, charge_type):
         self.info('Watched')
-        WatchManager().watch(self._user_id, location, charge_type=charge_type)
+        WatchManager().watch(self._user_id, location, charge_type=charge_type, immediate_assign=False)
 
     def handle_passenger_unwatch(self):
         self.info('Unwatched')
