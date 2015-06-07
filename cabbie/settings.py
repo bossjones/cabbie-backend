@@ -341,16 +341,16 @@ MAX_DISTANCE = 5 * 1000                 # meters
 
 # dispatch request
 REQUEST_REFRESH_INTERVAL = 3           # seconds
-REQUEST_REFRESH_COUNT = 4              # seconds
-REQUEST_DISTANCE_UNIT = 1000            # meters
-REQUEST_DISTANCE_LOOP_MAX_COUNT = 2     # meters
+REQUEST_REFRESH_COUNT = 1              # seconds
+REQUEST_DISTANCE_UNIT = 700            # meters
+REQUEST_DISTANCE_LOOP_MAX_COUNT = 3     # meters
 
 RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters
 CANDIDATE_COUNT = 200
 REASSIGN_COUNT = 50
 
-REQUEST_TIMEOUT = 32                    # seconds
+REQUEST_TIMEOUT = 20                    # seconds
 
 # Bot
 # ---

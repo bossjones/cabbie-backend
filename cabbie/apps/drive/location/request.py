@@ -337,7 +337,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         if self.refresh_count > 0:
             delay(self.refresh_interval, self.request)
         elif self.no_contacts:
-            self.terminate() 
+            delay(self.refresh_interval, self.terminate)
 
     def send_request(self, driver_ids):
         passenger = self._passenger 
