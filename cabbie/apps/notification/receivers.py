@@ -12,9 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def on_post_create_notification(sender, notification, **kwargs):
-    passengers_qs = (Passengers.objects if notification.is_all_passengers else
+    passengers_qs = (Passenger.objects if notification.is_all_passengers else
                      notification.passengers)
-    passengers = passengers_qs.filter(is_active=True)
+    passengers = passengers_qs.filter(is_active=True, is_sms_agreed=True)
     for passenger in passengers:
         try:
             send_sms_raw(passenger.phone, notification.body)
@@ -27,7 +27,7 @@ def on_post_create_notification(sender, notification, **kwargs):
     drivers_qs = (Driver.objects if notification.is_all_drivers else
                   notification.drivers)
     drivers = drivers_qs.filter(is_active=True, is_accepted=True,
-                                is_freezed=False)
+                                is_freezed=False, is_sms_agreed=True)
     for driver in drivers:
         try:
             send_sms_raw(driver.phone, notification.body)
