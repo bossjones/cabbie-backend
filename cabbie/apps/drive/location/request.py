@@ -174,8 +174,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         else:
             self._contacts_by_distance[target_distance] = [driver_id]
 
-        self.info('Contacts by distance: {0}'.format(self._contacts_by_distance))
-
     def remove_contact(self, driver_id):
         try:
             self._contacts.remove(driver_id)
@@ -301,8 +299,15 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         push_targets = []
 
         for candidate in candidates:
+            location_ = candidate['location']
             driver_ = candidate['driver']
             id_ = driver_['id']
+
+            valid_location = self.is_valid_location(self._source['location'], location_, id_, target_distance) 
+
+            if not valid_location:
+                continue
+
             is_freezed = driver_['is_freezed']
 
             if is_freezed:
@@ -311,8 +316,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
             state_ = candidate['state']
             candidate['estimate'] = candidate['estimate'].for_json()
-
-            self.debug('Driver {id}, {state} found'.format(id=id_, state=state_))
 
             if state_ is None and id_ not in self._rejects and id_ not in self._contacts:
                 self.info('Driver {driver_id} sent in request {request_id}'.format(driver_id=id_, request_id=self._request_id))
@@ -330,6 +333,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         # send push
         if bool(push_targets):
+            self.debug('{0}m targets: {1}'.format(target_distance, push_targets))
+
             self.send_request(push_targets)
 
         # repeat
@@ -338,6 +343,17 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             delay(self.refresh_interval, self.request)
         elif self.no_contacts:
             delay(self.refresh_interval, self.terminate)
+
+    def is_valid_location(self, source_location, driver_location, driver_id, target_distance):
+        distance_ = distance(source_location, driver_location)
+        if distance_ > target_distance:
+            self.error('Driver {0} location {1} is invalid, because distance is {2}, and it\'s far from source {3} beyond {4}m'
+                        .format(driver_id, driver_location, distance_, source_location, target_distance))
+            return False
+        else:
+            self.info('Driver {0} location {1} is valid, because distance is {2}, and it\'s within {3}m from source {4}'
+                        .format(driver_id, driver_location, distance_, target_distance, source_location))
+            return True
 
     def send_request(self, driver_ids):
         passenger = self._passenger 
