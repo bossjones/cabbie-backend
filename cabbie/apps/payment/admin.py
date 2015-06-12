@@ -76,10 +76,10 @@ class TransactionAdmin(AbstractAdmin):
 class AbstractReturnAdmin(AbstractAdmin):
     list_filter = ('is_requested', 'is_processed', 'processed_at',
                    'created_at')
-    list_display = ('id', 'user', 'phone', 'bank_account', 'amount',
+    list_display = ('id', 'user', 'phone', 'bank_account', 'point', 'amount',
                     'is_requested', 'is_processed', 
                     'created_at', 'processed_at')
-    readonly_fields = ('user', 'created_at', 'processed_at')
+    readonly_fields = ('created_at', 'processed_at')
     fieldsets = (
         (None, {
             'fields': (
@@ -113,6 +113,10 @@ class AbstractReturnAdmin(AbstractAdmin):
         msg = u'{0}개의 환급완료 처리를 완료하였습니다.'.format(len(returns))
         self.message_user(request, msg)
     process.short_description = u'환급완료 처리'
+
+    def point(self, obj):
+        return obj.user.point 
+    point.short_description = u'누적포인트'
 
 
 class PassengerReturnAdmin(AbstractReturnAdmin):
