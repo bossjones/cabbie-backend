@@ -72,6 +72,15 @@ def on_post_create_passenger(sender, instance, **kwargs):
                 note=Transaction.get_transaction_type_text(transaction_type)
             )
 
+    # send sms for recommend event
+    event_ends_at = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RECOMMEND_EVENT_SMS_SEND_ENDS_AT, "%Y-%m-%d").date()
+    event_ends_at = event_ends_at + datetime.timedelta(days=1)
+
+    today = datetime.date.today()
+
+    if today < event_ends_at:
+        send_sms('sms/passenger_recommend_event.txt', instance.phone, {})
+
 
 
 def on_post_create_driver_bill(sender, instance, **kwargs):
