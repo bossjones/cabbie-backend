@@ -254,14 +254,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return (self.approved, proxy._ride_id)
 
     def reject(self, driver_id):
-        # add to rejects
-        self.add_reject(driver_id)
-
         # cancel timer
         cancel(self._timers[str(driver_id)])
 
         # index : mark standby
         DriverManager().mark_standby(driver_id)
+
+        # add to rejects
+        self.add_reject(driver_id)
 
         return True
 
