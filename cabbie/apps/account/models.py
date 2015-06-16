@@ -279,9 +279,6 @@ class Driver(NullableImageMixin, User):
     # property : rating (total)
     def _rating(self):
 
-        # update rating
-        self._update_rating()
-
         total_rating = 0
         total_count = 0
 
