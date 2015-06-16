@@ -6,7 +6,7 @@ from cabbie.apps.account.models import Passenger
 from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.payment.models import Transaction, DriverCoupon
 from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
-from cabbie.apps import payment
+from cabbie.apps.payment import messages
 from cabbie.apps.drive.signals import post_ride_board, post_ride_first_rated
 from cabbie.common.signals import post_create
 from cabbie.utils.sms import send_sms
@@ -100,7 +100,7 @@ def on_return_apply_completed(sender, return_, **kwargs):
             'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
             'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
-            'subject': payment.messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_COMPLETED, 
+            'subject': messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_COMPLETED, 
             'return': return_, 
         })
 
@@ -124,7 +124,7 @@ def on_return_processed(sender, return_, **kwargs):
             'bktaxi_instagram_url': settings.BKTAXI_INSTAGRAM_URL,
             'bktaxi_naver_blog_url': settings.BKTAXI_NAVER_BLOG_URL,
 
-            'subject': payment.messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_PROCESSED, 
+            'subject': messages.PAYMENT_EMAIL_SUBJECT_POINT_APPLICATION_PROCESSED, 
             'return': return_, 
         })
 
