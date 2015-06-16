@@ -111,7 +111,7 @@ class Passenger(User):
     
     # partnership
     affiliation = models.ForeignKey(Affiliation, related_name='passengers', verbose_name=u'제휴사'
-                                    , null=True, on_delete=models.SET_NULL)
+                                    , null=True, blank=True, on_delete=models.SET_NULL)
 
     objects = PassengerManager()
 
