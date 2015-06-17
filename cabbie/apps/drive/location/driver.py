@@ -118,10 +118,10 @@ class DriverManager(LoggableMixin, SingletonMixin, PubsubMixin):
         drivers = ModelManager().get_driver_all(candidates)
 
         ret = [{
-            'driver': drivers[driver_id],
+            'driver': drivers.get(driver_id),
             'location': locations[i],
             'estimate': estimates[i],
-            'charge_type': self._driver_charge_types[driver_id],
+            'charge_type': self._driver_charge_types.get(driver_id),
             'state': states[i],
         } for i, driver_id in enumerate(candidates)]
 

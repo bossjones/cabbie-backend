@@ -254,14 +254,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return (self.approved, proxy._ride_id)
 
     def reject(self, driver_id):
-        # add to rejects
-        self.add_reject(driver_id)
-
         # cancel timer
         cancel(self._timers[str(driver_id)])
 
         # index : mark standby
         DriverManager().mark_standby(driver_id)
+
+        # add to rejects
+        self.add_reject(driver_id)
 
         return True
 
@@ -299,9 +299,18 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         push_targets = []
 
         for candidate in candidates:
-            location_ = candidate['location']
             driver_ = candidate['driver']
+
+            if driver_ is None:     # dropped-out driver
+                self.info('Ignore driver since it\'s dropped out')
+                continue
+
             id_ = driver_['id']
+            location_ = candidate['location']
+
+            if location_ is None:
+                self.info('Ignore driver {id} since its location is not found'.format(id=id_))
+                continue
 
             valid_location = self.is_valid_location(self._source['location'], location_, id_, target_distance) 
 

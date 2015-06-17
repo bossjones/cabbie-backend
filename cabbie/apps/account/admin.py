@@ -11,6 +11,7 @@ from cabbie.apps.account.models import (
     User, Driver, Passenger, DriverReservation, PassengerDropout,
     DriverDropout)
 from cabbie.apps.account.forms import EducationSelectForm
+from cabbie.apps.payment.models import PassengerReturn
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
@@ -235,8 +236,15 @@ class DriverAdmin(AbstractAdmin):
     mark_as_uneducated.short_description = u'교육이수 해제'
 
 
+class PassengerReturnInline(admin.TabularInline):
+    model = PassengerReturn
+    extra = 0
+
 
 class PassengerAdmin(AbstractAdmin):
+    inlines = [
+        PassengerReturnInline,
+    ]
     list_max_show_all = 1000
 
     ordering = ('-date_joined',)
