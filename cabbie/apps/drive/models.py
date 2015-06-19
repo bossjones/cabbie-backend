@@ -16,6 +16,15 @@ from cabbie.utils import json
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
+
+class Province(models.Model):
+    name = models.CharField(u'시도', max_length=20, primary_key=True)
+
+    class Meta:
+        verbose_name = u'시도'
+        verbose_name_plural = u'시도'
+
+
 class Request(AbstractTimestampModel):
     STANDBY, APPROVED, REJECTED,  = 'standby', 'approved', 'rejected'
 
@@ -28,6 +37,8 @@ class Request(AbstractTimestampModel):
                                             , null=True, on_delete=models.SET_NULL)
     source = JSONField(u'출발지', default='{}')
     source_location = models.PointField(u'출발지 좌표')
+    source_province = models.ForeignKey(Province, related_name='requests', verbose_name=u'콜요청 지역'
+                                                , null=True, blank=True, on_delete=models.SET_NULL)
     destination = JSONField(u'도착지', default='{}')
     destination_location = models.PointField(u'도착지 좌표', blank=True,
                                              null=True)
@@ -380,7 +391,6 @@ class RideHistory(AbstractTimestampModel):
         return self.data.get('admin', False)
     _is_admin.short_description = u'어드민'
     is_admin = property(_is_admin)
-
 
 class Favorite(AbstractTimestampModel):
     passenger = models.ForeignKey(Passenger, related_name='favorites',
