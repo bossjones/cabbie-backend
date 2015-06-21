@@ -18,8 +18,10 @@ class AbstractKpiModel(AbstractTimestampModel):
      
 
 class PassengerKpiModel(AbstractKpiModel):
-    subscriber = models.PositiveIntegerField(u'신규가입자')
+    subscriber = models.PositiveIntegerField(u'신규가입자', null=True)
     active_user = models.PositiveIntegerField(u'Active User')
+    province = models.CharField(u'시도', max_length=10, default='', null=True, blank=True)
+    region = models.CharField(u'지역', max_length=20, default='', null=True, blank=True)
     ride_requested = models.PositiveIntegerField(u'콜요청')
     ride_approved = models.PositiveIntegerField(u'수락')
     ride_canceled = models.PositiveIntegerField(u'승객취소')
@@ -30,6 +32,7 @@ class PassengerKpiModel(AbstractKpiModel):
     ride_satisfied = models.PositiveIntegerField(u'4.5이상')
 
     class Meta(AbstractKpiModel.Meta):
+        ordering = ('id',)
         verbose_name = u'승객 KPI'
         verbose_name_plural = u'승객 KPI'
 

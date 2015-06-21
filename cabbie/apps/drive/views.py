@@ -6,7 +6,7 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Province, Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.apps.drive.serializers import (
     RequestSerializer, RideSerializer, FavoriteSerializer, HotspotSerializer)
 from cabbie.apps.drive.receivers import post_ride_requested
@@ -256,10 +256,24 @@ class InternalRequestCreateView(InternalView):
 
         distance_ = distance(source_location, destination_location)
 
+        # source_province
+        source_province = None
+        source_address = source.get('address')
+
+        if source_address and isinstance(source_address, basestring):
+            province_name = source_address.split()[0]
+
+            try:
+                source_province = Province.objects.get(name=province_name)
+            except Province.DoesNotExist, e:
+                # if not exists, ignore because this can incur duplicated key error
+                source_province = None
+
         req = Request.objects.create(
             passenger_id=data['passenger_id'],
             source=source,
             source_location=Point(*source['location']),
+            source_province=source_province,
             destination=destination,
             destination_location=Point(*destination['location']),
             distance=distance_,

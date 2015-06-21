@@ -8,7 +8,7 @@ from django.db.models import Count, Q
 from django import forms
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.models import Request, Ride
+from cabbie.apps.drive.models import Province, Request, Ride
 from cabbie.apps.kpi.models import PassengerKpiModel, DriverKpiModel
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
@@ -49,9 +49,7 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
                 _filter['date_joined__lte'] = end_filter
 
             subscriber = Passenger.objects.astimezone('date_joined').filter(**_filter).count() 
-            data['subscriber'] = subscriber
 
-            # active_user
             _filter.clear()
             if not start_filter or start_filter < launch_date:
                 start_filter = launch_date
@@ -63,16 +61,71 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
                 _filter['created_at__lte'] = end_filter
 
             request_qs = Request.objects_with_tz_normalizer.astimezone('created_at').filter(**_filter)
+            ride_qs = Ride.objects_with_tz_normalizer.astimezone('created_at').filter(**_filter)
+
+            PassengerKpiModel.objects.all().delete()
+
+            # Per province
+            # ------------
+            provinces = Province.objects.all()
+
+            for province in provinces:            
+                
+                province_request_qs = request_qs.filter(source_province=province)
+                
+                active_user = province_request_qs.distinct('passenger').count()
+                data['active_user'] = active_user 
+
+                data['province'] = province.name
+
+                # requested
+                data['ride_requested'] = province_request_qs.count()
+
+                # approved
+                data['ride_approved'] = province_request_qs.filter(state=Request.APPROVED).count()
+
+                province_ride_qs = ride_qs.filter(approved_request__source_province=province)
+
+                # canceled
+                data['ride_canceled'] = province_ride_qs.filter(state=Ride.CANCELED).count()
+
+                # rejected
+                data['ride_rejected'] = province_ride_qs.filter(state=Ride.REJECTED).count()
+
+                # completed
+                data['ride_completed'] = province_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
+
+                # rated
+                ride_qs_rated = province_ride_qs.filter(state=Ride.RATED)
+                data['ride_rated'] = ride_qs_rated.count()
+
+                # rate_point, satisfied
+                ride_rate_sum = 0
+                satisfied = 0
+                for ride in ride_qs_rated:
+                    total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
+                    ride_rate_sum += total
+                    satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
+
+                data['ride_rate_sum'] = ride_rate_sum
+                data['ride_satisfied'] = satisfied 
+
+                PassengerKpiModel.objects.create(**data) 
+            
+            # Total    
+            # -----
+            data['subscriber'] = subscriber
+
             active_user = request_qs.distinct('passenger').count()
             data['active_user'] = active_user 
+
+            data['province'] = 'Total' 
 
             # requested
             data['ride_requested'] = request_qs.count()
 
             # approved
             data['ride_approved'] = request_qs.filter(state=Request.APPROVED).count()
-
-            ride_qs = Ride.objects_with_tz_normalizer.astimezone('created_at').filter(**_filter)
 
             # canceled
             data['ride_canceled'] = ride_qs.filter(state=Ride.CANCELED).count()
@@ -98,9 +151,9 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
             data['ride_rate_sum'] = ride_rate_sum
             data['ride_satisfied'] = satisfied 
 
-            PassengerKpiModel.objects.all().delete()
             PassengerKpiModel.objects.create(**data) 
-        
+
+
             qs = PassengerKpiModel.objects.all()
 
             return qs 
@@ -114,7 +167,9 @@ class PassengerKpiAdmin(AbstractAdmin):
     addable = False
     deletable = False
     list_display = (
-                    'subscriber', 'active_user',
+                    'subscriber', 
+                    'province',
+                    'active_user', 
                     '_ride_requested', '_ride_approved', 
                     '_ride_canceled', '_ride_rejected',
                     '_ride_completed', '_complete_rate', '_ride_rated', '_rated_ratio', '_average_rate', '_satisfied_ratio',
