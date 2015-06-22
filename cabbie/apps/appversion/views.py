@@ -23,8 +23,17 @@ class AbstractApplicationVersionView(APIView):
             except User.DoesNotExist, e:
                 pass
             else:
+                # app_version
                 user.app_version = app_version
-                user.save(update_fields=['app_version'])
+                update_fields = ['app_version']
+
+                # device_type
+                device_type = kwargs.get('device_type')
+                if device_type:
+                    user.device_type = device_type
+                    update_fields.append('device_type')
+
+                user.save(update_fields=update_fields)
 
 
 
@@ -45,6 +54,9 @@ class AndroidDriverView(AbstractApplicationVersionView):
 class AndroidPassengerView(AbstractApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
+        # device_type
+        kwargs.update({'device_type': 'a'})
+
         super(AndroidPassengerView, self).get(request, *args, **kwargs)
 
         ordered = AndroidPassenger.objects.order_by('-version_code') 
@@ -59,6 +71,9 @@ class AndroidPassengerView(AbstractApplicationVersionView):
 class IosPassengerView(AbstractApplicationVersionView):
 
     def get(self, request, *args, **kwargs):
+        # device_type
+        kwargs.update({'device_type': 'i'})
+
         super(IosPassengerView, self).get(request, *args, **kwargs)
 
         ordered = IosPassenger.objects.order_by('-version_code') 

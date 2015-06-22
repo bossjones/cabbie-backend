@@ -271,7 +271,7 @@ class PassengerAdmin(AbstractAdmin):
     list_max_show_all = 1000
 
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'email', 'name', 'affiliation', 'app_version', 'point',
+    list_display = ('id', 'phone', 'device_type_kor', 'email', 'name', 'affiliation', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
                     'total_ride_count',
                     'date_joined', 'link_to_rides')
@@ -315,6 +315,16 @@ class PassengerAdmin(AbstractAdmin):
         return u'<a href="{0}">조회</a>'.format(url)
     link_to_rides.short_description = u'배차이력'
     link_to_rides.allow_tags = True
+
+    def device_type_kor(self, obj):
+        if obj.device_type == 'a': 
+            return u'안드로이드'
+        elif obj.device_type == 'i': 
+            return u'아이폰'
+        else: 
+            return u''
+    device_type_kor.short_description = u'기기'
+    
 
 
 class DriverReservationAdminForm(forms.ModelForm):

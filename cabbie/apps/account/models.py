@@ -69,6 +69,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     # App version
     app_version = models.CharField(u'앱버전', max_length=10, default='')
 
+    # Device type
+    device_type = models.CharField(u'기기종류', max_length=1, default='')
+
     objects = UserManager()
 
     class Meta:
