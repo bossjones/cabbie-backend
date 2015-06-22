@@ -11,6 +11,7 @@ from cabbie.apps.account.models import (
     User, Driver, Passenger, DriverReservation, PassengerDropout,
     DriverDropout)
 from cabbie.apps.account.forms import EducationSelectForm
+from cabbie.apps.account.filter import EndDateIncludingDateRangeFilter
 from cabbie.apps.payment.models import PassengerReturn
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
@@ -108,7 +109,7 @@ class DriverAdmin(AbstractAdmin):
         'province',
         'region',
         'education',
-        ('date_joined', DateRangeFilter),
+        ('date_joined', EndDateIncludingDateRangeFilter),
     )
 
     actions = (
@@ -273,7 +274,7 @@ class PassengerAdmin(AbstractAdmin):
     list_filter = (
         'app_version',
         'affiliation',
-        ('date_joined', DateRangeFilter),
+        ('date_joined', EndDateIncludingDateRangeFilter),
     )
     actions = (
         'dropout',
