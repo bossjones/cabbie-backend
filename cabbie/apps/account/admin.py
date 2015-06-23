@@ -169,10 +169,10 @@ class DriverAdmin(AbstractAdmin):
         for driver in drivers:
             driver.is_accepted = True
             driver.save(update_fields=['is_accepted'])
-        msg = u'{0}명의 기사가 약관동의 처리되었습니다.'.format(
+        msg = u'{0}명의 기사가 승인 처리되었습니다.'.format(
             len(drivers))
         self.message_user(request, msg)
-    force_accept.short_description = u'약관동의 처리'
+    force_accept.short_description = u'승인 처리'
 
     def clear_image(self, request, queryset):
         drivers = list(queryset.all())
