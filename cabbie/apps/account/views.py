@@ -5,6 +5,7 @@ import datetime
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from django.db.utils import IntegrityError
 from rest_framework import viewsets, status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.authtoken.views import (
@@ -28,6 +29,10 @@ from cabbie.utils.sms import send_sms
 from cabbie.utils.email import send_email
 from cabbie.utils.validator import is_valid_phone
 from cabbie.utils import json
+
+# Error message
+# -------------
+ERR_001 = ('Already registered phone number',   'account.E001')
 
 # REST (Mixin/Abstract)
 # ---------------------
@@ -389,9 +394,13 @@ class DriverReserveView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], 
+        try:
+            driver, created = DriverReservation.objects.get_or_create(phone=request.DATA['phone'], 
                                                                   name=request.DATA['name'], 
                                                                   car_model=request.DATA['car_model'])
+        except IntegrityError, e:
+            return self.render_error(*ERR_001)
+
         return self.render({
             'reservation_id': driver.id
         })
