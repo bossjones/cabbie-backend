@@ -120,6 +120,8 @@ class DriverAdmin(AbstractAdmin):
         'unfreeze',
         'force_verify',
         'force_accept',
+        'force_sms_agree',
+        'force_sms_disagree',
         'clear_image',
         'dropout',
     )
@@ -173,6 +175,26 @@ class DriverAdmin(AbstractAdmin):
             len(drivers))
         self.message_user(request, msg)
     force_accept.short_description = u'승인 처리'
+
+    def force_sms_agree(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.is_sms_agreed = True
+            driver.save(update_fields=['is_sms_agreed'])
+        msg = u'{0}명의 기사가 SMS 수신동의 처리되었습니다.'.format(
+            len(drivers))
+        self.message_user(request, msg)
+    force_sms_agree.short_description = u'SMS 수신동의 처리'
+
+    def force_sms_disagree(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.is_sms_agreed = False 
+            driver.save(update_fields=['is_sms_agreed'])
+        msg = u'{0}명의 기사가 SMS 수신동의 해제되었습니다.'.format(
+            len(drivers))
+        self.message_user(request, msg)
+    force_sms_disagree.short_description = u'SMS 수신동의 해제'
 
     def clear_image(self, request, queryset):
         drivers = list(queryset.all())
