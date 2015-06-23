@@ -390,12 +390,21 @@ AWS_LOCATION = 'ap-northeast-1'
 #AWS_S3_CALLING_FORMAT = SubdomainCallingFormat() 
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
-# Push (Parse)
+# Parse
+# -----
+PARSE_API_URL = 'api.parse.com'
+PARSE_HTTPS_PORT = 443
+
 PARSE_APPLICATION_ID = '7Zb99LTr2u08bqWjmXAYVqhqEJlXsaGB20oHK7DZ'
 PARSE_REST_API_KEY = 'sUDJrgh7zik3ceToqDqD4MReOGsbBbW0uQ11jsdc'
 PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
 from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
+
+# Objects
+PARSE_OBJECT_DRIVER_LOCATION = 'DriverLocation'
+
+
 
 PUSH_CHANNEL_PREFIX = None
 
