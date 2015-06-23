@@ -69,6 +69,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     # App version
     app_version = models.CharField(u'앱버전', max_length=10, default='')
 
+    # Device type
+    device_type = models.CharField(u'기기종류', max_length=1, default='')
+
     objects = UserManager()
 
     class Meta:
@@ -420,7 +423,29 @@ class Driver(NullableImageMixin, User):
     def dropout(self, dropout_type, note=None):
         DriverDropout.objects.create(
             user_id=self.id, dropout_type=dropout_type, note=note or '')
+
+        # remove location from location server
+        self._remove_location_from_location_server(self.auth_token)
+
         self.delete()
+
+    def _remove_location_from_location_server(self, token):
+        connection = httplib.HTTPConnection(settings.LOCATION_SERVER_HOST, settings.LOCATION_WEB_SERVER_PORT)
+        connection.connect()
+
+        # method
+        _method = 'POST'
+
+        # header
+        _headers = {
+            "Authorization": 'Token {0}'.format(token.key),
+        }
+
+        # url
+        _url = '/ride/deactivate'
+
+        # request
+        connection.request(_method, _url, '', _headers)
 
     @property
     def latest_ride(self):

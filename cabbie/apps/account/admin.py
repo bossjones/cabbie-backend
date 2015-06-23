@@ -11,6 +11,7 @@ from cabbie.apps.account.models import (
     User, Driver, Passenger, DriverReservation, PassengerDropout,
     DriverDropout)
 from cabbie.apps.account.forms import EducationSelectForm
+from cabbie.apps.account.filter import EndDateIncludingDateRangeFilter
 from cabbie.apps.payment.models import PassengerReturn
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
@@ -108,7 +109,7 @@ class DriverAdmin(AbstractAdmin):
         'province',
         'region',
         'education',
-        ('date_joined', DateRangeFilter),
+        ('date_joined', EndDateIncludingDateRangeFilter),
     )
 
     actions = (
@@ -119,6 +120,8 @@ class DriverAdmin(AbstractAdmin):
         'unfreeze',
         'force_verify',
         'force_accept',
+        'force_sms_agree',
+        'force_sms_disagree',
         'clear_image',
         'dropout',
     )
@@ -168,10 +171,30 @@ class DriverAdmin(AbstractAdmin):
         for driver in drivers:
             driver.is_accepted = True
             driver.save(update_fields=['is_accepted'])
-        msg = u'{0}명의 기사가 약관동의 처리되었습니다.'.format(
+        msg = u'{0}명의 기사가 승인 처리되었습니다.'.format(
             len(drivers))
         self.message_user(request, msg)
-    force_accept.short_description = u'약관동의 처리'
+    force_accept.short_description = u'승인 처리'
+
+    def force_sms_agree(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.is_sms_agreed = True
+            driver.save(update_fields=['is_sms_agreed'])
+        msg = u'{0}명의 기사가 SMS 수신동의 처리되었습니다.'.format(
+            len(drivers))
+        self.message_user(request, msg)
+    force_sms_agree.short_description = u'SMS 수신동의 처리'
+
+    def force_sms_disagree(self, request, queryset):
+        drivers = list(queryset.all())
+        for driver in drivers:
+            driver.is_sms_agreed = False 
+            driver.save(update_fields=['is_sms_agreed'])
+        msg = u'{0}명의 기사가 SMS 수신동의 해제되었습니다.'.format(
+            len(drivers))
+        self.message_user(request, msg)
+    force_sms_disagree.short_description = u'SMS 수신동의 해제'
 
     def clear_image(self, request, queryset):
         drivers = list(queryset.all())
@@ -248,7 +271,7 @@ class PassengerAdmin(AbstractAdmin):
     list_max_show_all = 1000
 
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'email', 'name', 'affiliation', 'app_version', 'point',
+    list_display = ('id', 'phone', 'device_type_kor', 'email', 'name', 'affiliation', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
                     'total_ride_count',
                     'date_joined', 'link_to_rides')
@@ -273,7 +296,7 @@ class PassengerAdmin(AbstractAdmin):
     list_filter = (
         'app_version',
         'affiliation',
-        ('date_joined', DateRangeFilter),
+        ('date_joined', EndDateIncludingDateRangeFilter),
     )
     actions = (
         'dropout',
@@ -292,6 +315,16 @@ class PassengerAdmin(AbstractAdmin):
         return u'<a href="{0}">조회</a>'.format(url)
     link_to_rides.short_description = u'배차이력'
     link_to_rides.allow_tags = True
+
+    def device_type_kor(self, obj):
+        if obj.device_type == 'a': 
+            return u'안드로이드'
+        elif obj.device_type == 'i': 
+            return u'아이폰'
+        else: 
+            return u''
+    device_type_kor.short_description = u'기기'
+    
 
 
 class DriverReservationAdminForm(forms.ModelForm):

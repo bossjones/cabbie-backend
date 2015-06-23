@@ -327,8 +327,8 @@ INTERNAL_IPS = '127.0.0.1'
 # Location
 # --------
 
-#TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
-TMAP_API_KEY = '1a4dce89-3e7e-3b42-9955-7f1de35a13a5'
+TMAP_API_KEY = '063220b6-6f0b-3741-8349-5bf54cc5f00c'
+#TMAP_API_KEY = '1a4dce89-3e7e-3b42-9955-7f1de35a13a5'
 
 DEFAULT_SPEED = 25.0                    # km/h
 TMAP_ESTIMATOR_CACHE_TIMEOUT = 10 * 60  # seconds
@@ -390,12 +390,21 @@ AWS_LOCATION = 'ap-northeast-1'
 #AWS_S3_CALLING_FORMAT = SubdomainCallingFormat() 
 #AWS_HEADERS = {} # TODO: Specify the S3 headers (e.g. Cache)
 
-# Push (Parse)
+# Parse
+# -----
+PARSE_API_URL = 'api.parse.com'
+PARSE_HTTPS_PORT = 443
+
 PARSE_APPLICATION_ID = '7Zb99LTr2u08bqWjmXAYVqhqEJlXsaGB20oHK7DZ'
 PARSE_REST_API_KEY = 'sUDJrgh7zik3ceToqDqD4MReOGsbBbW0uQ11jsdc'
 PARSE_MASTER_KEY = 'l1s6VL3IuvsrxZKwM7EAbnxXzvRfAFiLfKcuZtX6'
 from parse_rest.connection import register
 register(PARSE_APPLICATION_ID, PARSE_REST_API_KEY, master_key=PARSE_MASTER_KEY)
+
+# Objects
+PARSE_OBJECT_DRIVER_LOCATION = 'DriverLocation'
+
+
 
 PUSH_CHANNEL_PREFIX = None
 

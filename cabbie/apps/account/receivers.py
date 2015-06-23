@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+import datetime, httplib, json
 
 from django.conf import settings
 from django.db.models import F
@@ -10,9 +10,10 @@ from cabbie.apps.account import messages
 from cabbie.apps.account.models import Passenger, Driver, DriverReservation
 from cabbie.apps.payment.models import DriverBill, Transaction
 from cabbie.apps.drive.signals import post_ride_board
-from cabbie.common.signals import post_create
+from cabbie.common.signals import post_create, post_delete
 from cabbie.utils.email import send_email
 from cabbie.utils.sms import send_sms
+from cabbie.utils.parse import ParseManager
 
 
 def on_post_create_driver(sender, instance, **kwargs):
@@ -25,6 +26,18 @@ def on_post_create_driver(sender, instance, **kwargs):
         pass
     else:
         driver_reservation.join()
+
+def on_post_delete_driver(sender, instance, **kwargs):
+    # remove location from parse
+    ParseManager().remove_location(instance.id)
+
+    # remove location from location server
+    try:
+        token = Token.objects.get(user=instance.user_ptr)
+    except Token.DoesNotExist, e:
+        pass
+    else:
+        _remove_location_from_location_server(token) 
 
 def on_post_create_driver_reservation(sender, instance, **kwargs):
     
@@ -109,6 +122,8 @@ def on_post_ride_board(sender, ride, **kwargs):
 post_create.connect(on_post_create_passenger, sender=Passenger,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver, sender=Driver,
+                    dispatch_uid='from_account')
+post_delete.connect(on_post_delete_driver, sender=Driver,
                     dispatch_uid='from_account')
 post_create.connect(on_post_create_driver_reservation, sender=DriverReservation,
                     dispatch_uid='from_account')
