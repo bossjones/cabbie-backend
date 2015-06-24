@@ -31,14 +31,6 @@ def on_post_delete_driver(sender, instance, **kwargs):
     # remove location from parse
     ParseManager().remove_location(instance.id)
 
-    # remove location from location server
-    try:
-        token = Token.objects.get(user=instance.user_ptr)
-    except Token.DoesNotExist, e:
-        pass
-    else:
-        _remove_location_from_location_server(token) 
-
 def on_post_create_driver_reservation(sender, instance, **kwargs):
     
     # send to driver account admin
