@@ -135,10 +135,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
     # State methods
     # -------------
 
-    def request(self):
+    def approve(self):
         self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
 
-        self.info('Requested ride {0}'.format(self._ride_id))
+        self.info('Approved ride {0}'.format(self._ride_id))
 
         # register proxy by ride id
         RideProxyManager().set_ride_proxy_by_ride_id(int(self._ride_id), self)
@@ -152,7 +152,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                 'additional_message': self._additional_message,
             })
 
-        self._transition_to(Ride.REQUESTED, update=False)
+        self._transition_to(Ride.APPROVED, update=False)
 
         return self._ride_id
 
@@ -170,17 +170,6 @@ class RideProxy(LoggableMixin, PubsubMixin):
 
         self._transition_to(Ride.CANCELED)
         self._destroy('cancel')
-
-    def approve(self, candidate):
-        if self.passenger_session:
-            self.passenger_session.notify_passenger_approve()
-        self._transition_to(Ride.APPROVED)
-
-        # deprecate estimation polling
-        #self._refresh_estimate()
-
-        # send push 
-        self.send_approve_push(candidate) 
 
     def reject(self, reason):
 
