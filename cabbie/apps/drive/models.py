@@ -236,7 +236,7 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         return timezone.get_current_timezone().normalize(self.created_at)
 
     def is_educated_driver(self):
-        if self.driver.education:
+        if self.driver and self.driver.education:
             return self.created_at > self.driver.education.started_at
         return False
 
