@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import defaultdict
 from functools import partial
 
@@ -367,6 +367,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
     def send_request(self, driver_ids):
         passenger = self._passenger 
 
+        now = datetime.now()
+    
         message = {
             'alert': settings.MESSAGE_RIDE_REQUEST_ALERT,
             'title': settings.MESSAGE_RIDE_REQUEST_TITLE,
@@ -382,6 +384,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
                 'source': self._source,
                 'destination': self._destination,
                 'additional_message': self._additional_message,
+                'created_at': str(now), 
+                'expires_at': str(now + timedelta(seconds=settings.REQUEST_TIMEOUT)),
             }
         }
 

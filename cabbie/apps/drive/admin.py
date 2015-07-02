@@ -53,7 +53,7 @@ class RideAdmin(AbstractAdmin):
         'driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
+    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
 
@@ -77,6 +77,13 @@ class RideAdmin(AbstractAdmin):
         'rollback_to_rejected',
         'rollback_to_canceled',
     )
+
+    def is_educated_driver(self, obj):
+        if obj.is_educated_driver(): 
+            return u'예'
+        else:
+            return u'아니오'
+    is_educated_driver.short_description = u'교육이수여부' 
 
     def rollback_to_rejected(self, request, queryset):
         rides = list(queryset.all())

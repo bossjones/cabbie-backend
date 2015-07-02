@@ -123,7 +123,7 @@ class Passenger(User):
         verbose_name_plural = u'승객'
 
     def __unicode__(self):
-        return u'{name} 승객 ({phone})'.format(name=self.name, phone=self.phone)
+        return u'{name} 승객 {device_type}.{app_version} ({phone})'.format(name=self.name, device_type=self.device_type, app_version=self.app_version, phone=self.phone)
 
     @property
     def is_affiliated(self):
