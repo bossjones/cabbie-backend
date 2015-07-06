@@ -257,7 +257,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                     'ride_id': self._ride_id,
                 }
             }
-            send_push_notification(message, ['driver_{0}'.format(driver['id'])], False)
+            send_push_notification(message, ['driver_{0}'.format(driver['id'])])
 
 
         
@@ -275,7 +275,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                     'candidate': candidate, 
                 }
             }
-            send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+            send_push_notification(message, ['user_{0}'.format(passenger['id'])])
 
 
 
@@ -301,7 +301,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                         'priority': '5',
                     }
                 }
-                send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+                send_push_notification(message, ['user_{0}'.format(passenger['id'])])
 
                
     def send_rate_push(self):
@@ -318,7 +318,7 @@ class RideProxy(LoggableMixin, PubsubMixin):
                     'ride_id': self._ride_id
                 }
             }
-            send_push_notification(message, ['user_{0}'.format(passenger['id'])], False)
+            send_push_notification(message, ['user_{0}'.format(passenger['id'])])
 
     def passenger_disconnect(self):
         if self.driver_session:
