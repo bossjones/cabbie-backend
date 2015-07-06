@@ -391,7 +391,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         channels = ['driver_{id}'.format(id=id_) for id_ in driver_ids]
 
-        send_push_notification(message, channels, False)
+        send_push_notification(message, channels)
 
         # start timer
         for id_ in driver_ids:
@@ -411,6 +411,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         channels = ['driver_{id}'.format(id=id_) for id_ in driver_ids]
 
-        send_push_notification(message, channels, False)
+        send_push_notification(message, channels)
 
 
