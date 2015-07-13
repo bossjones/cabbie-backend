@@ -18,11 +18,25 @@ class RequestAdmin(AbstractAdmin):
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
     list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance_in_kilometer', 
-            'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'updated_at', 'created_at')
+            'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'updated_at', 'created_at')
 
     def approved_driver(self, obj):
-        return obj.approval.driver if obj.approval else None
+        return obj.approval.driver if obj.approval else None 
     approved_driver.short_description = u'승인기사'
+    approved_driver.allow_tags = True
+
+    def approval_interval(self, obj):
+        if obj.state == Request.APPROVED:
+            return u'{seconds:.{digits}f}초'.format(seconds=(obj.updated_at - obj.created_at).total_seconds(), digits=1)
+        return None
+    approval_interval.short_description = u'승인시간'
+
+    def estimated_distance_to_pickup(self, obj):
+        if obj.approval:
+            return u'{distance:.{digits}f}m'.format(distance=obj.approval_driver_json['estimate']['distance'], digits=0)
+        return None
+    estimated_distance_to_pickup.short_description = u'예상이동거리'
+
 
     def distance_in_kilometer(self, obj):
         return "%.1fkm" % (float(obj.distance) / 1000)
