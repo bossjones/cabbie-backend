@@ -67,7 +67,7 @@ class RideAdmin(AbstractAdmin):
         'driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'ride_history', 'boarding_interval', 'source_address',
+    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'ride_history', 'estimated_distance_to_pickup', 'boarding_interval', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
 
@@ -102,6 +102,14 @@ class RideAdmin(AbstractAdmin):
     def ride_history(self, obj):
         return '-'.join([Ride.STATE_EXPRESSION[history.state] for history in obj.histories.order_by('updated_at')])
     ride_history.short_description = u'이력'
+
+
+    def estimated_distance_to_pickup(self, obj):
+        if obj.approved_request:
+            request = list(obj.approved_request.all())[0]
+            return u'{distance:.{digits}f}m'.format(distance=request.approval_driver_json['estimate']['distance'], digits=0)
+        return None
+    estimated_distance_to_pickup.short_description = u'예상이동거리'
 
 
     def boarding_interval(self, obj):
