@@ -33,6 +33,13 @@ class Request(AbstractTimestampModel):
         (APPROVED, _('approved')),
         (REJECTED, _('rejected')),
     )
+
+    STATE_EXPRESSION = { 
+        STANDBY: u'요청중',
+        APPROVED: u'승인',
+        REJECTED: u'차량없음',
+    }
+
     passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객'
                                             , null=True, on_delete=models.SET_NULL)
     source = JSONField(u'출발지', default='{}')
@@ -100,13 +107,27 @@ class Request(AbstractTimestampModel):
 
         for distance_ in sorted_keys:
             contacts_ = self.contacts_by_distance.get(str(distance_))
-            desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(str(v) for v in contacts_))
+            desc = u'{distance}m: {contacts}'.format(distance=distance_, contacts=','.join(self._decorate_contact(v) for v in contacts_))
             desc += u'<br />'
             ret += desc
         return ret
     description_for_contacts_by_distance.short_description = u'거리별 콜요청 리스트'
     description_for_contacts_by_distance.allow_tags = True
-    
+   
+
+    def _decorate_contact(self, contact):
+        if contact in self.rejects:
+            return '<font color=#aaaaaa>{0}</font>'.format(contact)
+        if self.approval and contact == self.approval.driver.id:
+            return '<font color=#51c692>{0}</font>'.format(contact)
+        return str(contact)  
+
+    # property state_kor
+    def _state_kor(self):
+        return Request.STATE_EXPRESSION[self.state]
+    _state_kor.short_description = u'상태'
+    state_kor = property(_state_kor)
+
 
     def update(self, **data):
         for field in ('state', 'contacts', 'contacts_by_distance', 'rejects', 'approval_id', 'approval_driver_json'): 

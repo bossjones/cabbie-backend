@@ -1,4 +1,5 @@
 # encoding: utf8
+import datetime
 
 from django.conf import settings
 
@@ -48,11 +49,32 @@ def on_post_create_transaction(sender, instance, **kwargs):
     return_.amount = role.point
     return_.save(update_fields=['amount'])
 
+def is_promotion_period():
+    promotion_begin_date = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_5000P_BEGIN, "%Y-%m-%d").date()
+    promotion_end_date = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_5000P_END, "%Y-%m-%d").date()
+    promotion_end_date += datetime.timedelta(days=1)
+
+    today = datetime.date.today()
+
+    return today >= promotion_begin_date and today < promotion_end_date 
+
 
 def on_post_ride_board(sender, ride, **kwargs):
-    # if affiliated and in event period
     passenger = ride.passenger
-    if passenger.is_affiliated:
+
+    # promotion period
+    if is_promotion_period():
+        amount = 5000
+        Transaction.objects.create(
+            user=passenger,
+            ride=ride,
+            transaction_type=Transaction.RIDE_POINT,
+            amount=amount,
+            state=Transaction.DONE,
+            note=u'이벤트 탑승 포인트'
+        )
+    # affiliated
+    elif passenger.is_affiliated:
         # amount
         amount = passenger.affiliation.ride_mileage
         Transaction.objects.create(
@@ -74,6 +96,7 @@ def on_post_ride_board(sender, ride, **kwargs):
                 state=Transaction.DONE,
                 note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
             )
+
 
 def on_post_ride_first_rated(sender, ride, **kwargs):
     amount = settings.POINTS_BY_TYPE.get(Transaction.RATE_POINT)

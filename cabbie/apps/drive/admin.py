@@ -18,11 +18,25 @@ class RequestAdmin(AbstractAdmin):
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
     list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance_in_kilometer', 
-            'state', 'contacts', 'description_for_contacts_by_distance', 'rejects', 'link_to_ride', 'approved_driver', 'updated_at', 'created_at')
+            'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'updated_at', 'created_at')
 
     def approved_driver(self, obj):
-        return obj.approval.driver if obj.approval else None
+        return obj.approval.driver if obj.approval else None 
     approved_driver.short_description = u'승인기사'
+    approved_driver.allow_tags = True
+
+    def approval_interval(self, obj):
+        if obj.state == Request.APPROVED:
+            return u'{seconds:.{digits}f}초'.format(seconds=(obj.updated_at - obj.created_at).total_seconds(), digits=1)
+        return None
+    approval_interval.short_description = u'승인시간'
+
+    def estimated_distance_to_pickup(self, obj):
+        if obj.approval:
+            return u'{distance:.{digits}f}m'.format(distance=obj.approval_driver_json['estimate']['distance'], digits=0)
+        return None
+    estimated_distance_to_pickup.short_description = u'예상이동거리'
+
 
     def distance_in_kilometer(self, obj):
         return "%.1fkm" % (float(obj.distance) / 1000)
@@ -53,7 +67,7 @@ class RideAdmin(AbstractAdmin):
         'driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'reason_kor', 'source_address',
+    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'ride_history', 'estimated_distance_to_pickup', 'boarding_interval', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
 
@@ -84,6 +98,41 @@ class RideAdmin(AbstractAdmin):
         else:
             return u'아니오'
     is_educated_driver.short_description = u'교육이수여부' 
+
+    def ride_history(self, obj):
+        return '-'.join([Ride.STATE_EXPRESSION[history.state] for history in obj.histories.order_by('updated_at')])
+    ride_history.short_description = u'이력'
+
+
+    def estimated_distance_to_pickup(self, obj):
+        if obj.approved_request:
+            request = list(obj.approved_request.all())[0]
+            return u'{distance:.{digits}f}m'.format(distance=request.approval_driver_json['estimate']['distance'], digits=0)
+        return None
+    estimated_distance_to_pickup.short_description = u'예상이동거리'
+
+
+    def boarding_interval(self, obj):
+        boarded = obj.histories.filter(state=Ride.BOARDED).order_by('updated_at')
+
+        if len(boarded) > 0:
+            boarded_at = boarded[0].updated_at
+
+            approved_at = obj.created_at
+
+            seconds = (boarded_at - approved_at).total_seconds()
+
+            if seconds > 60:
+                minutes = seconds / 60
+                seconds = seconds % 60
+                return u'{minutes:.{digits}f}분 {seconds:.{digits}f}초'.format(minutes=minutes, seconds=seconds, digits=0)
+            else:
+                return u'<font color=#ff0000>{seconds:.{digits}f}초</font>'.format(seconds=(boarded_at - approved_at).total_seconds(), digits=0)
+
+        return None
+    boarding_interval.short_description = u'승인후 탑승시간'
+    boarding_interval.allow_tags = True
+
 
     def rollback_to_rejected(self, request, queryset):
         rides = list(queryset.all())
