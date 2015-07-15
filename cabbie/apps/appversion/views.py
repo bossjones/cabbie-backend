@@ -42,14 +42,27 @@ class AndroidDriverView(AbstractApplicationVersionView):
     def get(self, request, *args, **kwargs):
         super(AndroidDriverView, self).get(request, *args, **kwargs)
 
+        # get latest version and whether update is required
         ordered = AndroidDriver.objects.order_by('-version_code')
         
-        if ordered:
-            return self.render({
-                'latest': AndroidDriverSerializer(ordered[0]).data
-            })
-        else:
+        if not ordered:
             return self.render_error(u'No android driver app version found')
+
+        is_update_required = False
+        app_version = request.GET.get('app_version', None)
+
+        if app_version:
+            for version in ordered:
+                if version.version_name == app_version:
+                    break
+                is_update_required = is_update_required or version.is_update_required
+        
+        latest = AndroidDriverSerializer(ordered[0]).data
+        latest['is_update_required'] = latest['is_update_required'] or is_update_required
+
+        return self.render({
+            'latest': latest 
+        })
 
 class AndroidPassengerView(AbstractApplicationVersionView):
 
@@ -59,14 +72,27 @@ class AndroidPassengerView(AbstractApplicationVersionView):
 
         super(AndroidPassengerView, self).get(request, *args, **kwargs)
 
+        # get latest version and whether update is required
         ordered = AndroidPassenger.objects.order_by('-version_code') 
-        
-        if ordered:
-            return self.render({
-                'latest': AndroidPassengerSerializer(ordered[0]).data
-            })
-        else:
+
+        if not ordered:
             return self.render_error(u'No android passenger app version found')
+
+        is_update_required = False
+        app_version = request.GET.get('app_version', None)
+
+        if app_version:
+            for version in ordered:
+                if version.version_name == app_version:
+                    break
+                is_update_required = is_update_required or version.is_update_required
+        
+        latest = AndroidPassengerSerializer(ordered[0]).data
+        latest['is_update_required'] = latest['is_update_required'] or is_update_required
+
+        return self.render({
+            'latest': latest 
+        })
 
 class IosPassengerView(AbstractApplicationVersionView):
 
