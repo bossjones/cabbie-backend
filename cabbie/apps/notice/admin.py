@@ -1,5 +1,6 @@
 # encoding: utf8
 from django.contrib import admin
+from django.utils import timezone
 
 from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
@@ -19,20 +20,28 @@ class NoticeAdmin(AbstractAdmin):
 class AppPopupAdmin(AbstractAdmin):
     change_form_template = 'notice/admin/change_form.html'
 
-    list_display = ('id', 'title', 'content', 'link', 'starts_at', 'ends_at', 'is_active')
+    list_display = ('id', 'title', 'image_preview', 'starts_at', 'ends_at', 'status')
     search_fields = (
         'title',
-        'content',
     )
     fields = (
-        'id', 'title', 'content', 'image', 'link', 
+        'id', 'title', 'image', 
         'starts_at', 'ends_at',
-        'is_active',
     )
     readonly_fields = (
         'id',
     ) 
 
+    def image_preview(self, obj):
+        return u'<a href="{url}"><img src="{url}" width=200></a>'.format(url=obj.url)
+    image_preview.short_description = u'미리보기'
+    image_preview.allow_tags = True
 
-admin.site.register(Notice, NoticeAdmin)
+    def status(self, obj):
+        now = timezone.now()
+        return u'게시중' if now >= obj.starts_at and now < obj.ends_at else u'종료'
+    status.short_description = u'상태'
+        
+
+
 admin.site.register(AppPopup, AppPopupAdmin)

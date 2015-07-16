@@ -18,7 +18,7 @@ class Notice(ActiveMixin, AbstractTimestampModel):
 class AppPopup(ActiveMixin, NullableImageMixin, AbstractTimestampModel): 
     title = models.CharField(u'제목', max_length=50)
     content = tinymce_models.HTMLField(u'내용', blank=True)
-    link = models.URLField(u'상세링크', max_length=200)
+    link = models.URLField(u'상세링크', max_length=200, blank=True, null=True)
     starts_at= models.DateTimeField(u'시작시간', null=True, db_index=True)
     ends_at = models.DateTimeField(u'종료시간', null=True, db_index=True)
 

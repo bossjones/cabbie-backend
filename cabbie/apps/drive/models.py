@@ -118,7 +118,7 @@ class Request(AbstractTimestampModel):
     def _decorate_contact(self, contact):
         if contact in self.rejects:
             return '<font color=#aaaaaa>{0}</font>'.format(contact)
-        if self.approval and contact == self.approval.driver.id:
+        if self.approval and self.approval.driver and contact == self.approval.driver.id:
             return '<font color=#51c692>{0}</font>'.format(contact)
         return str(contact)  
 
