@@ -19,13 +19,12 @@ class NoticeAdmin(AbstractAdmin):
 class AppPopupAdmin(AbstractAdmin):
     change_form_template = 'notice/admin/change_form.html'
 
-    list_display = ('id', 'title', 'content', 'link', 'starts_at', 'ends_at', 'is_active')
+    list_display = ('id', 'title', 'image_preview', 'starts_at', 'ends_at', 'is_active')
     search_fields = (
         'title',
-        'content',
     )
     fields = (
-        'id', 'title', 'content', 'image', 'link', 
+        'id', 'title', 'image', 
         'starts_at', 'ends_at',
         'is_active',
     )
@@ -33,6 +32,9 @@ class AppPopupAdmin(AbstractAdmin):
         'id',
     ) 
 
+    def image_preview(self, obj):
+        return u'<a href="{url}"><img src="{url}" width=200></a>'.format(url=obj.url)
+    image_preview.short_description = u'미리보기'
+    image_preview.allow_tags = True
 
-admin.site.register(Notice, NoticeAdmin)
 admin.site.register(AppPopup, AppPopupAdmin)
