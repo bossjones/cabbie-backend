@@ -105,9 +105,13 @@ class RideAdmin(AbstractAdmin):
 
 
     def estimated_distance_to_pickup(self, obj):
-        if obj.approved_request:
-            request = list(obj.approved_request.all())[0]
-            return u'{distance:.{digits}f}m'.format(distance=request.approval_driver_json['estimate']['distance'], digits=0)
+        approved_request = list(obj.approved_request.all())
+        if len(approved_request) > 0:
+            request = approved_request[0]
+
+            if request.approval_driver_json:
+                return u'{distance:.{digits}f}m'.format(distance=request.approval_driver_json['estimate']['distance'], digits=0)
+
         return None
     estimated_distance_to_pickup.short_description = u'예상이동거리'
 
