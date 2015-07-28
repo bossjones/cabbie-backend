@@ -39,7 +39,12 @@ class AppPopupAdmin(AbstractAdmin):
 
     def status(self, obj):
         now = timezone.now()
-        return u'게시중' if now >= obj.starts_at and now < obj.ends_at else u'종료'
+        if now < obj.starts_at:
+            return u'게시전'
+        if now >= obj.starts_at and now < obj.ends_at:
+            return u'게시중' 
+        else:
+            return u'종료'
     status.short_description = u'상태'
         
 
