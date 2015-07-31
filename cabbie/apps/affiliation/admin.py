@@ -8,6 +8,7 @@ from cabbie.apps.affiliation.models import Affiliation
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 class AffiliationAdmin(AbstractAdmin):
+    deletable = True
     list_display = ('id', 'name', 'company_code', 'affiliated_at', 'certificate_code', 'ride_mileage',
                     'event_start_at', 'event_end_at', 'is_active',
                     'updated_at', 'created_at',) 
