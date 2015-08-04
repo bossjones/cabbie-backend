@@ -5,13 +5,14 @@ from django.http import Http404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
-from cabbie.apps.drive.models import Province, Request, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Province, Request, Ride, RideHistory, Favorite, SecureNumber, Hotspot
 from cabbie.apps.drive.serializers import (
-    RequestSerializer, RideSerializer, FavoriteSerializer, HotspotSerializer)
+    RequestSerializer, RideSerializer, FavoriteSerializer, SecureNumberSerializer, HotspotSerializer)
 from cabbie.apps.drive.receivers import post_ride_requested
 from cabbie.apps.stats.models import DriverRideStatWeek
-from cabbie.common.views import InternalView, APIView, APIMixin
+from cabbie.common.views import CsrfExcempt, InternalView, APIView, APIMixin
 from cabbie.utils import json
 from cabbie.utils.geo import distance, TMap, TMapError
 from cabbie.utils.date import week_of_month
@@ -182,6 +183,24 @@ class GeoReverseView(APIView):
                 'address': result
             })
 
+
+class SecureNumberSetView(APIView):
+    # FIXME: change to post
+    def get(self, request, *args, **kwargs):
+        data = request.GET
+        
+        # ride_id, number owner role
+        ride_id = data.get('ride_id')
+        role = data.get('role')
+
+        if not ride_id or not role or role not in (SecureNumber.DRIVER, SecureNumber.PASSENGER):
+            return self.render_error('parameter error', status=status.HTTP_400_BAD_REQUEST)
+
+        # FIXME: make this async
+        return self.render({
+            'secure_number': SecureNumber.get(ride_id, role)
+        })
+            
 
 # Internal
 # --------

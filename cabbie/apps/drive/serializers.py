@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from cabbie.apps.account.serializers import (
     DriverSerializer, PassengerSerializer)
-from cabbie.apps.drive.models import Request, Ride, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, Ride, Favorite, SecureNumber, Hotspot
 from cabbie.common.serializers import AbstractSerializer, JSONField, PointField
 
 
@@ -36,6 +36,13 @@ class FavoriteSerializer(AbstractSerializer):
     class Meta:
         model = Favorite
         fields = ('id', 'name', 'location', 'address', 'poi', 'created_at')
+
+class SecureNumberSerializer(AbstractSerializer):
+    ride = RideSerializer(read_only=True)
+
+    class Meta:
+        model = SecureNumber
+        fields = ('phone', 'state', 'ride', 'role')
 
 
 class HotspotSerializer(AbstractSerializer):

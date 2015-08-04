@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import Q
 
-from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite,SecureNumber, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 
@@ -270,6 +270,14 @@ class FavoriteAdmin(AbstractAdmin):
     search_fields = ('address', 'poi', 'name')
 
 
+class SecureNumberAdmin(AbstractAdmin):
+    addable = True
+    deletable = True
+    list_filter = ('state', 'role')
+    list_display = ('phone', 'state', 'ride', 'role', 'updated_at')
+    search_fields = ('phone',)
+    ordering = ('-updated_at',)
+
 class HotspotForm(forms.ModelForm):
     class Meta:
         model = Hotspot
@@ -300,4 +308,5 @@ admin.site.register(Request, RequestAdmin)
 admin.site.register(Ride, RideAdmin)
 admin.site.register(RideHistory, RideHistoryAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
+admin.site.register(SecureNumber, SecureNumberAdmin)
 admin.site.register(Hotspot, HotspotAdmin)

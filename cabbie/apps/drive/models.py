@@ -386,6 +386,11 @@ class Ride(IncrementMixin, AbstractTimestampModel):
             if old_state != self.RATED:
                 post_ride_complete.send(sender=self.__class__, ride=self)
 
+            # remove secure number
+            if self.secure_numbers:
+                for sn in self.secure_numbers.all():
+                    sn.release()
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         super(Ride, self).save(
@@ -430,6 +435,87 @@ class Favorite(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'즐겨찾기'
         verbose_name_plural = u'즐겨찾기'
+
+class SecureNumber(AbstractTimestampModel):
+    ACQUIRED, RELEASED = 'acquired', 'released' 
+    STATES = (
+        (ACQUIRED, _('사용중')),
+        (RELEASED, _('대기')),
+    )
+    
+    DRIVER, PASSENGER = 'driver', 'passenger'
+    ROLES = (
+        (DRIVER, _('기사')),
+        (PASSENGER, _('승객')),
+    ) 
+    
+    phone = models.CharField(u'안심번호', max_length=20, primary_key=True)
+    state = models.CharField(u'상태', max_length=10, choices=STATES, default=RELEASED) 
+    ride = models.ForeignKey(Ride, related_name='secure_numbers', verbose_name=u'배차', null=True, blank=True, on_delete=models.SET_NULL)
+    role = models.CharField(u'소유자타입', max_length=10, choices=ROLES, null=True, blank=True)
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'안심번호'
+        verbose_name_plural = u'안심번호'
+
+
+    @staticmethod
+    def get(ride_id, role):
+        secure_number = SecureNumber.objects.filter(ride__id=ride_id, role=role)
+
+        from cabbie.apps.drive.serializers import SecureNumberSerializer
+
+        if len(secure_number) > 0:
+            return SecureNumberSerializer(secure_number).data
+        else:
+            acquired_number = SecureNumber.acquire(ride_id, role) 
+            return SecureNumberSerializer(acquired_number).data
+
+
+    @staticmethod
+    def acquire(ride_id, role):
+        try:
+            ride = Ride.objects.get(pk=ride_id)
+        except Ride.DoesNotExist, e:
+            return None
+        else:
+            if not ride.passenger:
+                return None
+            passenger_phone = ride.passenger.phone
+
+            # set to skb 
+            target_secure_number = SecureNumber.get_lru_released_number() 
+            if not target_secure_number:
+                return None
+
+            # TODO: set
+                        
+            
+            target_secure_number.state = SecureNumber.ACQUIRED
+            target_secure_number.ride = ride
+            target_secure_number.role = role
+            target_secure_number.save(update_fields=['state', 'ride', 'role'])
+
+            return target_secure_number
+    
+    def release(self):
+        self.state = SecureNumber.RELEASED
+        self.ride = None
+        self.role = None
+        self.save()
+ 
+            
+    @staticmethod
+    def get_lru_released_number():
+        released_secure_numbers = SecureNumber.objects.filter(state=SecureNumber.RELEASED).order_by('updated_at')
+
+        if not released_secure_numbers:
+            return None            
+        
+        return released_secure_numbers[0]
+             
+            
+        
 
 
 class Hotspot(AbstractTimestampModel):

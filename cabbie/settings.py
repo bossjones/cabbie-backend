@@ -512,6 +512,8 @@ SUPER_DRIVER_THRESHOLD = 10
 
 HOTSPOT_COUNT = 100
 
+# Secure Number
+RUN_SN_SERVER = False
 
 # Local settings
 # --------------

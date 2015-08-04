@@ -6,9 +6,19 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework.authtoken.models import Token
 
-from cabbie.apps.drive.models import Ride, RideHistory
+from cabbie.apps.drive.models import Ride, RideHistory, SecureNumber
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.stats.models import DriverRideStatMonth, DriverRideStatWeek, DriverRideStatDay
+
+
+    
+
+class SecureNumberAPITests(APITestCase):
+    def setUp(self):
+        # create passenger
+        # create driver
+        # create ride
+         
 
 class InternalRideAPITests(APITestCase):
     def setUp(self):
