@@ -20,12 +20,12 @@ class NoticeAdmin(AbstractAdmin):
 class AppPopupAdmin(AbstractAdmin):
     change_form_template = 'notice/admin/change_form.html'
 
-    list_display = ('id', 'title', 'image_preview', 'starts_at', 'ends_at', 'status')
+    list_display = ('id', 'title', 'image_preview', 'link', 'starts_at', 'ends_at', 'status')
     search_fields = (
         'title',
     )
     fields = (
-        'id', 'title', 'image', 
+        'id', 'title', 'image', 'link', 
         'starts_at', 'ends_at',
     )
     readonly_fields = (
