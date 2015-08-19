@@ -69,6 +69,7 @@ class DriverAdmin(AbstractAdmin):
                     'is_sms_agreed',
                     'is_freezed', 
                     'is_educated', 'education',
+                    'remark',
                     'date_joined',
                     'link_to_rides')
     fieldsets = (
@@ -77,6 +78,7 @@ class DriverAdmin(AbstractAdmin):
                 'phone', 'name', 'license_number', 'car_number', 'province', 'region', 'car_model',
                 'bank_account', 
                 'is_educated', 'education', 'about', 'image',
+                'remark',
             ),
         }),
         ('읽기전용', {

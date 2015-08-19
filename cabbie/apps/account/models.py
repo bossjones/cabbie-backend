@@ -212,6 +212,9 @@ class Driver(NullableImageMixin, User):
     # Rating
     total_ratings_by_category = JSONField(u'총상세평점', default='{}')
 
+    # Remark
+    remark = models.CharField(u'비고', max_length=100, default='', blank=True)
+
     objects = DriverManager()
 
     class Meta(NullableImageMixin.Meta, User.Meta):
