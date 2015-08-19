@@ -189,11 +189,11 @@ class Driver(NullableImageMixin, User):
                                       unique=True)
     car_number = models.CharField(u'차량번호', max_length=20, unique=True)
     car_model = models.CharField(u'차량모델', max_length=50, blank=True)
-    company = models.CharField(u'회사', max_length=50)
+    company = models.CharField(u'회사', max_length=50, default=u'개인')
     max_capacity = models.PositiveIntegerField(u'탑승인원수', default=4)
     garage = models.CharField(u'차고지', max_length=100, blank=True)
     taxi_type = models.CharField(u'택시종류', max_length=10,
-                                 choices=TAXI_TYPES)
+                                 choices=TAXI_TYPES, default=TAXI_PRIVATE)
     taxi_service = SeparatedField(u'서비스', max_length=1000, separator=',',
                                   blank=True,
                                   help_text=u'콤마(,)로 구분하여 여러 개의 '

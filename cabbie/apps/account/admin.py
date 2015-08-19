@@ -62,7 +62,7 @@ class DriverAdmin(AbstractAdmin):
 
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'province', 'region', 'car_model', 'company',
+    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'car_number', 'province', 'region', 'car_model', 
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
@@ -75,8 +75,8 @@ class DriverAdmin(AbstractAdmin):
         (None, {
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'province', 'region', 'car_model',
-                'company', 'bank_account', 'max_capacity',
-                'taxi_type', 'is_educated', 'education', 'about', 'image',
+                'bank_account', 
+                'is_educated', 'education', 'about', 'image',
             ),
         }),
         ('읽기전용', {
@@ -101,7 +101,6 @@ class DriverAdmin(AbstractAdmin):
     )
     list_filter = (
         'app_version',
-        'taxi_type',
         'is_verified',
         'is_accepted',
         'is_freezed',
