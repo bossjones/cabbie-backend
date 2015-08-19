@@ -54,6 +54,7 @@ class DriverForm(forms.ModelForm):
         model = Driver
         widgets = {
             'about': AdminTextareaWidget(),
+            'remark': AdminTextareaWidget(),
         }
 
 
