@@ -35,8 +35,8 @@ class Notification(AbstractTimestampModel):
                                                         default=0)
 
     class Meta(AbstractTimestampModel.Meta):
-        verbose_name = u'알림'
-        verbose_name_plural = u'알림'
+        verbose_name = u'승객알림'
+        verbose_name_plural = u'승객알림'
 
 
 class NotificationPassengerThrough(models.Model):

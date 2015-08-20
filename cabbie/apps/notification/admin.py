@@ -20,26 +20,25 @@ class NotificationDriverInline(admin.TabularInline):
     raw_id_fields = ('driver',)
 
 
-class NotificationAdmin(AbstractAdmin):
+class NotificationPassengerAdmin(AbstractAdmin):
     inlines = [
         NotificationPassengerInline,
-        NotificationDriverInline,
     ]
     list_display = ('id', 'notification_type', 'body', 'is_all_passengers',
-                    'is_all_drivers', 'notified_passenger_count',
-                    'notified_driver_count', 'created_at')
-    list_filter = ('notification_type', 'is_all_passengers', 'is_all_drivers',
+                    'notified_passenger_count',
+                    'created_at')
+    list_filter = ('notification_type', 'is_all_passengers', 
                    'created_at',)
     search_fields = ('=id', 'body')
     fieldsets = (
         (None, {'fields': (
-            'notification_type', 'body', 'is_all_passengers', 'is_all_drivers',
+            'notification_type', 'body', 'is_all_passengers', 
         )}),
         ('읽기전용', {'fields': (
-            'notified_passenger_count', 'notified_driver_count', 'created_at'
+            'notified_passenger_count', 'created_at'
         )}),
     )
-    readonly_fields = ('notified_passenger_count', 'notified_driver_count',
+    readonly_fields = ('notified_passenger_count', 
                        'created_at',)
 
     def response_add(self, request, obj, post_url_continue=None):
@@ -48,5 +47,49 @@ class NotificationAdmin(AbstractAdmin):
         notification_created.send(sender=self.__class__, notification=obj)
         return ret
 
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        return qs.filter(notified_passenger_count__gt=0)        
 
-admin.site.register(Notification, NotificationAdmin)
+
+class NotificationDriverAdmin(AbstractAdmin):
+    inlines = [
+        NotificationDriverInline,
+    ]
+    list_display = ('id', 'notification_type', 'body', 
+                    'is_all_drivers', 
+                    'notified_driver_count', 'created_at')
+    list_filter = ('notification_type', 'is_all_drivers',
+                   'created_at',)
+    search_fields = ('=id', 'body')
+    fieldsets = (
+        (None, {'fields': (
+            'notification_type', 'body', 'is_all_drivers',
+        )}),
+        ('읽기전용', {'fields': (
+            'notified_driver_count', 'created_at'
+        )}),
+    )
+    readonly_fields = ('notified_driver_count',
+                       'created_at',)
+
+    def response_add(self, request, obj, post_url_continue=None):
+        ret = super(NotificationAdmin, self).response_add(
+            request, obj, post_url_continue)
+        notification_created.send(sender=self.__class__, notification=obj)
+        return ret
+
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        return qs.filter(notified_driver_count__gt=0)        
+
+
+# proxy model of Notification to allow double register
+class ProxyNotification(Notification):
+    class Meta:
+        proxy = True
+        verbose_name = u'기사알림'
+        verbose_name_plural = u'기사알림'
+
+admin.site.register(Notification, NotificationPassengerAdmin)
+admin.site.register(ProxyNotification, NotificationDriverAdmin)
