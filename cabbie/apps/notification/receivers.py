@@ -30,7 +30,7 @@ def on_post_create_notification(sender, notification, **kwargs):
     # -----------
     drivers_qs = None
 
-    if notification.drivers:
+    if len(notification.drivers.all()) > 0:
         # unconditional filter
         drivers_qs = notification.drivers.filter(is_active=True, is_accepted=True, is_sms_agreed=True) 
     else:
