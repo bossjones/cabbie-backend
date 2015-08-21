@@ -20,6 +20,9 @@ from cabbie.utils.email import send_email
 class Province(models.Model):
     name = models.CharField(u'시도', max_length=20, primary_key=True)
 
+    def __unicode__(self):
+        return u'{name}'.format(name=self.name)
+
     class Meta:
         verbose_name = u'시도'
         verbose_name_plural = u'시도'

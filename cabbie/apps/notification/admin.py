@@ -42,7 +42,7 @@ class NotificationPassengerAdmin(AbstractAdmin):
                        'created_at',)
 
     def response_add(self, request, obj, post_url_continue=None):
-        ret = super(NotificationAdmin, self).response_add(
+        ret = super(NotificationPassengerAdmin, self).response_add(
             request, obj, post_url_continue)
         notification_created.send(sender=self.__class__, notification=obj)
         return ret
@@ -58,13 +58,15 @@ class NotificationDriverAdmin(AbstractAdmin):
     ]
     list_display = ('id', 'notification_type', 'body', 
                     'is_all_drivers', 
+                    'is_freezed', 'education', 'province', 'region',
                     'notified_driver_count', 'created_at')
     list_filter = ('notification_type', 'is_all_drivers',
                    'created_at',)
     search_fields = ('=id', 'body')
     fieldsets = (
         (None, {'fields': (
-            'notification_type', 'body', 'is_all_drivers',
+            'body', 'is_all_drivers',
+            'is_freezed', 'education', 'province', 'region',
         )}),
         ('읽기전용', {'fields': (
             'notified_driver_count', 'created_at'
@@ -74,7 +76,7 @@ class NotificationDriverAdmin(AbstractAdmin):
                        'created_at',)
 
     def response_add(self, request, obj, post_url_continue=None):
-        ret = super(NotificationAdmin, self).response_add(
+        ret = super(NotificationDriverAdmin, self).response_add(
             request, obj, post_url_continue)
         notification_created.send(sender=self.__class__, notification=obj)
         return ret
@@ -88,8 +90,8 @@ class NotificationDriverAdmin(AbstractAdmin):
 class ProxyNotification(Notification):
     class Meta:
         proxy = True
-        verbose_name = u'기사알림'
-        verbose_name_plural = u'기사알림'
+        verbose_name = u'기사SMS알림'
+        verbose_name_plural = u'기사SMS알림'
 
 admin.site.register(Notification, NotificationPassengerAdmin)
 admin.site.register(ProxyNotification, NotificationDriverAdmin)
