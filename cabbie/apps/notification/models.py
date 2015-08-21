@@ -41,6 +41,7 @@ class Notification(AbstractTimestampModel):
     # only for drivers
     is_freezed = models.BooleanField(u'사용제한자 대상', default=False)
     education = models.ForeignKey(Education, related_name='notifications', verbose_name=u'교육차수', blank=True, null=True, on_delete=models.SET_NULL)
+    is_educated = models.NullBooleanField(u'교육이수여부')
     province = models.ForeignKey(Province, related_name='notifications', verbose_name=u'시도', blank=True, null=True, on_delete=models.SET_NULL)
     region = models.CharField(u'지역', max_length=20, blank=True, null=True)
  

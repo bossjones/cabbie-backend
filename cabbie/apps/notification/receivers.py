@@ -42,6 +42,9 @@ def on_post_create_notification(sender, notification, **kwargs):
             filters = {}
             filters['is_freezed'] = notification.is_freezed or False
 
+            if notification.is_educated:
+                filters['is_educated'] = notification.is_educated
+
             if notification.education:
                 filters['education'] = notification.education
 
