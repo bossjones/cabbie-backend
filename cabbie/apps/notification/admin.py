@@ -85,7 +85,8 @@ class NotificationDriverAdmin(AbstractAdmin):
 
     def get_queryset(self, request):
         qs = self.model._default_manager.get_queryset()
-        return qs.filter(notified_driver_count__gt=0)        
+        #return qs.filter(notified_driver_count__gt=0)        
+        return qs
 
 
 # proxy model of Notification to allow double register
