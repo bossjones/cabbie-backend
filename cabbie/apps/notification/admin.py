@@ -59,6 +59,7 @@ class NotificationDriverAdmin(AbstractAdmin):
     list_display = ('id', 'notification_type', 'body', 
                     'is_all_drivers', 
                     'is_freezed', 'education', 'province', 'region',
+                    'is_test',
                     'notified_driver_count', 'created_at')
     list_filter = ('notification_type', 'is_all_drivers',
                    'created_at',)
@@ -67,6 +68,7 @@ class NotificationDriverAdmin(AbstractAdmin):
         (None, {'fields': (
             'body', 'is_all_drivers',
             'is_freezed', 'education', 'province', 'region',
+            'is_test',
         )}),
         ('읽기전용', {'fields': (
             'notified_driver_count', 'created_at'

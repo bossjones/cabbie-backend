@@ -36,6 +36,8 @@ class Notification(AbstractTimestampModel):
     notified_driver_count = models.PositiveIntegerField(u'총 전송 (기사)',
                                                         default=0)
 
+    is_test = models.BooleanField(u'테스트', default=False)
+
     # only for drivers
     is_freezed = models.NullBooleanField(u'사용제한', blank=True, null=True)
     education = models.ForeignKey(Education, related_name='notifications', verbose_name=u'교육차수', blank=True, null=True, on_delete=models.SET_NULL)

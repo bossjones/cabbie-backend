@@ -49,7 +49,8 @@ def on_post_create_notification(sender, notification, **kwargs):
     # send sms
     for driver in drivers:
         try:
-            send_sms_raw(driver.phone, notification.body)
+            if not notification.is_test:
+                send_sms_raw(driver.phone, notification.body)
         except Exception as e:
             logger.error(u'Failed to send sms to {0}: {1}'.format(
                 driver, e))
