@@ -106,6 +106,7 @@ class DriverAdmin(AbstractAdmin):
         'app_version',
         'is_verified',
         'is_accepted',
+        'is_sms_agreed',
         'is_freezed',
         'is_educated',
         'province',
