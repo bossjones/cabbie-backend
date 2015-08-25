@@ -393,11 +393,6 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         send_push_notification(message, channels)
 
-        # start timer
-        for id_ in driver_ids:
-            #self._timers[str(id_)] = delay(random_int(5,30), partial(self.reject, id_))
-            self._timers[str(id_)] = delay(settings.REQUEST_TIMEOUT, partial(self.reject, id_))
-
 
     def send_expired(self, driver_ids):
         message = {
