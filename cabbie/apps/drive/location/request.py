@@ -70,7 +70,12 @@ class RequestProxyManager(LoggableMixin, SingletonMixin, PubsubMixin):
             return False
 
         return request.reject(driver_id)
- 
+
+# 
+#               PHASE_DISPATCHING                 PHASE_WAITING                  PHASE_TERMINATED
+#             /                   \            /                \             /
+#   dispatch                        dispatched                    termination     
+#   ---------------------------------------------------------------------------------------------> time
 
 class RequestProxy(LoggableMixin, PubsubMixin):
     """ 
@@ -79,15 +84,15 @@ class RequestProxy(LoggableMixin, PubsubMixin):
     
     create_path = '/_/drive/request/create'
     update_path = '/_/drive/request/{pk}/update'
-    refresh_interval = settings.REQUEST_REFRESH_INTERVAL
-    refresh_count = settings.REQUEST_REFRESH_COUNT
+
     candidate_count = settings.CANDIDATE_COUNT
-    reassign_count = settings.REASSIGN_COUNT
-    max_distance = settings.MAX_DISTANCE
-    request_distance_unit = settings.REQUEST_DISTANCE_UNIT
+    termination_delay_with_no_contact   = settings.TERMINATION_DELAY_WITH_NO_CONTACT
+    termination_delay_with_contacts     = settings.TERMINATION_DELAY_WITH_CONTACTS
     charge_type = 1000
     approved = False
 
+    PHASE_DISPATCHING, PHASE_WAITING, PHASE_TERMINATED = 'phase_dispatching', 'phase_waiting', 'phase_terminated'
+   
     def __init__(self, passenger, source, destination, additional_message):
         super(RequestProxy, self).__init__()
 
@@ -104,11 +109,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self._approval = None
         self._approved_candidate = None
 
-        self._timers = {}
+        self._target_distances = list(settings.TARGET_DISTANCES) 
+        self._border = self._target_distances[-1]
+        self._phase = self.PHASE_DISPATCHING
 
         self._update_queue = []
 
-        self._request_distance_loop_count = 1
+        self._delayed = None
+        
 
     def __unicode__(self):
         return u'RequestProxy {0}'.format(self._passenger)
@@ -189,16 +197,16 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         self.remove_contact(driver_id)
         self._rejects.append(driver_id)
 
-        if self.no_contacts and self.refresh_count == 0:
-            self.terminate()
-    
+
     @property
     def no_contacts(self):
         return len(self._contacts) == 0
 
     def approve(self, driver_id):
         # return (approved, ride_id)        
-
+        if self._state == Request.REJECTED:
+            self.info('Request {0} already terminated'.format(self._request_id))
+            return (False, None)
 
         if self.approved:
             self.info('Request {0} already approved, trial by {1} failed'.format(self._request_id, driver_id))
@@ -208,10 +216,8 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.info('Request {0} already rejected by {1}'.format(self._request_id, driver_id))
             return (False, None)
 
-        # cancel all timers 
-        for k,v in self._timers.iteritems():
-
-            cancel(v)
+        # cancel terminate timer
+        self.cancel_delayed()
 
         # remove from contacts
         self.remove_contact(driver_id)
@@ -254,14 +260,15 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         return (self.approved, proxy._ride_id)
 
     def reject(self, driver_id):
-        # cancel timer
-        cancel(self._timers[str(driver_id)])
-
         # index : mark standby
         DriverManager().mark_standby(driver_id)
 
         # add to rejects
         self.add_reject(driver_id)
+
+        # early termination if rejected all
+        if self._phase == self.PHASE_WAITING and self.get_current_contacts() == 0:
+            self.terminate()
 
         return True
 
@@ -270,31 +277,42 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.info('Terminate request {0} but already terminated'.format(self._request_id))
             return
 
-        if self._request_distance_loop_count == settings.REQUEST_DISTANCE_LOOP_MAX_COUNT:
-            # terminate
-            self.info('Terminate request {0}'.format(self._request_id))
+        # terminate
+        self.info('Terminate request {0}'.format(self._request_id))
 
-            # state rejected
-            self._state = Request.REJECTED        
-            self.update(state=Request.REJECTED)
+        # phase transition
+        self.transit_phase(self.PHASE_TERMINATED)
 
-        else:
-            self._request_distance_loop_count += 1
-            self.refresh_count = settings.REQUEST_REFRESH_COUNT 
-            self.request()
+        # cancel delayed
+        self.cancel_delayed()
+
+        # make other contacts as standby
+        for id_ in self._contacts:
+            DriverManager().mark_standby(id_)
+
+        # state rejected
+        self._state = Request.REJECTED        
+        self.update(state=Request.REJECTED)
+
+        # notify others that this request has been expired 
+        self.send_expired(self._contacts) 
 
     @gen.coroutine
-    def request(self):
+    def start(self):
+        self.set_delayed_request(immediate=True) 
+
+
+    @gen.coroutine
+    def request(self, target_distance):
         if self.approved:
             self.info('Request {0} approved, no more request'.format(self._request_id))
             return
 
-        # distance
-        target_distance = self._request_distance_loop_count * self.request_distance_unit
-
         # find
         candidates = yield DriverManager().get_driver_candidates(self._passenger.id, self._source['location'], self.candidate_count, 
                                                         target_distance, self.charge_type) 
+
+        self.info('Request {0} within {1}m: {2}'.format(self._request_id, target_distance, candidates))
 
         push_targets = []
 
@@ -346,12 +364,64 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
             self.send_request(push_targets)
 
-        # repeat
-        self.refresh_count -= 1
-        if self.refresh_count > 0:
-            delay(self.refresh_interval, self.request)
-        elif self.no_contacts:
-            delay(self.refresh_interval, self.terminate)
+        # phase : PHASE_DISPATCHING --> PHASE_WAITING at edge boundary
+        if target_distance == self._border:
+            self.transit_phase(self.PHASE_WAITING)
+
+        self.set_delayed_request()        
+
+
+    def set_delayed_request(self, immediate=False):
+        target_distance = self.get_target_distance()
+
+        if target_distance is None:
+            # terminate
+            if self.get_current_contacts() == 0:
+                self.terminate()
+            else:
+                self._delayed = delay(self.termination_delay_with_contacts, self.terminate)
+            return
+
+        if immediate:
+            self.request(target_distance)
+        else:
+            delay_time = self.guess_delay_time()
+            self._delayed = delay(delay_time, partial(self.request, target_distance))
+
+    def cancel_delayed(self):
+        if self._delayed:
+            self.info('Cancel delayed request')
+            cancel(self._delayed)
+
+    def get_target_distance(self):
+        if bool(self._target_distances):
+            return self._target_distances.pop(0)
+        else:
+            return None
+
+    def guess_delay_time(self):
+        current_contacts = self.get_current_contacts() 
+
+        if current_contacts == 0:
+            return 0
+        elif current_contacts <= 5:
+            return 5
+        elif current_contacts >= 10:
+            return 10
+        else:
+            return current_contacts * 1
+
+    def get_current_contacts(self):
+        return len(self._contacts)
+
+    def transit_phase(self, new):
+        if self._phase == new:
+            self.info('Already in {0} phase'.format(self._phase))
+        else:
+            old = self._phase
+            self._phase = new
+            self.info('Phase transtion from {0} to {1}'.format(old, new))
+
 
     def is_valid_location(self, source_location, driver_location, driver_id, target_distance):
         distance_ = distance(source_location, driver_location)

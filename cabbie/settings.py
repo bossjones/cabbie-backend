@@ -340,10 +340,9 @@ SESSION_CLOSE_TIMEOUT = 5               # seconds
 MAX_DISTANCE = 5 * 1000                 # meters
 
 # dispatch request
-REQUEST_REFRESH_INTERVAL = 3           # seconds
-REQUEST_REFRESH_COUNT = 1              # seconds
-REQUEST_DISTANCE_UNIT = 700            # meters
-REQUEST_DISTANCE_LOOP_MAX_COUNT = 3     # meters
+TARGET_DISTANCES = [300, 600, 1000, 1500, 2200]
+TERMINATION_DELAY_WITH_NO_CONTACT   = 5     # seconds
+TERMINATION_DELAY_WITH_CONTACTS     = 30    # seconds
 
 RIDE_COMPLETE_DISTANCE = 1000           # meters
 ESTIMATE_CACHE_DISTANCE = 20            # meters

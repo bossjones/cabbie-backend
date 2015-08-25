@@ -534,7 +534,7 @@ class WebSessionRequest(LoggableMixin, PassengerAuthenticatedWebHandler):
 
         # Create a new ride proxy instance
         proxy = RequestProxyManager().create(self.passenger, source, destination, additional_message)
-        proxy.request()
+        proxy.start()
 
         self.write(json.dumps({ 'request_id': proxy._request_id }))
 
