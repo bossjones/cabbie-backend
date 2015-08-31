@@ -41,7 +41,9 @@ def on_post_create_notification(sender, notification, **kwargs):
         if not notification.is_all_drivers:
             filters = {}
             filters['is_freezed'] = notification.is_freezed 
-            filters['is_educated'] = notification.is_educated or False
+            
+            if notification.is_educated:
+                filters['is_educated'] = notification.is_educated
 
             if notification.education:
                 filters['education'] = notification.education
