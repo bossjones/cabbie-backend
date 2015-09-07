@@ -21,7 +21,7 @@ class RequestAdmin(AbstractAdmin):
             'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'updated_at', 'created_at')
 
     def passenger_with_full_description(self, obj):
-        return obj.passenger.full_description_for_admin
+        return obj.passenger.full_description_for_admin if obj.passenger else None
     passenger_with_full_description.short_description = u'승객' 
     passenger_with_full_description.allow_tags = True
 
@@ -98,7 +98,7 @@ class RideAdmin(AbstractAdmin):
     )
 
     def passenger_with_full_description(self, obj):
-        return obj.passenger.full_description_for_admin
+        return obj.passenger.full_description_for_admin if obj.passenger else None
     passenger_with_full_description.short_description = u'승객' 
     passenger_with_full_description.allow_tags = True
 
