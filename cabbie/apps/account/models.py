@@ -122,13 +122,22 @@ class Passenger(User):
         verbose_name = u'승객'
         verbose_name_plural = u'승객'
 
-    def __unicode__(self):
-        _passenger_description = u'{name} 승객 {device_type}.{app_version} ({phone})'.format(name=self.name, device_type=self.device_type, app_version=self.app_version, phone=self.phone)
-        
-        if self.affiliation:
-            _passenger_description += u'\n{affiliation}'.format(affiliation=self.affiliation.name)
+    def _description(self):
+        return u'{name} 승객 {device_type}.{app_version} ({phone})'.format(name=self.name, device_type=self.device_type, app_version=self.app_version, phone=self.phone)
 
-        return _passenger_description 
+    def __unicode__(self):
+        if self.affiliation:
+            return self._description() + u'\n{affiliation}'.format(affiliation=self.affiliation.name)
+        return self._description()
+
+    @property
+    def full_description_for_admin(self):
+        if self.affiliation:
+            _ret =  self._description() 
+            _ret += u'\n<font color=#51c692>{affiliation}</font>'.format(affiliation=self.affiliation.name)
+            return _ret 
+
+        return self._description() 
         
 
     @property
