@@ -228,12 +228,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         proxy.set_driver(driver_id, driver_location, driver_charge_type)
 
         # notify to driver
-        proxy.approve()
+        proxy.request()
 
         candidate = self.get_contact_detail(driver_id)
         self.debug('Approved candidate: {0}'.format(candidate))
-        # send push 
-        proxy.send_approve_push(candidate) 
+        proxy.approve(candidate)     # send push at this timing
+
 
         # state approved
         self.info('Approve request {0}'.format(self._request_id))
