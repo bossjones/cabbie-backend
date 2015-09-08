@@ -191,7 +191,7 @@ class InternalRideCreateView(InternalView):
 
         data = json.loads(request.body)
 
-        data['state'] = Ride.APPROVED 
+        data['state'] = 'requested'
 
         source = data['source']
         destination = data['destination']

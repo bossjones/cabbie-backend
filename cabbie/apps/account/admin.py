@@ -54,6 +54,7 @@ class DriverForm(forms.ModelForm):
         model = Driver
         widgets = {
             'about': AdminTextareaWidget(),
+            'remark': AdminTextareaWidget(),
         }
 
 
@@ -62,21 +63,23 @@ class DriverAdmin(AbstractAdmin):
 
     form = DriverForm
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'taxi_type', 'car_number', 'province', 'region', 'car_model', 'company',
+    list_display = ('id', 'phone', 'name', 'profile_image_link', 'app_version', 'car_number', 'province', 'region', 'car_model', 
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 
                     'ride_count', 'total_ride_count',
                     'verification_code', 'is_verification_code_notified', 'is_verified', 'is_accepted',
                     'is_sms_agreed',
                     'is_freezed', 
                     'is_educated', 'education',
+                    'remark',
                     'date_joined',
                     'link_to_rides')
     fieldsets = (
         (None, {
             'fields': (
                 'phone', 'name', 'license_number', 'car_number', 'province', 'region', 'car_model',
-                'company', 'bank_account', 'max_capacity',
-                'taxi_type', 'is_educated', 'education', 'about', 'image',
+                'bank_account', 
+                'is_educated', 'education', 'about', 'image',
+                'remark',
             ),
         }),
         ('읽기전용', {
@@ -90,7 +93,7 @@ class DriverAdmin(AbstractAdmin):
         }),
     )
     search_fields = (
-        'phone', 'name', '=id', 'car_model', 'car_number', 'education__name',
+        'phone', 'name', '=id', 'car_model', 'car_number', 'license_number', 'education__name',
     )
     readonly_fields = (
         'recommend_code', 'point', rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security',
@@ -101,9 +104,9 @@ class DriverAdmin(AbstractAdmin):
     )
     list_filter = (
         'app_version',
-        'taxi_type',
         'is_verified',
         'is_accepted',
+        'is_sms_agreed',
         'is_freezed',
         'is_educated',
         'province',
@@ -364,6 +367,8 @@ class AbstractDropoutAdmin(AbstractAdmin):
     addable = False
     list_display = ('user_id', 'dropout_type', 'note', 'created_at')
     ordering = ('-created_at',)
+    list_filter = ('dropout_type',)
+    search_fields = ('note',)
 
 
 class PassengerDropoutAdmin(AbstractDropoutAdmin):  pass

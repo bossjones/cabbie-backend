@@ -20,12 +20,12 @@ class NoticeAdmin(AbstractAdmin):
 class AppPopupAdmin(AbstractAdmin):
     change_form_template = 'notice/admin/change_form.html'
 
-    list_display = ('id', 'title', 'image_preview', 'starts_at', 'ends_at', 'status')
+    list_display = ('id', 'title', 'image_preview', 'link', 'starts_at', 'ends_at', 'status')
     search_fields = (
         'title',
     )
     fields = (
-        'id', 'title', 'image', 
+        'id', 'title', 'image', 'link', 
         'starts_at', 'ends_at',
     )
     readonly_fields = (
@@ -39,7 +39,12 @@ class AppPopupAdmin(AbstractAdmin):
 
     def status(self, obj):
         now = timezone.now()
-        return u'게시중' if now >= obj.starts_at and now < obj.ends_at else u'종료'
+        if now < obj.starts_at:
+            return u'게시전'
+        if now >= obj.starts_at and now < obj.ends_at:
+            return u'게시중' 
+        else:
+            return u'종료'
     status.short_description = u'상태'
         
 

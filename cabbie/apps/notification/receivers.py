@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 def on_post_create_notification(sender, notification, **kwargs):
+    # for passengers 
+    # -----------
     passengers_qs = (Passenger.objects if notification.is_all_passengers else
                      notification.passengers)
     passengers = passengers_qs.filter(is_active=True, is_sms_agreed=True)
@@ -24,13 +26,43 @@ def on_post_create_notification(sender, notification, **kwargs):
         else:
             notification.notified_passenger_count += 1
 
-    drivers_qs = (Driver.objects if notification.is_all_drivers else
-                  notification.drivers)
-    drivers = drivers_qs.filter(is_active=True, is_accepted=True,
-                                is_freezed=False, is_sms_agreed=True)
+    # for drivers
+    # -----------
+    drivers_qs = None
+
+    if len(notification.drivers.all()) > 0:
+        # unconditional filter
+        drivers_qs = notification.drivers.filter(is_active=True, is_accepted=True, is_sms_agreed=True) 
+    else:
+        # unconditional filter
+        drivers_qs = Driver.objects.filter(is_active=True, is_accepted=True, is_sms_agreed=True)
+
+        # conditional filter
+        if not notification.is_all_drivers:
+            filters = {}
+            filters['is_freezed'] = notification.is_freezed 
+            
+            if notification.is_educated is not None:
+                filters['is_educated'] = notification.is_educated
+
+            if notification.education:
+                filters['education'] = notification.education
+
+            if notification.province:
+                filters['province'] = notification.province
+
+            if notification.region:
+                filters['region'] = notification.region
+
+            drivers_qs = drivers_qs.filter(**filters) 
+
+    drivers = drivers_qs
+
+    # send sms
     for driver in drivers:
         try:
-            send_sms_raw(driver.phone, notification.body)
+            if not notification.is_test:
+                send_sms_raw(driver.phone, notification.body)
         except Exception as e:
             logger.error(u'Failed to send sms to {0}: {1}'.format(
                 driver, e))

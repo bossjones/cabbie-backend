@@ -60,6 +60,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         if self.passenger_session:
             self.passenger_session.ride_proxy = self
 
+        # timeout callback
+        self._timeout_reject = None
+
     def _recover(self, ride):
         self._state = ride.state
         self._ride_id = ride.id
@@ -135,10 +138,10 @@ class RideProxy(LoggableMixin, PubsubMixin):
     # State methods
     # -------------
 
-    def approve(self):
+    def request(self):
         self._create(source=self._source, destination=self._destination, additional_message=self._additional_message)
 
-        self.info('Approved ride {0}'.format(self._ride_id))
+        self.info('Requested ride {0}'.format(self._ride_id))
 
         # register proxy by ride id
         RideProxyManager().set_ride_proxy_by_ride_id(int(self._ride_id), self)
@@ -152,16 +155,28 @@ class RideProxy(LoggableMixin, PubsubMixin):
                 'additional_message': self._additional_message,
             })
 
-        self._transition_to(Ride.APPROVED, update=False)
+        self._transition_to(Ride.REQUESTED, update=False)
+
+        # timeout 30s
+        self._timeout_reject = delay(settings.REQUEST_TIMEOUT, partial(self.reject, 'timeout'))
 
         return self._ride_id
 
+    def _cancel_timeout_reject(self):
+        self.debug('Cancel reject timeout')
+        if self._timeout_reject:
+            cancel(self._timeout_reject)
+
     def cancel(self):
+        
         if self._state in [Ride.CANCELED, Ride.REJECTED]:
             self.debug('Already canceled or rejected')
             self._transition_to(Ride.CANCELED)
             return
 
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+        
         if self.driver_session:
             self.driver_session.notify_driver_cancel()
         
@@ -171,6 +186,20 @@ class RideProxy(LoggableMixin, PubsubMixin):
         self._transition_to(Ride.CANCELED)
         self._destroy('cancel')
 
+    def approve(self, candidate):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
+        if self.passenger_session:
+            self.passenger_session.notify_passenger_approve()
+        self._transition_to(Ride.APPROVED)
+
+        # deprecate estimation polling
+        #self._refresh_estimate()
+
+        # send push 
+        self.send_approve_push(candidate) 
+
     def reject(self, reason):
 
         if self._state in [Ride.CANCELED, Ride.REJECTED]:
@@ -178,17 +207,26 @@ class RideProxy(LoggableMixin, PubsubMixin):
             self._transition_to(Ride.REJECTED, reason=reason)
             return
 
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_passenger_reject(reason)
         self._transition_to(Ride.REJECTED, reason=reason)
         self._destroy('reject')
 
     def arrive(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_passenger_arrive()
         self._transition_to(Ride.ARRIVED)
 
     def board(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_passenger_board(self._ride_id)
 
@@ -207,6 +245,9 @@ class RideProxy(LoggableMixin, PubsubMixin):
         delay(destroy_timer, partial(self._destroy, u'timer {0}'.format(destroy_timer_text)))
 
     def complete(self, summary):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_passenger_complete(summary, self._ride_id)
         self._transition_to(Ride.COMPLETED, summary=summary)
@@ -321,12 +362,18 @@ class RideProxy(LoggableMixin, PubsubMixin):
             send_push_notification(message, ['user_{0}'.format(passenger['id'])])
 
     def passenger_disconnect(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.driver_session:
             self.driver_session.notify_passenger_disconnect()
             self.driver_session.ride_proxy = None
         self.publish('finished', self)
 
     def driver_disconnect(self):
+        # cancel timed out reject
+        self._cancel_timeout_reject()
+
         if self.passenger_session:
             self.passenger_session.notify_driver_disconnect()
 

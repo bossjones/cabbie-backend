@@ -17,8 +17,13 @@ class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'state', 'created_at') 
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
-    list_display = ('id', 'passenger', 'source_information', 'destination_information', 'distance_in_kilometer', 
+    list_display = ('id', 'passenger_with_full_description', 'source_information', 'destination_information', 'distance_in_kilometer', 
             'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'updated_at', 'created_at')
+
+    def passenger_with_full_description(self, obj):
+        return obj.passenger.full_description_for_admin if obj.passenger else None
+    passenger_with_full_description.short_description = u'승객' 
+    passenger_with_full_description.allow_tags = True
 
     def approved_driver(self, obj):
         return obj.approval.driver if obj.approval else None 
@@ -67,7 +72,7 @@ class RideAdmin(AbstractAdmin):
         'driver__phone',
     )
     ordering = ('-updated_at',) 
-    list_display = ('id', 'driver', 'is_educated_driver', 'passenger', 'state_kor', 'ride_history', 'estimated_distance_to_pickup', 'boarding_interval', 'source_address',
+    list_display = ('id', 'driver', 'is_educated_driver', 'passenger_with_full_description', 'state_kor', 'ride_history', 'estimated_distance_to_pickup', 'boarding_interval', 'source_address',
                     'source_poi', 'destination_address', 'destination_poi',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
 
@@ -91,6 +96,11 @@ class RideAdmin(AbstractAdmin):
         'rollback_to_rejected',
         'rollback_to_canceled',
     )
+
+    def passenger_with_full_description(self, obj):
+        return obj.passenger.full_description_for_admin if obj.passenger else None
+    passenger_with_full_description.short_description = u'승객' 
+    passenger_with_full_description.allow_tags = True
 
     def is_educated_driver(self, obj):
         if obj.is_educated_driver(): 
