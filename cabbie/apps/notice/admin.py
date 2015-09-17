@@ -6,20 +6,17 @@ from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
 
 class NoticeAdmin(AbstractAdmin):
-    change_form_template = 'notice/admin/change_form.html'
-
-    list_display = ('id', 'title', 'visible_from', 'created_at')
+    list_display = ('id', 'title', 'notice_type', 'link', 'visible_from', 'created_at')
     search_fields = (
         'content',
     )
-    fields = ('id', 'title', 'content', 'visible_from', 'is_active',)
+    list_filter = ('notice_type',)
+    fields = ('id', 'title', 'notice_type', 'content', 'link', 'visible_from', 'is_active',)
     readonly_fields = (
         'id',
     ) 
 
 class AppPopupAdmin(AbstractAdmin):
-    change_form_template = 'notice/admin/change_form.html'
-
     list_display = ('id', 'title', 'image_preview', 'link', 'starts_at', 'ends_at', 'status')
     search_fields = (
         'title',
@@ -48,5 +45,5 @@ class AppPopupAdmin(AbstractAdmin):
     status.short_description = u'상태'
         
 
-
 admin.site.register(AppPopup, AppPopupAdmin)
+admin.site.register(Notice, NoticeAdmin)
