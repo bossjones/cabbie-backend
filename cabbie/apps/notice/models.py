@@ -14,11 +14,19 @@ class Notice(ActiveMixin, AbstractTimestampModel):
         (TYPE_NEWS,     u'백기사 뉴스'),
     )
 
+    VISIBILITY_ALL, VISIBILITY_DRIVER, VISIBILITY_PASSENGER = 'visibility_all', 'visibility_driver', 'visibility_passenger'
+    NOTICE_VISIBILITIES = (
+        (VISIBILITY_ALL,        u'전체'),
+        (VISIBILITY_DRIVER,     u'기사'),
+        (VISIBILITY_PASSENGER,  u'승객'),
+    ) 
+
     title = models.CharField(u'제목', max_length=50)
     content = tinymce_models.HTMLField(u'내용', blank=True)
     notice_type = models.CharField(u'타입', max_length=10, choices=NOTICE_TYPES, default=TYPE_EVENT)
     link = models.URLField(u'상세링크', max_length=200, blank=True, null=True)
     visible_from = models.DateTimeField(u'게시시간') 
+    visibility = models.CharField(u'타겟', max_length=30, choices=NOTICE_VISIBILITIES, default=VISIBILITY_ALL)
 
     class Meta(ActiveMixin.Meta, AbstractTimestampModel.Meta):
         verbose_name = u'공지사항'

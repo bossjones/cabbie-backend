@@ -6,12 +6,12 @@ from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
 
 class NoticeAdmin(AbstractAdmin):
-    list_display = ('id', 'title', 'notice_type', 'link', 'visible_from', 'created_at')
+    list_display = ('id', 'title', 'notice_type', 'visibility', 'link', 'visible_from', 'created_at')
     search_fields = (
         'content',
     )
     list_filter = ('notice_type',)
-    fields = ('id', 'title', 'notice_type', 'content', 'link', 'visible_from', 'is_active',)
+    fields = ('id', 'title', 'notice_type', 'visibility', 'content', 'link', 'visible_from', 'is_active',)
     readonly_fields = (
         'id',
     ) 
