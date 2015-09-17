@@ -47,6 +47,7 @@ admin.site.unregister(import_('cabbie.apps.drive.models.Hotspot'))
 
 admin.autodiscover()
 urlpatterns += patterns('',
+    (r'^tinymce/', include('tinymce.urls')),
     (r'^admin/', include(admin.site.urls)),
 )
 

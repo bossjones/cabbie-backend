@@ -6,7 +6,7 @@ from cabbie.common.serializers import AbstractSerializer
 class NoticeSerializer(AbstractSerializer):
     class Meta:
         model = Notice
-        fields = ('id', 'title', 'content', 'visible_from')
+        fields = ('id', 'title', 'notice_type', 'content', 'link', 'visible_from')
 
 class AppPopupSerializer(AbstractSerializer):
     image_url = serializers.CharField(source='url', read_only=True)
