@@ -515,6 +515,12 @@ SUPER_DRIVER_THRESHOLD = 10
 
 HOTSPOT_COUNT = 100
 
+# Tinymce
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'advanced', 
+    'width': 800,
+    'height': 800,
+}
 
 # Local settings
 # --------------
