@@ -222,11 +222,11 @@ class PassengerKpiAdmin(AbstractAdmin):
 
     def _ride_rated(self, obj):
         return obj.ride_rated
-    _ride_rated.short_description = u'평가완료(C)'
+    _ride_rated.short_description = u'평가완료(F)'
      
     def _rated_ratio(self, obj):
         return "%.1f" % (100.0 * obj.ride_rated / obj.ride_completed if obj.ride_completed > 0 else 0.0) 
-    _rated_ratio.short_description = u'평가완료율(C/E)(%)'
+    _rated_ratio.short_description = u'평가완료율(F/E)(%)'
 
     def _average_rate(self, obj):
         return "%.2f" % (1.0 * obj.ride_rate_sum / obj.ride_rated / 3 if obj.ride_rated > 0 else 0.0)
