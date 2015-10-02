@@ -19,15 +19,21 @@ class NoticeForm(forms.ModelForm):
 class NoticeAdmin(AbstractAdmin):
     form = NoticeForm
 
-    list_display = ('id', 'title', 'notice_type', 'visibility', 'link', 'visible_from', 'created_at')
+    list_display = ('id', 'title', 'image_preview', 'notice_type', 'visibility', 'link', 'visible_from', 'created_at')
     search_fields = (
         'content',
     )
     list_filter = ('notice_type',)
-    fields = ('id', 'title', 'notice_type', 'visibility', 'content', 'link', 'visible_from', 'is_active',)
+    fields = ('id', 'title', 'notice_type', 'visibility', 'image', 'content', 'link', 'link_label', 'visible_from', 'new_until', 'is_active',)
     readonly_fields = (
         'id',
     ) 
+
+    def image_preview(self, obj):
+        return u'<a href="{url}"><img src="{url}" width=200></a>'.format(url=obj.url)
+    image_preview.short_description = u'미리보기'
+    image_preview.allow_tags = True
+
 
 class AppPopupAdmin(AbstractAdmin):
     list_display = ('id', 'title', 'image_preview', 'link', 'starts_at', 'ends_at', 'status')

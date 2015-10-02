@@ -12,6 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from cabbie.apps.education.models import Education
 from cabbie.apps.affiliation.models import Affiliation
+from cabbie.apps.notice.models import Notice
 from cabbie.apps.account.managers import (
     UserManager, PassengerManager, DriverManager)
 from cabbie.common.fields import SeparatedField, JSONField
@@ -72,6 +73,9 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     # Device type
     device_type = models.CharField(u'기기종류', max_length=1, default='')
 
+    # Notice checked time
+    last_notice_checked_at = models.DateTimeField(u'마지막 공지사항 확인시간', default=timezone.now)
+
     objects = UserManager()
 
     class Meta:
@@ -107,6 +111,11 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     def has_role(self, role_name):
         return bool(self.get_role(role_name))
+
+    @property
+    def has_unread_notices(self):
+        unreads = Notice.objects.filter(visible_from__gt=self.last_notice_checked_at) 
+        return len(unreads) > 0
 
 
 class Passenger(User):

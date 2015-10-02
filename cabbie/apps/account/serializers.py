@@ -25,10 +25,11 @@ class AuthTokenSerializer(BaseAuthTokenSerializer):
 
 
 class UserSerializer(AbstractSerializer):
+    has_unread_notices = serializers.Field(source='has_unread_notices')
     class Meta:
         model = User
         fields = ('id', 'phone', 'password', 'name', 'is_sms_agreed', 'is_email_agreed', 'point', 
-                'date_joined', 'recommend_code')
+                'date_joined', 'recommend_code', 'has_unread_notices')
         read_only_fields = ('point', 'date_joined', 'recommend_code')
         write_only_fields = ('password',)
 

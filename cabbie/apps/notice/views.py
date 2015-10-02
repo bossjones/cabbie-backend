@@ -30,6 +30,10 @@ class NoticeViewSet(viewsets.ModelViewSet):
 
         else:
             qs = qs.filter(visibility=Notice.VISIBILITY_ALL)       
+
+        # update last_notice_checked_at with now
+        user.last_notice_checked_at = now
+        user.save(update_fields=['last_notice_checked_at'])
  
         return qs
 
