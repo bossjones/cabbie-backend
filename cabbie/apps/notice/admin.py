@@ -1,11 +1,24 @@
 # encoding: utf8
+
+from django import forms
+
 from django.contrib import admin
 from django.utils import timezone
+from django.contrib.admin.widgets import AdminTextareaWidget
 
 from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
 
+class NoticeForm(forms.ModelForm):
+    class Meta:
+        model = Notice
+        widgets = {
+            'content': AdminTextareaWidget(),
+        }
+
 class NoticeAdmin(AbstractAdmin):
+    form = NoticeForm
+
     list_display = ('id', 'title', 'notice_type', 'visibility', 'link', 'visible_from', 'created_at')
     search_fields = (
         'content',
