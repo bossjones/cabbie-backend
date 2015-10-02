@@ -229,9 +229,11 @@ class ImageMixin(DirtyMixin):
 
     @property
     def url(self):
-        return 'https://s3-{location}.amazonaws.com/{bucket}/{location}/{name}'.format(location=self.image.storage.location, 
+        if self.image:
+            return 'https://s3-{location}.amazonaws.com/{bucket}/{location}/{name}'.format(location=self.image.storage.location, 
                                                                     bucket=self.image.storage.bucket.name,
                                                                     name=self.image.name)
+        return None
 
     def _refresh_image_key(self):
         # TODO: Check existence in storage before allocating
