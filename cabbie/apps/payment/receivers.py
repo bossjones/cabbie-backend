@@ -8,6 +8,7 @@ from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.payment.models import Transaction, DriverCoupon
 from cabbie.apps.payment.signals import return_processed, return_apply_completed, coupon_processed
 from cabbie.apps.payment import messages
+from cabbie.apps.event.models import RidePointEvent
 from cabbie.apps.drive.signals import post_ride_board, post_ride_first_rated
 from cabbie.common.signals import post_create
 from cabbie.utils.sms import send_sms
@@ -49,8 +50,9 @@ def on_post_create_transaction(sender, instance, **kwargs):
     return_.amount = role.point
     return_.save(update_fields=['amount'])
 
-def after_ride_point_adjustment():
-    adjusted_ride_point_activated_from = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RIDE_POINT_ADJUSTED_FROM, "%Y-%m-%d").date()
+def during_ride_point_event():
+    ride_point_event_starts_from = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_2_3000P_BEGIN, "%Y-%m-%d").date()
+    ride_point_event_ends_at = datetime.datetime.strptime(settings.BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_2_3000P_END, "%Y-%m-%d").date()
 
     today = datetime.date.today()
 
@@ -59,6 +61,21 @@ def after_ride_point_adjustment():
 
 def on_post_ride_board(sender, ride, **kwargs):
     passenger = ride.passenger
+    
+    # affiliation ride point
+    affiliation_ride_point = 0
+    if passenger.is_affiliated:
+        affiliation_ride_point = passenger.affiliation.ride_mileage
+
+
+    # compare "event ride point" with "affiliation ride point"
+    current_event = RidePointEvent.current_event() 
+
+    if current_event and current_event.event_point > affiliation_ride_point:
+        success = current_event.apply_event(ride)
+
+        if success:
+            return
 
     # affiliated
     if passenger.is_affiliated:
@@ -72,7 +89,7 @@ def on_post_ride_board(sender, ride, **kwargs):
             state=Transaction.DONE,
             note=u'제휴사 회원 탑승 포인트'
         )
-    elif after_ride_point_adjustment(): 
+    else:
         amount = settings.BKTAXI_PASSENGER_RIDE_POINT_ADJUSTED_AMOUNT
         Transaction.objects.create(
             user=ride.passenger,
@@ -82,17 +99,6 @@ def on_post_ride_board(sender, ride, **kwargs):
             state=Transaction.DONE,
             note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
         )
-    else:
-        amount = settings.POINTS_BY_TYPE.get(Transaction.RIDE_POINT)
-        if amount:
-            Transaction.objects.create(
-                user=ride.passenger,
-                ride=ride,
-                transaction_type=Transaction.RIDE_POINT,
-                amount=amount,
-                state=Transaction.DONE,
-                note=Transaction.get_transaction_type_text(Transaction.RIDE_POINT)
-            )
 
 
 def on_post_ride_first_rated(sender, ride, **kwargs):
