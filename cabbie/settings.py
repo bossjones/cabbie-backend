@@ -103,6 +103,7 @@ INSTALLED_APPS = (
     'cabbie.apps.notice', 
     'cabbie.apps.notification',
     'cabbie.apps.policy',
+    'cabbie.apps.event',
 
     #'cabbie.apps.track',
 )
@@ -479,7 +480,7 @@ BKTAXI_PASSENGER_SIGNUP_POINT_DUE_DATE = '2015-05-31'
 # Recommend event sms
 BKTAXI_PASSENGER_RECOMMEND_EVENT_SMS_SEND_ENDS_AT = '2015-06-17'
 
-# Passenger promotion : 5000P
+# Passenger promotion : 5000P (deprecated)
 BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_5000P_BEGIN = '2015-07-15'
 BKTAXI_PASSENGER_RIDE_POINT_PROMOTION_5000P_END = '2015-07-22'
 
@@ -515,6 +516,12 @@ SUPER_DRIVER_THRESHOLD = 10
 
 HOTSPOT_COUNT = 100
 
+# Tinymce
+TINYMCE_DEFAULT_CONFIG = {
+    'theme': 'advanced', 
+    'width': 800,
+    'height': 800,
+}
 
 # Local settings
 # --------------

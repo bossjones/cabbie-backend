@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
@@ -13,9 +14,28 @@ class NoticeViewSet(viewsets.ModelViewSet):
     ordering = ('-visible_from',)
 
     def get_queryset(self):
+        # visible_from
+        qs = self.queryset
         now = datetime.datetime.now()
-        return self.queryset.filter(visible_from__lte=now, is_active=True)
-        
+        qs = qs.filter(visible_from__lte=now, is_active=True)
+
+        # visibility
+        user = self.request.user
+    
+        if user.has_role('passenger'):
+            qs = qs.filter( Q(visibility=Notice.VISIBILITY_PASSENGER) | Q(visibility=Notice.VISIBILITY_ALL))
+
+        elif user.has_role('driver'):
+            qs = qs.filter( Q(visibility=Notice.VISIBILITY_DRIVER) | Q(visibility=Notice.VISIBILITY_ALL))
+
+        else:
+            qs = qs.filter(visibility=Notice.VISIBILITY_ALL)       
+
+        # update last_notice_checked_at with now
+        user.last_notice_checked_at = now
+        user.save(update_fields=['last_notice_checked_at'])
+ 
+        return qs
 
 class AppPopupViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)

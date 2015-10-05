@@ -1,25 +1,41 @@
 # encoding: utf8
+
+from django import forms
+
 from django.contrib import admin
 from django.utils import timezone
+from django.contrib.admin.widgets import AdminTextareaWidget
 
 from cabbie.apps.notice.models import Notice, AppPopup
 from cabbie.common.admin import AbstractAdmin
 
-class NoticeAdmin(AbstractAdmin):
-    change_form_template = 'notice/admin/change_form.html'
+class NoticeForm(forms.ModelForm):
+    class Meta:
+        model = Notice
+        widgets = {
+            'content': AdminTextareaWidget(),
+        }
 
-    list_display = ('id', 'title', 'visible_from', 'created_at')
+class NoticeAdmin(AbstractAdmin):
+    form = NoticeForm
+
+    list_display = ('id', 'title', 'image_preview', 'notice_type', 'visibility', 'link', 'visible_from', 'created_at')
     search_fields = (
         'content',
     )
-    fields = ('id', 'title', 'content', 'visible_from', 'is_active',)
+    list_filter = ('notice_type',)
+    fields = ('id', 'title', 'notice_type', 'visibility', 'image', 'content', 'link', 'link_label', 'visible_from', 'new_until', 'is_active',)
     readonly_fields = (
         'id',
     ) 
 
-class AppPopupAdmin(AbstractAdmin):
-    change_form_template = 'notice/admin/change_form.html'
+    def image_preview(self, obj):
+        return u'<a href="{url}"><img src="{url}" width=200></a>'.format(url=obj.url)
+    image_preview.short_description = u'미리보기'
+    image_preview.allow_tags = True
 
+
+class AppPopupAdmin(AbstractAdmin):
     list_display = ('id', 'title', 'image_preview', 'link', 'starts_at', 'ends_at', 'status')
     search_fields = (
         'title',
@@ -48,5 +64,5 @@ class AppPopupAdmin(AbstractAdmin):
     status.short_description = u'상태'
         
 
-
 admin.site.register(AppPopup, AppPopupAdmin)
+admin.site.register(Notice, NoticeAdmin)
