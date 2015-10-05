@@ -75,6 +75,15 @@ def on_post_ride_board(sender, ride, **kwargs):
         success = current_event.apply_event(ride)
 
         if success:
+            amount = current_event.event_point 
+            Transaction.objects.create(
+                user=passenger,
+                ride=ride,
+                transaction_type=Transaction.RIDE_POINT,
+                amount=amount,
+                state=Transaction.DONE,
+                note=u'탑승 이벤트 포인트'
+            )
             return
 
     # affiliated

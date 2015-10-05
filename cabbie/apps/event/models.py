@@ -46,34 +46,41 @@ class RidePointEvent(AbstractTimestampModel):
 
         return current_events[0]
 
-
     def check_if_applicable_passenger_by_date(self, passenger, date, limit_count):
-        passengers_by_date = self.applied_passengers.get(date)
+        date_key = date.strftime('%Y-%m-%d')
+        passengers_by_date = self.applied_passengers.get(date_key)
 
         if not passengers_by_date:
-            return False 
+            return True 
         
-        ride_ids = passengers_by_date.get(passenger.id)
+        passenger_key = str(passenger.id)
+        ride_ids = passengers_by_date.get(passenger_key)
 
         if not ride_ids:
-            return False 
+            return True 
 
         return len(ride_ids) < limit_count
 
     def update_event(self, date, ride):
-        passengers_by_date = self.applied_passengers.get(date)
+        date_key = date.strftime('%Y-%m-%d')
+        passengers_by_date = self.applied_passengers.get(date_key)
+        
+        passenger_key = str(ride.passenger.id)
 
         if not passengers_by_date:
-            passenger_ride_ids = {}
-            passenger_ride_ids[ride.passenger.id] = [ride.id]
-            self.applied_passengers[date] = passenger_ride_ids
+            passengers_by_date= {}
+            passengers_by_date[passenger_key] = [ride.id]
+            self.applied_passengers[date_key] = passengers_by_date 
         else:
-            ride_ids = passenger_by_date.get(ride.passenger.id)
+            ride_ids = passengers_by_date.get(passenger_key)
 
             if not ride_ids:
-                passenger_by_date[ride.passenger.id] = [ride.id]
+                passengers_by_date[passenger_key] = [ride.id]
             else:
-                passenger_by_date[ride.passenger.id] = ride_ids.append(ride.id)
+                ride_ids.append(ride.id)
+                passengers_by_date[passenger_key] = ride_ids
+
+            self.applied_passengers[date_key] = passengers_by_date
 
         self.applied_count += 1
 
