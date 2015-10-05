@@ -82,7 +82,7 @@ def on_post_ride_board(sender, ride, **kwargs):
                 transaction_type=Transaction.RIDE_POINT,
                 amount=amount,
                 state=Transaction.DONE,
-                note=u'탑승 이벤트 포인트'
+                note=u'이벤트 탑승 포인트'
             )
             return
 
