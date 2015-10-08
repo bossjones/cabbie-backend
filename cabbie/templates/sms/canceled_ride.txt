@@ -1,0 +1,2 @@
+[백기사] {{ passenger_name }} {{ passenger_phone }} 승객의 콜 취소
+배차정보: {{ url_for_ride }}

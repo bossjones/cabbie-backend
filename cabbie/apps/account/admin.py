@@ -112,6 +112,7 @@ class DriverAdmin(AbstractAdmin):
         'province',
         'region',
         'education',
+        'remark',
         ('date_joined', EndDateIncludingDateRangeFilter),
     )
 
