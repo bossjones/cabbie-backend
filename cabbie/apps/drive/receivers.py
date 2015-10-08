@@ -5,6 +5,7 @@ from rest_framework.renderers import JSONRenderer
 
 from cabbie.apps.drive.signals import post_request_rejected, post_ride_requested, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
 from cabbie.utils.push import send_push_notification
+from cabbie.utils.sms import send_sms
 from cabbie.utils import json
 
 def on_post_request_rejected(sender, request, **kwargs):
@@ -69,6 +70,15 @@ def on_post_ride_reject(sender, ride, **kwargs):
     }
     send_push_notification(message, ['user_{0}'.format(passenger.id)], False)
 
+def on_post_ride_cancel(sender, ride, **kwargs):
+    # send each information of canceled rides to its QA managers
+    if ride.passenger:
+        for phone in settings.RIDE_QA_MANAGERS:
+            send_sms('sms/canceled_ride.txt', phone, {
+                'passenger_phone': ride.passenger.phone,
+                'url_for_ride': 'http://admin.bktaxi.com/admin/drive/ride/?id={id}'.format(id=ride.id)
+            }) 
+
 
 def on_post_ride_arrive(sender, ride, **kwargs):
     # For passenger, send arrive 
@@ -106,6 +116,7 @@ def on_post_ride_complete(sender, ride, **kwargs):
 post_ride_requested.connect(on_post_ride_requested, dispatch_uid='from_drive')
 post_ride_approve.connect(on_post_ride_approve, dispatch_uid='from_drive')
 post_ride_reject.connect(on_post_ride_reject, dispatch_uid='from_drive')
+post_ride_cancel.connect(on_post_ride_cancel, dispatch_uid='from_drive')
 post_ride_arrive.connect(on_post_ride_arrive, dispatch_uid='from_drive')
 post_ride_board.connect(on_post_ride_board, dispatch_uid='from_drive')
 post_ride_complete.connect(on_post_ride_complete, dispatch_uid='from_drive')

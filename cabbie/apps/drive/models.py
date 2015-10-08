@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from cabbie.apps.account.models import Passenger, Driver
 from cabbie.apps.drive.managers import TimezoneManager
-from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
+from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, post_ride_reject, post_ride_cancel, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_first_rated, post_ride_rated
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
@@ -353,7 +353,6 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         else:
             self.save()
 
-
         # create history
         passenger_location = (Point(*data['passenger_location'])
                               if 'passenger_location' in data else None)
@@ -376,7 +375,10 @@ class Ride(IncrementMixin, AbstractTimestampModel):
         elif self.state == self.REJECTED:
             post_ride_reject.send(sender=self.__class__, ride=self)
 
-        elif self.state == self.REJECTED:
+        elif self.state == self.CANCELED:
+            post_ride_cancel.send(sender=self.__class__, ride=self)
+
+        elif self.state == self.ARRIVED:
             post_ride_arrive.send(sender=self.__class__, ride=self)
 
         elif self.state == self.BOARDED:
