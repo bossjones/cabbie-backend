@@ -75,6 +75,7 @@ def on_post_ride_cancel(sender, ride, **kwargs):
     if ride.passenger:
         for phone in settings.RIDE_QA_MANAGERS:
             send_sms('sms/canceled_ride.txt', phone, {
+                'passenger_name': ride.passenger.name,
                 'passenger_phone': ride.passenger.phone,
                 'url_for_ride': 'http://admin.bktaxi.com/admin/drive/ride/?id={id}'.format(id=ride.id)
             }) 
