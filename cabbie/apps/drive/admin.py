@@ -7,6 +7,7 @@ from django.db.models import Q
 from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
+from cabbie.utils.geo import distance
 
 
 def rating_round_off(obj):
@@ -73,7 +74,7 @@ class RideAdmin(AbstractAdmin):
     )
     ordering = ('-updated_at',) 
     list_display = ('id', 'driver', 'is_educated_driver', 'passenger_with_full_description', 'state_kor', 'ride_history', 'estimated_distance_to_pickup', 'boarding_interval', 'source_address',
-                    'source_poi', 'destination_address', 'destination_poi',
+                    'source_poi', 'destination_address', 'destination_poi', 'distance_in_kilometer',
                     rating_round_off, 'rating_kindness', 'rating_cleanliness', 'rating_security', 'comment', 'updated_at', 'created_at')
 
     fieldsets = (
@@ -123,7 +124,7 @@ class RideAdmin(AbstractAdmin):
                 return u'{distance:.{digits}f}m'.format(distance=request.approval_driver_json['estimate']['distance'], digits=0)
 
         return None
-    estimated_distance_to_pickup.short_description = u'예상이동거리'
+    estimated_distance_to_pickup.short_description = u'기사위치->출발지 직선거리'
 
 
     def boarding_interval(self, obj):
@@ -146,6 +147,17 @@ class RideAdmin(AbstractAdmin):
         return None
     boarding_interval.short_description = u'승인후 탑승시간'
     boarding_interval.allow_tags = True
+
+    def distance_in_kilometer(self, obj):
+        source_location = obj.source.get('location')
+        destination_location = obj.destination.get('location')
+
+        if source_location and destination_location:
+            distance_ = distance(source_location, destination_location)
+            return "%.1fkm" % (float(distance_) / 1000)
+        return None
+    distance_in_kilometer.short_description = u'출발지->목적지 직선거리'
+
 
 
     def rollback_to_rejected(self, request, queryset):
