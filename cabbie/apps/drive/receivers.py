@@ -3,7 +3,7 @@ from django.db.models import Sum
 
 from rest_framework.renderers import JSONRenderer
 
-from cabbie.apps.drive.signals import post_request_rejected, post_ride_requested, post_ride_approve, post_ride_reject, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
+from cabbie.apps.drive.signals import post_request_rejected, post_ride_requested, post_ride_approve, post_ride_reject, post_ride_cancel, post_ride_arrive, post_ride_board, post_ride_complete, post_ride_rated
 from cabbie.utils.push import send_push_notification
 from cabbie.utils.sms import send_sms
 from cabbie.utils import json
