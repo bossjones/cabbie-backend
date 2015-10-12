@@ -209,6 +209,7 @@ class DriverAcceptView(APIView):
         if driver.is_sms_agreed:
             send_sms('sms/driver_accept.txt', driver.phone, {})
             send_sms('sms/driver_accept_2.txt', driver.phone, {})
+            send_sms('sms/driver_accept_event.txt', driver.phone, {})
 
         return self.render()
 
