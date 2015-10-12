@@ -32,6 +32,8 @@ class Region(models.Model):
     name = models.CharField(u'지역', max_length=30)
     depth = models.PositiveIntegerField(u'Depth', default=0) 
     province = models.ForeignKey(Province, related_name='regions', verbose_name=u'시도')
+    parent = models.ForeignKey('self', related_name='childs', verbose_name=u'상위지역'
+                                    , null=True, blank=True, on_delete=models.SET_NULL)
 
     def __unicode__(self):
         return u'{name}'.format(name=self.name)
@@ -73,7 +75,7 @@ class Request(AbstractTimestampModel):
     destination = JSONField(u'도착지', default='{}')
     destination_location = models.PointField(u'도착지 좌표', blank=True,
                                              null=True)
-    destination_province = models.Foreignkey(Province, related_name='destinations', verbose_name=u'도착지 지역'
+    destination_province = models.ForeignKey(Province, related_name='destinations', verbose_name=u'도착지 지역'
                                                     , null=True, blank=True, on_delete=models.SET_NULL)
     destination_region1 = models.ForeignKey(Region, related_name='depth1_destination_regions', verbose_name=u'도착지 세부지역1'
                                                 , null=True, blank=True, on_delete=models.SET_NULL)
@@ -145,7 +147,48 @@ class Request(AbstractTimestampModel):
         return ret
     description_for_contacts_by_distance.short_description = u'거리별 콜요청 리스트'
     description_for_contacts_by_distance.allow_tags = True
+
+    
+    def parse_source(self):
+        return Request.parse_address(self.source.get('address'))
+
+    def parse_destination(self):
+        return Request.parse_address(self.destination.get('address')) 
    
+    @staticmethod
+    def parse_address(address):
+        """
+        Parse address string and return a tuple (province, region1, region2)
+        """
+        province = None
+        region1 = None
+        region2 = None
+
+        if not address or not isinstance(address, basestring):
+            return (province, region1, region2)
+            
+        addresses = address.split() 
+
+        # province
+        try:
+            province = addresses[0]
+        except IndexError, e:
+            pass
+
+        # region1
+        try:
+            region1 = addresses[1]
+        except IndexError, e:
+            pass
+
+        # region2
+        try:
+            region2 = addresses[2]
+        except IndexError, e:
+            pass
+
+        return (province, region1, region2)
+
 
     def _decorate_contact(self, contact):
         if contact in self.rejects:
