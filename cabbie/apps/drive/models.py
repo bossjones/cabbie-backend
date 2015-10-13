@@ -28,6 +28,22 @@ class Province(models.Model):
         verbose_name_plural = u'시도'
 
 
+class Region(models.Model):
+    name = models.CharField(u'지역', max_length=30)
+    depth = models.PositiveIntegerField(u'Depth', default=0) 
+    province = models.ForeignKey(Province, related_name='regions', verbose_name=u'시도')
+    parent = models.ForeignKey('self', related_name='childs', verbose_name=u'상위지역'
+                                    , null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __unicode__(self):
+        return u'{name}'.format(name=self.name)
+
+    class Meta:
+        verbose_name = u'지역'
+        verbose_name_plural = u'지역'
+
+
+
 class Request(AbstractTimestampModel):
     STANDBY, APPROVED, REJECTED,  = 'standby', 'approved', 'rejected'
 
@@ -45,14 +61,29 @@ class Request(AbstractTimestampModel):
 
     passenger = models.ForeignKey(Passenger, related_name='requests', verbose_name=u'승객'
                                             , null=True, on_delete=models.SET_NULL)
+    # source
     source = JSONField(u'출발지', default='{}')
     source_location = models.PointField(u'출발지 좌표')
     source_province = models.ForeignKey(Province, related_name='requests', verbose_name=u'콜요청 지역'
                                                 , null=True, blank=True, on_delete=models.SET_NULL)
+    source_region1 = models.ForeignKey(Region, related_name='depth1_request_regions', verbose_name=u'콜요청 세부지역1'
+                                                , null=True, blank=True, on_delete=models.SET_NULL)
+    source_region2 = models.ForeignKey(Region, related_name='depth2_request_regions', verbose_name=u'콜요청 세부지역2'
+                                                , null=True, blank=True, on_delete=models.SET_NULL)
+
+    # distance
     destination = JSONField(u'도착지', default='{}')
     destination_location = models.PointField(u'도착지 좌표', blank=True,
                                              null=True)
+    destination_province = models.ForeignKey(Province, related_name='destinations', verbose_name=u'도착지 지역'
+                                                    , null=True, blank=True, on_delete=models.SET_NULL)
+    destination_region1 = models.ForeignKey(Region, related_name='depth1_destination_regions', verbose_name=u'도착지 세부지역1'
+                                                , null=True, blank=True, on_delete=models.SET_NULL)
+    destination_region2 = models.ForeignKey(Region, related_name='depth2_destination_regions', verbose_name=u'도착지 세부지역2'
+                                                , null=True, blank=True, on_delete=models.SET_NULL)
+
     distance = models.PositiveIntegerField(u'요청거리', default=0)
+
     state = models.CharField(u'상태', max_length=50, choices=STATES)
     contacts = JSONField(u'보낸기사', default='[]')
     contacts_by_distance = JSONField(u'거리별 보낸기사', default='{}')
@@ -116,7 +147,48 @@ class Request(AbstractTimestampModel):
         return ret
     description_for_contacts_by_distance.short_description = u'거리별 콜요청 리스트'
     description_for_contacts_by_distance.allow_tags = True
+
+    
+    def parse_source(self):
+        return Request.parse_address(self.source.get('address'))
+
+    def parse_destination(self):
+        return Request.parse_address(self.destination.get('address')) 
    
+    @staticmethod
+    def parse_address(address):
+        """
+        Parse address string and return a tuple (province, region1, region2)
+        """
+        province = None
+        region1 = None
+        region2 = None
+
+        if not address or not isinstance(address, basestring):
+            return (province, region1, region2)
+            
+        addresses = address.split() 
+
+        # province
+        try:
+            province = addresses[0]
+        except IndexError, e:
+            pass
+
+        # region1
+        try:
+            region1 = addresses[1]
+        except IndexError, e:
+            pass
+
+        # region2
+        try:
+            region2 = addresses[2]
+        except IndexError, e:
+            pass
+
+        return (province, region1, region2)
+
 
     def _decorate_contact(self, contact):
         if contact in self.rejects:
