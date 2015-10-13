@@ -278,7 +278,7 @@ CELERY_IMPORTS = (
 )
 CELERYBEAT_SCHEDULE = {
     'update_request_regions': {
-        'task': 'cabbie.apps.drive.tasks.UpdateRequestRegionsTask'
+        'task': 'cabbie.apps.drive.tasks.UpdateRequestRegionsTask',
         'schedule': crontab(minute='*/5'),   # execute every 5 minutes
     },
 
