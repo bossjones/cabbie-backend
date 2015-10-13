@@ -33,7 +33,7 @@ class RequestAdmin(AbstractAdmin):
 
     def approval_interval(self, obj):
         if obj.state == Request.APPROVED:
-            return u'{seconds:.{digits}f}초'.format(seconds=(obj.updated_at - obj.created_at).total_seconds(), digits=1)
+            return u'{seconds:.{digits}f}초'.format(seconds=(obj.approval.created_at - obj.created_at).total_seconds(), digits=1)
         return None
     approval_interval.short_description = u'승인시간'
 
