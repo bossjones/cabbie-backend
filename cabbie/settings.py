@@ -277,22 +277,28 @@ CELERY_IMPORTS = (
     'cabbie.utils.push',
 )
 CELERYBEAT_SCHEDULE = {
-    'dormant_driver': {
-        'task': 'cabbie.apps.account.tasks.DormantDriverDailyTask',
-        'schedule': crontab(minute=1, hour=0),
+    'update_request_regions': {
+        'task': 'cabbie.apps.drive.tasks.UpdateRequestRegionsTask'
+        'schedule': crontab(minute='*/5'),   # execute every 5 minutes
     },
-    'super_driver': {
-        'task': 'cabbie.apps.account.tasks.SuperDriverMonthlyTask',
-        'schedule': crontab(minute=5, hour=0, day_of_month=1),
-    },
-    'compute_hotspot': {
-        'task': 'cabbie.apps.drive.tasks.ComputeHotspotDailyTask',
-        'schedule': crontab(minute=2, hour=0),
-    },
-    'coupon': {
-        'task': 'cabbie.apps.stats.tasks.CouponMonthlyTask',
-        'schedule': crontab(minute=45, hour=0, day_of_month=1),
-    },
+
+    # deprecated
+#   'dormant_driver': {
+#       'task': 'cabbie.apps.account.tasks.DormantDriverDailyTask',
+#       'schedule': crontab(minute=1, hour=0),
+#   },
+#   'super_driver': {
+#       'task': 'cabbie.apps.account.tasks.SuperDriverMonthlyTask',
+#       'schedule': crontab(minute=5, hour=0, day_of_month=1),
+#   },
+#   'compute_hotspot': {
+#       'task': 'cabbie.apps.drive.tasks.ComputeHotspotDailyTask',
+#       'schedule': crontab(minute=2, hour=0),
+#   },
+#   'coupon': {
+#       'task': 'cabbie.apps.stats.tasks.CouponMonthlyTask',
+#       'schedule': crontab(minute=45, hour=0, day_of_month=1),
+#   },
 }
 
 
