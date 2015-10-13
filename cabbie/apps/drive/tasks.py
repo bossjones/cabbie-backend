@@ -48,7 +48,7 @@ class ComputeHotspotDailyTask(Task):
 
 class UpdateRequestRegionsTask(Task):
     def run(self, *args, **kwargs):
-        requests = Request.objects.filter(destination_province=None)  
+        requests = Request.objects.exclude(source={}).filter(destination_province=None) 
         
         for request in requests:
             source_province, source_region1, source_region2 = request.parse_source()    # source_region2 is nullable 
