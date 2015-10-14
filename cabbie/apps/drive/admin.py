@@ -19,7 +19,7 @@ class RequestAdmin(AbstractAdmin):
     search_fields = ('=id', 'passenger__name', 'passenger__phone', '=passenger__email')
     ordering = ('-created_at',)
     list_display = ('id', 'passenger_with_full_description', 'source_information', 'destination_information', 'distance_in_kilometer', 
-            'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'updated_at', 'created_at')
+            'state_kor', 'description_for_contacts_by_distance', 'link_to_ride', 'approved_driver', 'approval_interval', 'estimated_distance_to_pickup', 'created_at')
 
     def passenger_with_full_description(self, obj):
         return obj.passenger.full_description_for_admin if obj.passenger else None

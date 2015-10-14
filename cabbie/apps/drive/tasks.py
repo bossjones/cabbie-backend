@@ -93,7 +93,7 @@ class UpdateRequestRegionsTask(Task):
                 update_fields.append('destination_region2')
 
             # update db 
-            request.save(update_fields=update_fields)
+            request.save(update_fields=update_fields, ignore_updated_at=True)
 
 
 # helper
