@@ -2,7 +2,31 @@ from celery.task import Task
 from django.conf import settings
 from django.utils import timezone
 
-from cabbie.apps.account.models import Driver
+from cabbie.apps.account.models import Driver, DriverLocation
+
+from cabbie.utils.parse import ParseManager
+
+class ActiveDriverHourlyTask(Task):
+    def run(self, *args, **kwargs):
+        limit = 100
+        loop = 0
+
+        fetched = 0
+
+        while True:
+            locations = ParseManager()._get(settings.PARSE_OBJECT_DRIVER_LOCATION, limit=limit, skip=loop*limit) 
+            results = locations['results']
+
+            if results: 
+                fetched += len(results)
+                
+                for driver_location in results:
+                    # sync with db
+                    DriverLocation.update(driver_location)
+
+                loop += 1
+            else:
+                break;
 
 
 class DormantDriverDailyTask(Task):

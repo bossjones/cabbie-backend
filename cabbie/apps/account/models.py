@@ -6,6 +6,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.contrib.gis.db import models as GeoModels
+from django.contrib.gis.geos import Point
 from django.db.models import F, Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -495,6 +497,39 @@ class Driver(NullableImageMixin, User):
         super(Driver, self).save(
             force_insert, force_update, using, update_fields)
 
+class DriverLocation(GeoModels.Model):
+    driver=models.OneToOneField(Driver, primary_key=True)
+    activated=models.BooleanField(u'활성화여부', default=False)
+    location=GeoModels.PointField(u'좌표')
+    created_at = models.DateTimeField(u'생성시간', default=timezone.now,
+                                      db_index=True, editable=False)
+    updated_at = models.DateTimeField(u'갱신시간', default=timezone.now,
+                                      db_index=True, editable=False)
+    parse_object_id = models.CharField(u'Parse object ID', max_length=20)
+
+    class Meta:
+        verbose_name = u'기사위치'
+        verbose_name_plural = u'기사위치'
+
+    @staticmethod
+    def update(data):
+        try:
+            driver = Driver.objects.get(pk=data['driver'])
+        except Driver.DoesNotExist, e:
+            return
+        
+        driver_location, created = DriverLocation.objects.get_or_create(driver=driver)
+
+        driver_location.activated = data['activated']
+        driver_location.location = Point(data['location']['longitude'], data['location']['latitude']) 
+
+        # TODO: parse to datetime
+    #   driver_location.created_at = data['createdAt']
+    #   driver_location.updated_at = data['updatedAt']
+
+        driver_location.parse_object_id = data['objectId']
+
+        driver_location.save()
 
 class DriverReservation(NullableImageMixin, AbstractTimestampModel):
     IMAGE_TYPES = ('original',)
