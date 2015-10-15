@@ -281,7 +281,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'cabbie.apps.drive.tasks.UpdateRequestRegionsTask',
         'schedule': crontab(minute='*/5'),   # execute every 5 minutes
     },
-
+    'update_driver_location': {
+        'task': 'cabbie.apps.account.tasks.ActiveDriverHourlyTask',
+        'schedule': crontab(minute=0),       # execute every hour
+    }
     # deprecated
 #   'dormant_driver': {
 #       'task': 'cabbie.apps.account.tasks.DormantDriverDailyTask',

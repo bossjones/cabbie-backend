@@ -8,7 +8,7 @@ from cabbie.utils.meta import SingletonMixin
 
 class ParseManager(LoggableMixin, SingletonMixin):
     # helper
-    def _get(self, object_name, params=None, headers=None):
+    def _get(self, object_name, params=None, headers=None, limit=None, skip=None):
         connection = httplib.HTTPSConnection(settings.PARSE_API_URL, settings.PARSE_HTTPS_PORT)
         connection.connect()
 
@@ -16,9 +16,12 @@ class ParseManager(LoggableMixin, SingletonMixin):
         _method = 'GET'
 
         # where
-        _params = params or {} 
-        _where = urllib.urlencode({'where': json.dumps(_params)})
-
+        _params = {'where': json.dumps(params or {})}
+        if limit is not None:
+            _params['limit'] = limit
+        if skip is not None:
+            _params['skip'] = skip
+        
         # header
         _headers = {
             "X-Parse-Application-Id": settings.PARSE_APPLICATION_ID,
@@ -27,7 +30,7 @@ class ParseManager(LoggableMixin, SingletonMixin):
         _headers.update(headers or {})
 
         # url
-        _url = '/1/classes/{0}?{1}'.format(object_name, _where)
+        _url = '/1/classes/{0}?{1}'.format(object_name, urllib.urlencode(_params))
 
         # request
         connection.request(_method, _url, '', _headers)
