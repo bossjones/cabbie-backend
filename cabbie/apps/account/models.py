@@ -524,13 +524,15 @@ class DriverLocation(GeoModels.Model):
         created_at = datetime.datetime.strptime(data['createdAt'], "%Y-%m-%dT%H:%M:%S.%fZ") 
         updated_at = datetime.datetime.strptime(data['updatedAt'], "%Y-%m-%dT%H:%M:%S.%fZ") 
  
+        activated = data['activated']
+
         try:
             driver_location = DriverLocation.objects.get(driver=driver)
         except DriverLocation.DoesNotExist, e:
-            driver_location = DriverLocation(driver=driver, location=Point(lon, lat), parse_object_id=parse_object_id, created_at=created_at, updated_at=updated_at)
+            driver_location = DriverLocation(driver=driver, location=Point(lon, lat), parse_object_id=parse_object_id, created_at=created_at, updated_at=updated_at, activated=activated)
             driver_location.save()
         else:
-            driver_location.activated = data['activated']
+            driver_location.activated = activated
             driver_location.location = Point(lon, lat)
             driver_location.parse_object_id = parse_object_id
             driver_location.created_at = created_at
