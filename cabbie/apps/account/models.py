@@ -498,7 +498,7 @@ class Driver(NullableImageMixin, User):
             force_insert, force_update, using, update_fields)
 
 class DriverLocation(GeoModels.Model):
-    driver=models.OneToOneField(Driver, primary_key=True)
+    driver=models.OneToOneField(Driver, primary_key=True, on_delete=models.CASCADE)
     activated=models.BooleanField(u'활성화여부', default=False)
     location=GeoModels.PointField(u'좌표')
     created_at = models.DateTimeField(u'생성시간', default=timezone.now,
