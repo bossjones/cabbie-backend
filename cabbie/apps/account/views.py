@@ -217,9 +217,11 @@ class UserDropoutView(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user.concrete
         if isinstance(user, Passenger):
-            user.dropout(PassengerDropout.REQUEST)
+            note = u'{name} {phone}'.format(name=user.name, phone=user.phone)
+            user.dropout(PassengerDropout.REQUEST, note=note)
         elif isinstance(user, Driver):
-            user.dropout(DriverDropout.REQUEST)
+            note = u'{name} {province}'.format(name=user.name, province=user.province)
+            user.dropout(DriverDropout.REQUEST, note=note)
 
         return self.render()
             

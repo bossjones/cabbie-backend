@@ -116,9 +116,9 @@ class TimestampMixin(models.Model):
         self.save(update_fields=[])
 
     def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+             update_fields=None, ignore_updated_at=False):
         self.updated_at = timezone.now()
-        if update_fields is not None:
+        if update_fields is not None and not ignore_updated_at:
             update_fields.append('updated_at')
         super(TimestampMixin, self).save(
             force_insert, force_update, using, update_fields)

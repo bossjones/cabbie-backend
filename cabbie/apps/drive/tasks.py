@@ -48,47 +48,52 @@ class ComputeHotspotDailyTask(Task):
 
 class UpdateRequestRegionsTask(Task):
     def run(self, *args, **kwargs):
-        requests = Request.objects.filter(destination_province=None)  
+        requests = Request.objects.exclude(source={}).filter(destination_province=None) 
         
         for request in requests:
-            # destination
-            source_province, source_region1, source_region2 = request.parse_source()  
-            destination_province, destination_region1, destination_region2 = request.parse_destination()
+            source_province, source_region1, source_region2 = request.parse_source()    # source_region2 is nullable 
+            destination_province, destination_region1, destination_region2 = request.parse_destination()    # destination_region2 is nullable
             
-            
-            # update Province, Region
+            update_fields = [] 
+            # update Province, Region, Request
             # -----------------------
 
             # source
             # 1. create Province, Region
             source_province_obj, created = Province.objects.get_or_create(name=source_province)
             source_region1_obj, created = Region.objects.get_or_create(name=source_region1, depth=1, province=source_province_obj)
-            source_region2_obj, created = Region.objects.get_or_create(name=source_region2, depth=2, province=source_province_obj, parent=source_region1_obj)
+
             # 2. update Request
             request.source_province = source_province_obj
             request.source_region1 = source_region1_obj
-            request.source_region2 = source_region2_obj
+            update_fields.append('source_province')
+            update_fields.append('source_region1')
+
+            # 3. region2 needs null check
+            if source_region2:
+                source_region2_obj, created = Region.objects.get_or_create(name=source_region2, depth=2, province=source_province_obj, parent=source_region1_obj)
+                request.source_region2 = source_region2_obj
+                update_fields.append('source_region2')
 
             # destination
             # 1. create Province, Region
             destination_province_obj, created = Province.objects.get_or_create(name=destination_province)
             destination_region1_obj, created = Region.objects.get_or_create(name=destination_region1, depth=1, province=destination_province_obj)
-            destination_region2_obj, created = Region.objects.get_or_create(name=destination_region2, depth=2, province=destination_province_obj, parent=destination_region1_obj)
+
             # 2. update Request
             request.destination_province = destination_province_obj
             request.destination_region1 = destination_region1_obj
-            request.destination_region2 = destination_region2_obj
+            update_fields.append('destination_province')
+            update_fields.append('destination_region1')
 
+            # 3. region2 needs null check
+            if destination_region2:
+                destination_region2_obj, created = Region.objects.get_or_create(name=destination_region2, depth=2, province=destination_province_obj, parent=destination_region1_obj)
+                request.destination_region2 = destination_region2_obj
+                update_fields.append('destination_region2')
 
             # update db 
-            request.save(update_fields=[
-                            'destination_province', 
-                            'destination_region1', 
-                            'destination_region2',
-                            'source_province',
-                            'source_region1',
-                            'source_region2',
-                         ])
+            request.save(update_fields=update_fields, ignore_updated_at=True)
 
 
 # helper

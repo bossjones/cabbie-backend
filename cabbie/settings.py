@@ -281,7 +281,10 @@ CELERYBEAT_SCHEDULE = {
         'task': 'cabbie.apps.drive.tasks.UpdateRequestRegionsTask',
         'schedule': crontab(minute='*/5'),   # execute every 5 minutes
     },
-
+    'update_driver_location': {
+        'task': 'cabbie.apps.account.tasks.ActiveDriverHourlyTask',
+        'schedule': crontab(minute=0),       # execute every hour
+    }
     # deprecated
 #   'dormant_driver': {
 #       'task': 'cabbie.apps.account.tasks.DormantDriverDailyTask',
@@ -504,9 +507,9 @@ POINTS_BY_TYPE = {
     'recommend_p2d': 1000,
     'recommend_d2p': 1000,
     'recommend_d2d': 5000,
-    'recommended_d2p': 1000,
     'recommended_p2p': 1000,
     'recommended_p2d': 0,
+    'recommended_d2p': 1000,
     'recommended_d2d': 1000,
     'signup_point': 10000,                      # For passenger
     'ride_point': 1000,                         # For passenger
