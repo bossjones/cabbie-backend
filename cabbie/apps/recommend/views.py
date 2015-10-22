@@ -43,12 +43,26 @@ class RecommendViewSet(viewsets.ModelViewSet):
 class RecommendQueryAmountView(APIView):
     permission_classes = (AllowAny,)
 
+    allowed_types = [
+        'recommend_p2p',
+        'recommend_p2d',
+        'recommend_d2p',
+        'recommend_d2d',
+        'recommended_p2p',
+        'recommended_p2d',
+        'recommended_d2p',
+        'recommended_d2d',
+    ]
+
     def get(self, request, *args, **kwargs):
 
         recommend_type = request.GET.get('recommend_type')
 
         if recommend_type is None or not isinstance(recommend_type, basestring):
             return self.render_error(u'"recommend_type" is needed')
+
+        if recommend_type not in self.allowed_types:
+            return self.render_error(u'"recommend_type" you input is not allowed')
 
         amount = settings.POINTS_BY_TYPE.get(recommend_type)
         amount = amount or 0
