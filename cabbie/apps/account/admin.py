@@ -314,7 +314,9 @@ class PassengerAdmin(AbstractAdmin):
     def dropout(self, request, queryset):
         passengers = list(queryset.all())
         for passenger in passengers:
-            passenger.dropout(PassengerDropout.ADMIN)
+            note = u'{name} {phone}'.format(name=passenger.name, phone=passenger.phone)
+
+            passenger.dropout(PassengerDropout.ADMIN, note=note)
         msg = u'{0}명의 승객이 탈퇴 처리되었습니다.'.format(len(passengers))
         self.message_user(request, msg)
     dropout.short_description = u'탈퇴 처리'

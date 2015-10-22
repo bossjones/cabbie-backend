@@ -216,10 +216,11 @@ class DriverAcceptView(APIView):
 class UserDropoutView(APIView):
     def post(self, request, *args, **kwargs):
         user = request.user.concrete
+        note = u'{name} {phone}'.format(name=user.name, phone=user.phone)
         if isinstance(user, Passenger):
-            user.dropout(PassengerDropout.REQUEST)
+            user.dropout(PassengerDropout.REQUEST, note=note)
         elif isinstance(user, Driver):
-            user.dropout(DriverDropout.REQUEST)
+            user.dropout(DriverDropout.REQUEST, note=note)
 
         return self.render()
             
