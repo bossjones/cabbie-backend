@@ -40,6 +40,22 @@ class RecommendViewSet(viewsets.ModelViewSet):
         return qs
 
 
+class RecommendQueryAmountView(APIView):
+    permission_classes = (AllowAny,)
+
+    def get(self, request, *args, **kwargs):
+
+        recommend_type = request.GET.get('recommend_type')
+
+        if recommend_type is None or not isinstance(recommend_type, basestring):
+            return self.render_error(u'"recommend_type" is needed')
+
+        amount = settings.POINTS_BY_TYPE.get(recommend_type)
+        amount = amount or 0
+
+        return self.render({ 'amount': amount })
+
+
 class RecommendQueryView(APIView):
     permission_classes = (AllowAny,)
 
