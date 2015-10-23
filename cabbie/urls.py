@@ -94,6 +94,8 @@ router.register(r'notices',
                 import_('cabbie.apps.notice.views.NoticeViewSet'))
 router.register(r'apppopups',
                 import_('cabbie.apps.notice.views.AppPopupViewSet'))
+router.register(r'appexplanations',
+                import_('cabbie.apps.notice.views.AppExplanationViewSet'))
 router.register(r'recommends',
                 import_('cabbie.apps.recommend.views.RecommendViewSet'))
 

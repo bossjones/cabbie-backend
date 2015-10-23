@@ -4,8 +4,8 @@ from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.notice.serializers import NoticeSerializer, AppPopupSerializer
-from cabbie.apps.notice.models import Notice, AppPopup
+from cabbie.apps.notice.serializers import NoticeSerializer, AppPopupSerializer, AppExplanationSerializer
+from cabbie.apps.notice.models import Notice, AppPopup, AppExplanation
 
 class NoticeViewSet(viewsets.ModelViewSet):
     permission_classes = (AllowAny,)
@@ -50,3 +50,34 @@ class AppPopupViewSet(viewsets.ModelViewSet):
         now = datetime.datetime.now()
         qs = qs.filter(starts_at__lte=now, ends_at__gte=now, is_active=True)
         return qs
+
+
+class AppExplanationViewSet(viewsets.ModelViewSet):
+    permission_classes = (AllowAny,)
+    queryset = AppExplanation.objects.all()
+    serializer_class = AppExplanationSerializer
+
+    def get_queryset(self):
+        qs = self.queryset
+
+        # param "explanation_type" is needed
+        explanation_type = self.request.QUERY_PARAMS.get('explanation_type')
+        
+        if explanation_type is None:        
+            return qs 
+ 
+        return qs.filter(explanation_type=explanation_type)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

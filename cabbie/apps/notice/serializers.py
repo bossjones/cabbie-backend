@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from cabbie.apps.notice.models import Notice, AppPopup
+from cabbie.apps.notice.models import Notice, AppPopup, AppExplanation
 from cabbie.common.serializers import AbstractSerializer
 
 class NoticeSerializer(AbstractSerializer):
@@ -15,3 +15,8 @@ class AppPopupSerializer(AbstractSerializer):
     class Meta:
         model = AppPopup
         fields = ('id', 'title', 'content', 'image_url', 'image_width', 'image_height', 'link')
+
+class AppExplanationSerializer(AbstractSerializer):
+    class Meta:
+        model = AppExplanation
+        fields = ('content',)
