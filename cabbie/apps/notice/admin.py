@@ -64,10 +64,20 @@ class AppPopupAdmin(AbstractAdmin):
     status.short_description = u'상태'
 
 
+class AppExplanationForm(forms.ModelForm):
+    class Meta:
+        model = AppExplanation 
+        widgets = {
+            'content': AdminTextareaWidget(),
+        }
+
+
 class AppExplanationAdmin(AbstractAdmin):
-    list_display = ('explanation_type', 'content')
+    form = AppExplanationForm
+
+    list_display = ('explanation_type', 'content', 'created_at', 'updated_at')
     fields = (
-        'id', 'explanation_type', 'content', 'created_at', 'updated_at'
+        'id', 'explanation_type', 'content', 
     )
     readonly_fields = (
         'id',
