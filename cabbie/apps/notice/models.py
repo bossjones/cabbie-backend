@@ -50,3 +50,20 @@ class AppPopup(ActiveMixin, NullableImageMixin, AbstractTimestampModel):
     class Meta(ActiveMixin.Meta, NullableImageMixin.Meta, AbstractTimestampModel.Meta):
         verbose_name = u'앱팝업'
         verbose_name_plural = u'앱팝업'
+
+
+class AppExplanation(ActiveMixin, AbstractTimestampModel):
+    TYPE_PROMOTION_CODE, TYPE_REFUND = 'promotion_code', 'refund'
+
+    EXPLANATION_TYPES = (
+        (TYPE_PROMOTION_CODE,   u'프로모션코드'),
+        (TYPE_REFUND,           u'환급'),
+    )
+
+    explanation_type = models.CharField(u'타입', max_length=15, choices=EXPLANATION_TYPES, unique=True, default=TYPE_PROMOTION_CODE)
+
+    content = tinymce_models.HTMLField(u'내용') 
+
+    class Meta(ActiveMixin.Meta, AbstractTimestampModel.Meta):
+        verbose_name = u'앱내설명'
+        verbose_name_plural = u'앱내설명'

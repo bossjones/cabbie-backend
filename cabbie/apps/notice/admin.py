@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.utils import timezone
 from django.contrib.admin.widgets import AdminTextareaWidget
 
-from cabbie.apps.notice.models import Notice, AppPopup
+from cabbie.apps.notice.models import Notice, AppPopup, AppExplanation
 from cabbie.common.admin import AbstractAdmin
 
 class NoticeForm(forms.ModelForm):
@@ -62,7 +62,28 @@ class AppPopupAdmin(AbstractAdmin):
         else:
             return u'종료'
     status.short_description = u'상태'
+
+
+class AppExplanationForm(forms.ModelForm):
+    class Meta:
+        model = AppExplanation 
+        widgets = {
+            'content': AdminTextareaWidget(),
+        }
+
+
+class AppExplanationAdmin(AbstractAdmin):
+    form = AppExplanationForm
+
+    list_display = ('explanation_type', 'content', 'created_at', 'updated_at')
+    fields = (
+        'id', 'explanation_type', 'content', 
+    )
+    readonly_fields = (
+        'id',
+    )
         
 
-admin.site.register(AppPopup, AppPopupAdmin)
 admin.site.register(Notice, NoticeAdmin)
+admin.site.register(AppPopup, AppPopupAdmin)
+admin.site.register(AppExplanation, AppExplanationAdmin)
