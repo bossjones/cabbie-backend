@@ -166,6 +166,9 @@ urlpatterns += patterns('',
     url(r'^api/affiliations/dropout',
         import_('cabbie.apps.affiliation.views.DropoutAffiliationView').as_view()), 
 
+    url(r'^api/events/codes/query',
+        import_('cabbie.apps.event.views.EventCodeCheckView').as_view()), 
+
     url(r'^api/', include(router.urls)),
 )
 
