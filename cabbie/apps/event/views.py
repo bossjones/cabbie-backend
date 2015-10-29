@@ -35,7 +35,7 @@ class EventCodeCheckView(APIView):
             if note:
                 dropout_name, dropout_phone = note.split() 
 
-                if phone is dropout_phone:
+                if phone == dropout_phone:
                     return self.render_error(*ERR_002)
 
         # code validation check
