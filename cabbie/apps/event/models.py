@@ -6,6 +6,8 @@ from django.utils import timezone
 from cabbie.common.models import AbstractTimestampModel
 from cabbie.common.fields import JSONField
 
+from cabbie.apps.account.models import Passenger
+
 # Types
 EVENT_CU = 'cu'
 
@@ -135,3 +137,14 @@ class CuEventCode(models.Model):
     class Meta:
         verbose_name = u'CU 이벤트코드'
         verbose_name_plural = u'CU 이벤트코드'
+
+
+class CuEventPassengers(AbstractTimestampModel):
+    passenger = models.OneToOneField(Passenger, blank=True, null=True)
+    code = models.CharField(u'코드', max_length=10) 
+    is_gift_sent = models.BooleanField(u'기프티콘 발송여부', default=False)
+    gift_sent_at = models.DateTimeField(u'기프티콘 발송시각', blank=True, null=True)
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'CU 코드입력 승객'
+        verbose_name_plural = u'CU 코드입력 승객'

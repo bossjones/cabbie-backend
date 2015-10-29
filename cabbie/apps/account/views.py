@@ -23,6 +23,7 @@ from cabbie.apps.account.serializers import (
 from cabbie.apps.account.session import (
     PhoneVerificationSessionManager, PasswordResetSessionManager, InvalidCode, InvalidSession)
 from cabbie.apps.recommend.models import Recommend
+from cabbie.apps.event.models import CuEventPassengers
 from cabbie.common.views import CsrfExcempt, APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.sms import send_sms
@@ -81,6 +82,14 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                     recommender=recommender,
                     recommendee=user,
                 )
+
+            # for promotion codes
+            promotion_codes = request.DATA.get('promotion_codes', [])
+            promotion_codes = json.loads(promotion_codes) if isinstance(promotion_codes, basestring) else promotion_codes 
+
+            for promotion_code in promotion_codes:
+                # save to cu code table
+                CuEventPassengers(passenger=user, code=promotion_code).save()
 
             # for affiliation
             if self.model == Passenger:
