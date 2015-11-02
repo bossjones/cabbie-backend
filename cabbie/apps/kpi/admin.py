@@ -26,6 +26,12 @@ def _process_kpi(request_qs, ride_qs, place, place_label, lookup_field):
     if isinstance(place, Region):
         data['province'] = place.province
         
+    # by distance
+    total = place_request_qs.count()
+    data['ride_short'] = place_request_qs.filter(distance__range=(0, 3000)).count() / total if total > 0 else 0
+    data['ride_medium'] = place_request_qs.filter(distance__range=(3000, 6000)).count() / total if total > 0 else 0
+    data['ride_long'] = place_request_qs.filter(distance__range=(6000, 10000)).count() / total if total > 0 else 0
+    data['ride_xlong'] = place_request_qs.filter(distance__gte=10000).count() / total if total > 0 else 0
 
     # requested
     data['ride_requested'] = place_request_qs.count()
