@@ -203,6 +203,7 @@ class PassengerKpiAdmin(AbstractAdmin):
 
     list_filter = (
         ('start_filter', PassengerKpiGenerateDateRangeFilter),
+        'province',
     )
 
     def __init__(self, *args, **kwargs):
