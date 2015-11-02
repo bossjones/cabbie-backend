@@ -24,7 +24,7 @@ def _process_kpi(request_qs, ride_qs, place, place_label, lookup_field):
     data[place_label] = place.name
 
     if isinstance(place, Region):
-        data['province'] = place__province
+        data['province'] = place.province
         
 
     # requested
@@ -196,7 +196,7 @@ class PassengerKpiAdmin(AbstractAdmin):
     deletable = False
     list_display = (
                     'subscriber', 
-                    'province',
+                    '_dynamic_province',
                     'region',
                     'active_user', 
                     '_ride_requested', '_ride_approved', '_approval_rate',
@@ -209,6 +209,10 @@ class PassengerKpiAdmin(AbstractAdmin):
         ('start_filter', PassengerKpiGenerateDateRangeFilter),
         'province',
     )
+
+    def _dynamic_province(self, obj):
+        return '' if obj.region else obj.province 
+    _dynamic_province.short_description= u'시도'
 
     def __init__(self, *args, **kwargs):
         super(PassengerKpiAdmin, self).__init__(*args, **kwargs)
