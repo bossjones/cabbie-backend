@@ -8,42 +8,42 @@ from django.db.models import Count, Q
 from django import forms
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.models import Province, Request, Ride
+from cabbie.apps.drive.models import Province, Region, Request, Ride
 from cabbie.apps.kpi.models import PassengerKpiModel, DriverKpiModel
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
-def _process_kpi(place, place_label, lookup_field):
+def _process_kpi(request_qs, ride_qs, place, place_label, lookup_field):
       data = {}
 
-      province_request_qs = request_qs.filter(source_province=province)
+      place_request_qs = request_qs.filter(**{lookup_field:place})
       
-      active_user = province_request_qs.distinct('passenger').count()
+      active_user = place_request_qs.distinct('passenger').count()
       data['active_user'] = active_user 
 
       data[place_label] = place.name
 
       # requested
-      data['ride_requested'] = province_request_qs.count()
+      data['ride_requested'] = place_request_qs.count()
 
       # approved
-      data['ride_approved'] = province_request_qs.filter(state=Request.APPROVED).count()
+      data['ride_approved'] = place_request_qs.filter(state=Request.APPROVED).count()
 
-      lookup = { 'approve_request_{0}'.format(lookup_field): place }
+      lookup = { 'approved_request__{0}'.format(lookup_field): place }
 
-      province_ride_qs = ride_qs.filter(**lookup)
+      place_ride_qs = ride_qs.filter(**lookup)
 
       # canceled
-      data['ride_canceled'] = province_ride_qs.filter(state=Ride.CANCELED).count()
+      data['ride_canceled'] = place_ride_qs.filter(state=Ride.CANCELED).count()
 
       # rejected
-      data['ride_rejected'] = province_ride_qs.filter(state=Ride.REJECTED).count()
+      data['ride_rejected'] = place_ride_qs.filter(state=Ride.REJECTED).count()
 
       # completed
-      data['ride_completed'] = province_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
+      data['ride_completed'] = place_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
 
       # rated
-      ride_qs_rated = province_ride_qs.filter(state=Ride.RATED)
+      ride_qs_rated = place_ride_qs.filter(state=Ride.RATED)
       data['ride_rated'] = ride_qs_rated.count()
 
       # rate_point, satisfied
@@ -119,7 +119,7 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
 
             for province in provinces:            
                 
-                data = _process_kpi(province, 'province', source_province)
+                data = _process_kpi(request_qs, ride_qs, province, 'province', 'source_province')
 
                 PassengerKpiModel.objects.create(**data) 
             
@@ -128,7 +128,7 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
                 regions = Region.objects.filter(province=province, depth=1)
 
                 for region in regions:
-                    data = _process_kpi(region, 'region', source_region1)
+                    data = _process_kpi(request_qs, ride_qs, region, 'region', 'source_region1')
 
                     PassengerKpiModel.objects.create(**data) 
     
@@ -186,6 +186,8 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
 
 
 class PassengerKpiAdmin(AbstractAdmin):
+    list_max_show_all = 1000
+
     addable = False
     deletable = False
     list_display = (
