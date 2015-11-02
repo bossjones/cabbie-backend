@@ -14,50 +14,54 @@ from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 
 
 def _process_kpi(request_qs, ride_qs, place, place_label, lookup_field):
-      data = {}
+    data = {}
 
-      place_request_qs = request_qs.filter(**{lookup_field:place})
-      
-      active_user = place_request_qs.distinct('passenger').count()
-      data['active_user'] = active_user 
+    place_request_qs = request_qs.filter(**{lookup_field:place})
+    
+    active_user = place_request_qs.distinct('passenger').count()
+    data['active_user'] = active_user 
 
-      data[place_label] = place.name
+    data[place_label] = place.name
 
-      # requested
-      data['ride_requested'] = place_request_qs.count()
+    if isinstance(place, Region):
+        data['province'] = place__province
+        
 
-      # approved
-      data['ride_approved'] = place_request_qs.filter(state=Request.APPROVED).count()
+    # requested
+    data['ride_requested'] = place_request_qs.count()
 
-      lookup = { 'approved_request__{0}'.format(lookup_field): place }
+    # approved
+    data['ride_approved'] = place_request_qs.filter(state=Request.APPROVED).count()
 
-      place_ride_qs = ride_qs.filter(**lookup)
+    lookup = { 'approved_request__{0}'.format(lookup_field): place }
 
-      # canceled
-      data['ride_canceled'] = place_ride_qs.filter(state=Ride.CANCELED).count()
+    place_ride_qs = ride_qs.filter(**lookup)
 
-      # rejected
-      data['ride_rejected'] = place_ride_qs.filter(state=Ride.REJECTED).count()
+    # canceled
+    data['ride_canceled'] = place_ride_qs.filter(state=Ride.CANCELED).count()
 
-      # completed
-      data['ride_completed'] = place_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
+    # rejected
+    data['ride_rejected'] = place_ride_qs.filter(state=Ride.REJECTED).count()
 
-      # rated
-      ride_qs_rated = place_ride_qs.filter(state=Ride.RATED)
-      data['ride_rated'] = ride_qs_rated.count()
+    # completed
+    data['ride_completed'] = place_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
 
-      # rate_point, satisfied
-      ride_rate_sum = 0
-      satisfied = 0
-      for ride in ride_qs_rated:
-          total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
-          ride_rate_sum += total
-          satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
+    # rated
+    ride_qs_rated = place_ride_qs.filter(state=Ride.RATED)
+    data['ride_rated'] = ride_qs_rated.count()
 
-      data['ride_rate_sum'] = ride_rate_sum
-      data['ride_satisfied'] = satisfied 
+    # rate_point, satisfied
+    ride_rate_sum = 0
+    satisfied = 0
+    for ride in ride_qs_rated:
+        total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
+        ride_rate_sum += total
+        satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
 
-      return data
+    data['ride_rate_sum'] = ride_rate_sum
+    data['ride_satisfied'] = satisfied 
+
+    return data
 
 
 
@@ -184,9 +188,9 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
             return None
         
 
-
 class PassengerKpiAdmin(AbstractAdmin):
     list_max_show_all = 1000
+    list_per_page = 300
 
     addable = False
     deletable = False
