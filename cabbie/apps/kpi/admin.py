@@ -146,6 +146,8 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
 
             # Total    
             # -----
+            data = {}
+
             data['subscriber'] = subscriber
 
             active_user = request_qs.distinct('passenger').count()
