@@ -141,6 +141,11 @@ class Passenger(User):
             return self._description() + u'\n{affiliation}'.format(affiliation=self.affiliation.name)
         return self._description()
 
+    @staticmethod
+    def get_login_key():
+        return encrypt('1899-1391')
+
+
     @property
     def full_description_for_admin(self):
         if self.affiliation:
@@ -189,7 +194,6 @@ class Passenger(User):
         return len(qs)
     _total_ride_count.short_description = u'총탑승횟수'
     total_ride_count = property(_total_ride_count)
-
 
 
 class Driver(NullableImageMixin, User):
