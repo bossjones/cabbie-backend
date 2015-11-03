@@ -216,7 +216,17 @@ class Request(AbstractTimestampModel):
             post_request_rejected.send(sender=self.__class__, request=self)
 
  
-    
+
+class RequestNormalized(AbstractTimestampModel):
+    parent = models.ForeignKey(Request, related_name='normalized', verbose_name=u'부모'
+                                            , null=True, on_delete=models.SET_NULL)
+    is_representative = models.BooleanField(u'대표여부', default=False)
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'배차 요청 Normalization'
+        verbose_name_plural = u'배차 요청 Normalization'
+
+
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
