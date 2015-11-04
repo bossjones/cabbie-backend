@@ -1,6 +1,7 @@
 # encoding: utf8
 
 import datetime
+import rstr
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
@@ -33,10 +34,21 @@ def _issue_new_code():
     return random_string(User.CODE_LEN)
 
 
+def _issue_new_recommend_code():
+    while True:
+        code = rstr.xeger(User.RECOMMEND_CODE_REGEX)
+        try:
+            User.objects.get(recommend_code=code)
+        except User.DoesNotExist, e:
+            return code
+
+
 class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
     USERNAME_FIELD = 'phone'  # required by Django
     REQUIRED_FIELDS = []      # required by Django
     CODE_LEN = 6
+
+    RECOMMEND_CODE_REGEX = r'[0-9][a-z]{5}'
 
     phone = models.CharField(u'전화번호', max_length=11, unique=True,
                              validators=[validate_phone])
@@ -46,7 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     point = models.PositiveIntegerField(u'포인트', default=0)
     recommend_code = models.CharField(u'추천코드', max_length=10, unique=True,
-                                      default=_issue_new_code)
+                                      default=_issue_new_recommend_code)
     is_bot = models.BooleanField(u'bot 여부', default=False)
     last_active_at = models.DateTimeField(u'마지막 활동', default=timezone.now)
     bank_account = models.CharField(u'계좌정보', max_length=100, blank=True)
