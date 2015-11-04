@@ -5,7 +5,7 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.account.models import User, Passenger, Driver
+from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout
 from cabbie.apps.account.serializers import (
     PassengerSerializer, DriverSerializer)
 from cabbie.apps.recommend.models import Recommend
@@ -74,11 +74,20 @@ class RecommendQueryView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
+        phone = request.GET.get('phone')
+        recommend_code = request.GET.get('code')
+
+        # param check
+        if phone is None or recommend_code is None:
+            return self.render_error(u'"phone", "code"를 파라미터로 입력해야 합니다.')
+        
+        # code existence
         try:
             user = User.objects.get(recommend_code=request.GET['code'])
         except User.DoesNotExist:
             return self.render_error(u'유효하지 않은 코드입니다')
         
+        # role check
         if 'recommendee_role' not in request.GET:
             return self.render_error(u'recommendee_role을 입력해주세요')
 
@@ -88,6 +97,21 @@ class RecommendQueryView(APIView):
             return self.render_error(u'올바르지 않은 피추천인 타입입니다')
 
         user = user.concrete
+
+        # dropout history check  (only check in passenger case at this moment @20151104)
+        if isinstance(user, Passenger):        
+            dropouts = PassengerDropout.objects.all()
+
+            for dropout in dropouts:
+                note = dropout.note
+        
+                if note:
+                    dropout_name, dropout_phone = note.split() 
+
+                    if phone == dropout_phone:
+                        return self.render_error(u'부정사용 방지를 위하여, 탈퇴한 이력이 있는 경우 추천코드를 입력하실 수 없습니다.')
+
+
 
         recommender_role = 'passenger' if isinstance(user, Passenger) else 'driver'
 
