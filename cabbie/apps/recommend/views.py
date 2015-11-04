@@ -5,13 +5,20 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
-from cabbie.apps.account.models import User, Passenger, Driver
+from cabbie.apps.account.models import User, Passenger, Driver, PassengerDropout
 from cabbie.apps.account.serializers import (
     PassengerSerializer, DriverSerializer)
 from cabbie.apps.recommend.models import Recommend
 from cabbie.apps.recommend.serializers import RecommendSerializer
 from cabbie.common.views import APIView
 
+
+# Error message
+# -------------
+ERR_001 = ('parameter "phone", "code", "recommendee_role" should be provided',   'recommend.E001')
+ERR_002 = ('invalid code',   'recommend.E002')
+ERR_003 = ('recommendee role should be either "passenger" or "driver"',   'recommend.E003')
+ERR_004 = ('this passenger has dropout history',   'recommend.E004')
 
 # REST
 # ----
@@ -74,20 +81,40 @@ class RecommendQueryView(APIView):
     permission_classes = (AllowAny,)
 
     def get(self, request, *args, **kwargs):
+        phone = request.GET.get('phone')
+        recommend_code = request.GET.get('code')
+        recommendee_role = request.GET.get('recommendee_role')
+
+        # param check
+        if phone is None or recommend_code is None or recommendee_role is None:
+            return self.render_error(*ERR_001)
+        
+        # code existence
         try:
             user = User.objects.get(recommend_code=request.GET['code'])
         except User.DoesNotExist:
-            return self.render_error(u'유효하지 않은 코드입니다')
+            return self.render_error(*ERR_002)
         
-        if 'recommendee_role' not in request.GET:
-            return self.render_error(u'recommendee_role을 입력해주세요')
-
-        recommendee_role = request.GET['recommendee_role']
-
+        # recommendee role check
         if recommendee_role not in ['passenger', 'driver']:
-            return self.render_error(u'올바르지 않은 피추천인 타입입니다')
+            return self.render_error(*ERR_003)
 
         user = user.concrete
+
+        # dropout history check  (only check in passenger case at this moment @20151104)
+        if isinstance(user, Passenger):        
+            dropouts = PassengerDropout.objects.all()
+
+            for dropout in dropouts:
+                note = dropout.note
+        
+                if note:
+                    dropout_name, dropout_phone = note.split() 
+
+                    if phone == dropout_phone:
+                        return self.render_error(*ERR_004)
+
+
 
         recommender_role = 'passenger' if isinstance(user, Passenger) else 'driver'
 
