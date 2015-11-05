@@ -262,15 +262,15 @@ class RequestNormalized(AbstractTimestampModel):
         else:
             # 2. source < 500m, destination < 500m
             # source
-            if not request.source_location:
-                return None, 'Request {req} source has no location information'.format(req=request.id)
+            if not request.source_location or not rep.ref.source_location:
+                return None, 'Request {req} source or its rep source has no location information'.format(req=request.id)
 
             if 500 < distance(request.source_location, rep.ref.source_location): 
                 return None, 'Request {req} source is more than 500m far away'.format(req=request.id)
 
             # destination
-            if not request.destination_location:
-                return None, 'Request {req} destination has no location information'.format(req=request.id)
+            if not request.destination_location or not rep.ref.destination_location:
+                return None, 'Request {req} destination or its rep destination has no location information'.format(req=request.id)
 
             if 500 < distance(request.destination_location, rep.ref.destination_location):
                 return None, 'Request {req} destination is more than 500m far away'.format(req=request.id)
