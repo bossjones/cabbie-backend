@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import Q
 
-from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, RequestNormalized, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 from cabbie.utils.geo import distance
@@ -56,6 +56,10 @@ class RequestAdmin(AbstractAdmin):
         return None
     link_to_ride.short_description = u'승인된 배차'
     link_to_ride.allow_tags = True
+
+class RequestNormalizedAdmin(AbstractAdmin):
+    ordering = ('-created_at',)
+    list_display = ('id', 'ref', 'parent', 'reason') 
 
 
 class RideAdmin(AbstractAdmin):
@@ -309,6 +313,7 @@ class HotspotAdmin(AbstractAdmin):
 
 
 admin.site.register(Request, RequestAdmin)
+admin.site.register(RequestNormalized, RequestNormalizedAdmin)
 admin.site.register(Ride, RideAdmin)
 admin.site.register(RideHistory, RideHistoryAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
