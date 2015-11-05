@@ -101,6 +101,9 @@ class Request(AbstractTimestampModel):
         verbose_name = u'배차 요청'
         verbose_name_plural = u'배차 요청'
 
+    def __unicode__(self):
+        return u'{id}'.format(id=self.id)
+
     # source
     def source_address(self):
         return self.source.get('address', '')
