@@ -226,7 +226,7 @@ class RequestNormalized(AbstractTimestampModel):
                                             , null=True, on_delete=models.SET_NULL)
     parent = models.ForeignKey('self', related_name='childs', verbose_name=u'부모'
                                     , null=True, blank=True, on_delete=models.SET_NULL)
-    reason = models.CharField(u'Reason', max_length=50, default='')
+    reason = models.CharField(u'Reason', max_length=100, default='')
 
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차 요청 Normalization'
