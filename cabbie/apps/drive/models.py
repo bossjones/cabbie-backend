@@ -237,7 +237,7 @@ class RequestNormalized(AbstractTimestampModel):
 
     @property
     def is_representative(self):
-        return parent is None
+        return self.parent is None
 
     @staticmethod
     def normalize(request):
@@ -260,7 +260,11 @@ class RequestNormalized(AbstractTimestampModel):
         except RequestNormalized.DoesNotExist, e:
             return None, 'Request {req} has no rep'.format(req=request.id)
         else:
-            # 2. source < 500m, destination < 500m
+            # 2. within 1 hour from rep
+            if rep.ref.created_at + datetime.timedelta(hours=1) <= request.created_at:
+                return None, 'Request {req} is more than one hour later than rep'.format(req=request.id)
+
+            # 3. source < 500m, destination < 500m
             # source
             if not request.source_location or not rep.ref.source_location:
                 return None, 'Request {req} source or its rep source has no location information'.format(req=request.id)
@@ -275,9 +279,6 @@ class RequestNormalized(AbstractTimestampModel):
             if 500 < distance(request.destination_location, rep.ref.destination_location):
                 return None, 'Request {req} destination is more than 500m far away'.format(req=request.id)
 
-            # 3. within 1 hour from rep
-            if rep.created_at + datetime.timedelta(hours=1) <= request.created_at:
-                return None, 'Request {req} is more than one hour later than rep'.format(req=request.id)
 
             return rep, 'Rep request {req} found'.format(req=rep.ref.id)
 

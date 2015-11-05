@@ -58,8 +58,34 @@ class RequestAdmin(AbstractAdmin):
     link_to_ride.allow_tags = True
 
 class RequestNormalizedAdmin(AbstractAdmin):
+    search_fields = (
+        'ref__passenger__name',
+    )
     ordering = ('-created_at',)
-    list_display = ('id', 'ref', 'parent', 'reason') 
+    list_display = ('ref', 'request_passenger', 'request_created_at',
+                           'request_source', 'request_destination',
+                           'id', 'representative', 'reason')
+
+    def request_passenger(self, obj):
+        return obj.ref.passenger
+    request_passenger.short_description = u'요청승객'
+
+    def request_created_at(self, obj):
+        return obj.ref.created_at if obj.is_representative else ''
+    request_created_at.short_description = u'요청시간'
+
+    def request_source(self, obj):
+        return obj.ref.source_address if obj.is_representative else ''
+    request_source.short_description = u'출발지'
+
+    def request_destination(self, obj):
+        return obj.ref.destination_address if obj.is_representative else ''
+    request_destination.short_description = u'목적지'
+
+    def representative(self, obj):
+        return 'REP' if obj.is_representative else obj.parent
+    representative.short_description = u'대표여부'
+
 
 
 class RideAdmin(AbstractAdmin):
