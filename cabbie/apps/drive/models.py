@@ -13,6 +13,7 @@ from cabbie.apps.drive.signals import post_request_rejected, post_ride_approve, 
 from cabbie.common.fields import JSONField
 from cabbie.common.models import AbstractTimestampModel, IncrementMixin
 from cabbie.utils import json
+from cabbie.utils.geo import distance
 from cabbie.utils.crypto import encrypt
 from cabbie.utils.email import send_email
 
@@ -99,6 +100,9 @@ class Request(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'배차 요청'
         verbose_name_plural = u'배차 요청'
+
+    def __unicode__(self):
+        return u'{id}'.format(id=self.id)
 
     # source
     def source_address(self):
@@ -216,7 +220,67 @@ class Request(AbstractTimestampModel):
             post_request_rejected.send(sender=self.__class__, request=self)
 
  
-    
+
+class RequestNormalized(AbstractTimestampModel):
+    ref = models.ForeignKey(Request, related_name='normalized', verbose_name=u'배차요청'
+                                            , null=True, on_delete=models.SET_NULL)
+    parent = models.ForeignKey('self', related_name='childs', verbose_name=u'부모'
+                                    , null=True, blank=True, on_delete=models.SET_NULL)
+    reason = models.CharField(u'Reason', max_length=100, default='')
+
+    class Meta(AbstractTimestampModel.Meta):
+        verbose_name = u'배차 요청 Normalization'
+        verbose_name_plural = u'배차 요청 Normalization'
+
+    def __unicode__(self):
+        return u'{id}'.format(id=self.id)
+
+    @property
+    def is_representative(self):
+        return self.parent is None
+
+    @staticmethod
+    def normalize(request):
+        # find normalization group
+        rep, reason = RequestNormalized.find_normalized(request)
+        print reason
+
+        if rep:
+            # append
+            RequestNormalized(ref=request, parent=rep, reason=reason).save()
+        else:
+            # new
+            RequestNormalized(ref=request, reason=reason).save()
+
+    @staticmethod
+    def find_normalized(request):
+        # 1. rep
+        try:
+            rep = RequestNormalized.objects.filter(ref__passenger=request.passenger, parent=None).latest('created_at')
+        except RequestNormalized.DoesNotExist, e:
+            return None, 'Request {req} has no rep'.format(req=request.id)
+        else:
+            # 2. within 1 hour from rep
+            if rep.ref.created_at + datetime.timedelta(hours=1) <= request.created_at:
+                return None, 'Request {req} is more than one hour later than rep'.format(req=request.id)
+
+            # 3. source < 500m, destination < 500m
+            # source
+            if not request.source_location or not rep.ref.source_location:
+                return None, 'Request {req} source or its rep source has no location information'.format(req=request.id)
+
+            if 500 < distance(request.source_location, rep.ref.source_location): 
+                return None, 'Request {req} source is more than 500m far away'.format(req=request.id)
+
+            # destination
+            if not request.destination_location or not rep.ref.destination_location:
+                return None, 'Request {req} destination or its rep destination has no location information'.format(req=request.id)
+
+            if 500 < distance(request.destination_location, rep.ref.destination_location):
+                return None, 'Request {req} destination is more than 500m far away'.format(req=request.id)
+
+
+            return rep, 'Rep request {req} found'.format(req=rep.ref.id)
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \

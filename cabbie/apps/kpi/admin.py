@@ -8,9 +8,67 @@ from django.db.models import Count, Q
 from django import forms
 
 from cabbie.apps.account.models import Passenger, Driver
-from cabbie.apps.drive.models import Province, Request, Ride
+from cabbie.apps.drive.models import Province, Region, Request, Ride
 from cabbie.apps.kpi.models import PassengerKpiModel, DriverKpiModel
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
+
+
+def _process_kpi(request_qs, ride_qs, place, place_label, lookup_field):
+    data = {}
+
+    place_request_qs = request_qs.filter(**{lookup_field:place})
+    
+    active_user = place_request_qs.distinct('passenger').count()
+    data['active_user'] = active_user 
+
+    data[place_label] = place.name
+
+    if isinstance(place, Region):
+        data['province'] = place.province
+        
+    # by distance
+    total = place_request_qs.count()
+    data['ride_short'] = int(place_request_qs.filter(distance__range=(0, 3000)).count() * 100.0 / total if total > 0 else 0.0)
+    data['ride_medium'] = int(place_request_qs.filter(distance__range=(3000, 6000)).count() * 100.0 / total if total > 0 else 0.0)
+    data['ride_long'] = int(place_request_qs.filter(distance__range=(6000, 10000)).count() * 100.0 / total if total > 0 else 0.0)
+    data['ride_xlong'] = int(place_request_qs.filter(distance__gte=10000).count() * 100.0 / total if total > 0 else 0.0)
+
+    # requested
+    data['ride_requested'] = place_request_qs.count()
+
+    # approved
+    data['ride_approved'] = place_request_qs.filter(state=Request.APPROVED).count()
+
+    lookup = { 'approved_request__{0}'.format(lookup_field): place }
+
+    place_ride_qs = ride_qs.filter(**lookup)
+
+    # canceled
+    data['ride_canceled'] = place_ride_qs.filter(state=Ride.CANCELED).count()
+
+    # rejected
+    data['ride_rejected'] = place_ride_qs.filter(state=Ride.REJECTED).count()
+
+    # completed
+    data['ride_completed'] = place_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
+
+    # rated
+    ride_qs_rated = place_ride_qs.filter(state=Ride.RATED)
+    data['ride_rated'] = ride_qs_rated.count()
+
+    # rate_point, satisfied
+    ride_rate_sum = 0
+    satisfied = 0
+    for ride in ride_qs_rated:
+        total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
+        ride_rate_sum += total
+        satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
+
+    data['ride_rate_sum'] = ride_rate_sum
+    data['ride_satisfied'] = satisfied 
+
+    return data
+
 
 
 class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
@@ -71,49 +129,25 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
 
             for province in provinces:            
                 
-                province_request_qs = request_qs.filter(source_province=province)
-                
-                active_user = province_request_qs.distinct('passenger').count()
-                data['active_user'] = active_user 
-
-                data['province'] = province.name
-
-                # requested
-                data['ride_requested'] = province_request_qs.count()
-
-                # approved
-                data['ride_approved'] = province_request_qs.filter(state=Request.APPROVED).count()
-
-                province_ride_qs = ride_qs.filter(approved_request__source_province=province)
-
-                # canceled
-                data['ride_canceled'] = province_ride_qs.filter(state=Ride.CANCELED).count()
-
-                # rejected
-                data['ride_rejected'] = province_ride_qs.filter(state=Ride.REJECTED).count()
-
-                # completed
-                data['ride_completed'] = province_ride_qs.filter(Q(state=Ride.BOARDED) | Q(state=Ride.COMPLETED) | Q(state=Ride.RATED)).count()
-
-                # rated
-                ride_qs_rated = province_ride_qs.filter(state=Ride.RATED)
-                data['ride_rated'] = ride_qs_rated.count()
-
-                # rate_point, satisfied
-                ride_rate_sum = 0
-                satisfied = 0
-                for ride in ride_qs_rated:
-                    total = ride.rating_kindness + ride.rating_cleanliness + ride.rating_security 
-                    ride_rate_sum += total
-                    satisfied += 1 if float(total) / 3.0 >= 4.5 else 0
-
-                data['ride_rate_sum'] = ride_rate_sum
-                data['ride_satisfied'] = satisfied 
+                data = _process_kpi(request_qs, ride_qs, province, 'province', 'source_province')
 
                 PassengerKpiModel.objects.create(**data) 
             
+                # Per region
+                # ----------
+                regions = Region.objects.filter(province=province, depth=1)
+
+                for region in regions:
+                    data = _process_kpi(request_qs, ride_qs, region, 'region', 'source_region1')
+
+                    PassengerKpiModel.objects.create(**data) 
+    
+
+
             # Total    
             # -----
+            data = {}
+
             data['subscriber'] = subscriber
 
             active_user = request_qs.distinct('passenger').count()
@@ -162,15 +196,20 @@ class PassengerKpiGenerateDateRangeFilter(DateRangeFilter):
             return None
         
 
-
 class PassengerKpiAdmin(AbstractAdmin):
+    list_max_show_all = 1000
+    list_per_page = 300
+
     addable = False
     deletable = False
     list_display = (
                     'subscriber', 
-                    'province',
+                    '_dynamic_province',
+                    'region',
                     'active_user', 
-                    '_ride_requested', '_ride_approved', '_approval_rate',
+                    '_ride_requested', 
+                    'ride_short', 'ride_medium', 'ride_long', 'ride_xlong', 
+                    '_ride_approved', '_approval_rate',
                     '_ride_canceled', '_cancel_rate', 
                     '_ride_rejected', '_reject_rate',
                     '_ride_completed', '_complete_rate', '_ride_rated', '_rated_ratio', '_average_rate', '_satisfied_ratio',
@@ -178,7 +217,12 @@ class PassengerKpiAdmin(AbstractAdmin):
 
     list_filter = (
         ('start_filter', PassengerKpiGenerateDateRangeFilter),
+        'province',
     )
+
+    def _dynamic_province(self, obj):
+        return '' if obj.region else obj.province 
+    _dynamic_province.short_description= u'시도'
 
     def __init__(self, *args, **kwargs):
         super(PassengerKpiAdmin, self).__init__(*args, **kwargs)

@@ -23,6 +23,7 @@ from cabbie.apps.account.serializers import (
 from cabbie.apps.account.session import (
     PhoneVerificationSessionManager, PasswordResetSessionManager, InvalidCode, InvalidSession)
 from cabbie.apps.recommend.models import Recommend
+from cabbie.apps.event.models import CuEventPassengers
 from cabbie.common.views import CsrfExcempt, APIMixin, APIView, GenericAPIView
 from cabbie.utils.ds import pick
 from cabbie.utils.sms import send_sms
@@ -61,7 +62,15 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
     serializer_class = None
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.DATA,
+        secret_key = request.META.get('HTTP_BKTAXI_SKIP_PASSWORD_SECRET')
+
+        _mutable_DATA = request.DATA.copy()
+
+        if secret_key and secret_key == settings.BKTAXI_SKIP_PASSWORD_SECRET_KEY:
+            _mutable_DATA['password'] = Passenger.get_login_key()
+            _mutable_DATA['name'] = _mutable_DATA.get('phone') 
+
+        serializer = self.get_serializer(data=_mutable_DATA,
                                          files=request.FILES)
         if serializer.is_valid():
             user = self.model.objects.create_user(**pick(
@@ -81,6 +90,14 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                     recommender=recommender,
                     recommendee=user,
                 )
+
+            # for promotion codes
+            promotion_codes = request.DATA.get('promotion_codes', [])
+            promotion_codes = json.loads(promotion_codes) if isinstance(promotion_codes, basestring) else promotion_codes 
+
+            for promotion_code in promotion_codes:
+                # save to cu code table
+                CuEventPassengers(passenger=user, code=promotion_code).save()
 
             # for affiliation
             if self.model == Passenger:
@@ -132,11 +149,10 @@ class DriverAuthView(ObtainAuthToken):
         if request.DATA.get('password', None):
             return Response({'error': 'password is not allowed parameter'}, status=status.HTTP_400_BAD_REQUEST)
         
-        _credential = dict()
-        _credential['password'] = Driver.get_login_key()
-        _credential['username'] = request.DATA['username'] 
+        _mutable_DATA = request.DATA.copy()
+        _mutable_DATA['password'] = Driver.get_login_key()
        
-        serializer = self.serializer_class(data=_credential)
+        serializer = self.serializer_class(data=_mutable_DATA)
         if serializer.is_valid():
             token, created = Token.objects.get_or_create(user=serializer.object['user'])
             return Response({'token':token.key, 'id':token.user.id})
@@ -145,7 +161,22 @@ class DriverAuthView(ObtainAuthToken):
 
 class PassengerAuthView(ObtainAuthToken):
     serializer_class = AuthTokenSerializer
-    
+
+    def post(self, request):
+        secret_key = request.META.get('HTTP_BKTAXI_SKIP_PASSWORD_SECRET')
+
+        if secret_key and secret_key == settings.BKTAXI_SKIP_PASSWORD_SECRET_KEY:
+            _mutable_DATA = request.DATA.copy()
+            _mutable_DATA['password'] = Passenger.get_login_key()
+
+            serializer = self.serializer_class(data=_mutable_DATA)
+            if serializer.is_valid():
+                token, created = Token.objects.get_or_create(user=serializer.object['user'])
+                return Response({'token':token.key, 'id':token.user.id})
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return super(PassengerAuthView, self).post(request)       
+
 
 class PassengerViewSet(PassengerMixin, AbstractUserViewSet):        pass
 class DriverViewSet(DriverMixin, AbstractUserViewSet):              pass

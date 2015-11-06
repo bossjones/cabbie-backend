@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import Q
 
-from cabbie.apps.drive.models import Request, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Request, RequestNormalized, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 from cabbie.utils.geo import distance
@@ -56,6 +56,36 @@ class RequestAdmin(AbstractAdmin):
         return None
     link_to_ride.short_description = u'승인된 배차'
     link_to_ride.allow_tags = True
+
+class RequestNormalizedAdmin(AbstractAdmin):
+    search_fields = (
+        'ref__passenger__name',
+    )
+    ordering = ('-created_at',)
+    list_display = ('ref', 'request_passenger', 'request_created_at',
+                           'request_source', 'request_destination',
+                           'id', 'representative', 'reason')
+
+    def request_passenger(self, obj):
+        return obj.ref.passenger
+    request_passenger.short_description = u'요청승객'
+
+    def request_created_at(self, obj):
+        return obj.ref.created_at if obj.is_representative else ''
+    request_created_at.short_description = u'요청시간'
+
+    def request_source(self, obj):
+        return obj.ref.source_address if obj.is_representative else ''
+    request_source.short_description = u'출발지'
+
+    def request_destination(self, obj):
+        return obj.ref.destination_address if obj.is_representative else ''
+    request_destination.short_description = u'목적지'
+
+    def representative(self, obj):
+        return 'REP' if obj.is_representative else obj.parent
+    representative.short_description = u'대표여부'
+
 
 
 class RideAdmin(AbstractAdmin):
@@ -309,6 +339,7 @@ class HotspotAdmin(AbstractAdmin):
 
 
 admin.site.register(Request, RequestAdmin)
+admin.site.register(RequestNormalized, RequestNormalizedAdmin)
 admin.site.register(Ride, RideAdmin)
 admin.site.register(RideHistory, RideHistoryAdmin)
 admin.site.register(Favorite, FavoriteAdmin)

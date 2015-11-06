@@ -477,6 +477,9 @@ MASTER_VERIFICATION_CODE = '0624'
 
 BKTAXI_GRAND_LAUNCH_DATE = '2015-03-30'
 
+# Skip password
+BKTAXI_SKIP_PASSWORD_SECRET_KEY = '+shv@3d#bzjs*kwji_^*3s0xp0%-dd)cs8i$$kaujv)33hi9ra'
+
 # Non peak hour
 PASSENGER_NON_PEAK_HOUR = [10, 11, 12, 13, 14, 15, 16, 17]
 

@@ -58,3 +58,6 @@ _refs/
 
 # Django
 components/
+
+# ctags
+tags

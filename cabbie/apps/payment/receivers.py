@@ -26,6 +26,7 @@ def on_post_create_recommend(sender, instance, **kwargs):
             recommend=recommend,
             transaction_type=Transaction.RECOMMEND,
             amount=amount,
+            note=u'추천 포인트 (추천)'
         )
 
     amount = settings.POINTS_BY_TYPE.get(
@@ -36,6 +37,7 @@ def on_post_create_recommend(sender, instance, **kwargs):
             recommend=recommend,
             transaction_type=Transaction.RECOMMENDED,
             amount=amount,
+            note=u'추천 포인트 (피추천)'
         )
 
 # deprecated 

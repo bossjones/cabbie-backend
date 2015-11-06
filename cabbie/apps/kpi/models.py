@@ -31,6 +31,12 @@ class PassengerKpiModel(AbstractKpiModel):
     ride_rate_sum = models.PositiveIntegerField(u'합산평점')
     ride_satisfied = models.PositiveIntegerField(u'4.5이상')
 
+    # by distance
+    ride_short = models.PositiveIntegerField(u'0-3km (%)', default=0)
+    ride_medium = models.PositiveIntegerField(u'3-6km (%)', default=0)
+    ride_long = models.PositiveIntegerField(u'6-10km (%)', default=0)
+    ride_xlong = models.PositiveIntegerField(u'10km이상 (%)', default=0)
+
     class Meta(AbstractKpiModel.Meta):
         ordering = ('id',)
         verbose_name = u'승객 KPI'
