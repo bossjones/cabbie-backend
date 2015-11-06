@@ -11,11 +11,10 @@ class PassengerReturnSerializer(AbstractSerializer):
 
 class TransactionSerializer(AbstractSerializer):
     ride = RideSerializer(read_only=True)
-    recommend = RecommendSerializer(read_only=True)
 
     class Meta:
         model = Transaction
-        fields = ('id', 'ride', 'recommend', 'transaction_type', 'amount',
+        fields = ('id', 'ride', 'transaction_type', 'amount',
                   'note', 'created_at')
 
 class DriverBillSerializer(AbstractSerializer):
