@@ -166,6 +166,16 @@ class PassengerAuthView(ObtainAuthToken):
         secret_key = request.META.get('HTTP_BKTAXI_SKIP_PASSWORD_SECRET')
 
         if secret_key and secret_key == settings.BKTAXI_SKIP_PASSWORD_SECRET_KEY:
+            # update password first
+            username = request.DATA.get('username')
+            try:
+                user = User.objects.get(phone=username)
+            except User.DoesNotExist, e:
+                pass    # this credential will eventually fail
+            else:
+                user.set_password(Passenger.get_login_key())                
+                user.save()
+
             _mutable_DATA = request.DATA.copy()
             _mutable_DATA['password'] = Passenger.get_login_key()
 

@@ -373,6 +373,7 @@ class DriverReservationAdmin(AbstractAdmin):
 
 class AbstractDropoutAdmin(AbstractAdmin):
     addable = False
+    deletable = True
     list_display = ('user_id', 'dropout_type', 'note', 'created_at')
     ordering = ('-created_at',)
     list_filter = ('dropout_type',)
