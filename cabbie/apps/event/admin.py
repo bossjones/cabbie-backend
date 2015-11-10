@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from cabbie.apps.event.models import RidePointEvent
+from cabbie.apps.event.models import RidePointEvent, CuEventPassengers
 from cabbie.common.admin import AbstractAdmin
 
 class RidePointEventAdmin(AbstractAdmin):
@@ -35,4 +35,31 @@ class RidePointEventAdmin(AbstractAdmin):
     status.short_description = u'상태'
  
 
+class CuEventPassengersAdmin(AbstractAdmin):
+    list_display = ('passenger', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at') 
+
+    actions = (
+        'action_gift_sent',
+        'action_gift_sent_cancel',
+    )
+
+    def action_gift_sent(self, request, queryset):
+        passengers = list(queryset.all())
+        for passenger in passengers:
+            passenger.make_gift_sent()
+        msg = u'{0}명의 CU 이벤트 승객을 기프티콘 전송완료 처리하였습니다.'.format(len(passengers))
+        self.message_user(request, msg)
+    action_gift_sent.short_description= u'기프티콘 전송완료 처리'
+
+
+    def action_gift_sent_cancel(self, request, queryset):
+        passengers = list(queryset.all())
+        for passenger in passengers:
+            passengers.make_gift_sent(sent=False)
+        msg = u'{0}명의 CU 이벤트 승객을 기프티콘 전송완료 취소하였습니다.'.format(len(passengers))
+        self.message_user(request, msg)
+    action_gift_sent_cancel.short_description= u'기프티콘 전송완료 취소'
+
+
 admin.site.register(RidePointEvent, RidePointEventAdmin)
+admin.site.register(CuEventPassengers, CuEventPassengersAdmin)

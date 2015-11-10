@@ -140,7 +140,7 @@ class CuEventCode(models.Model):
 
 
 class CuEventPassengers(AbstractTimestampModel):
-    passenger = models.OneToOneField(Passenger, blank=True, null=True)
+    passenger = models.OneToOneField(Passenger, related_name='cu_event', blank=True, null=True)
     code = models.CharField(u'코드', max_length=10) 
     is_gift_sent = models.BooleanField(u'기프티콘 발송여부', default=False)
     gift_sent_at = models.DateTimeField(u'기프티콘 발송시각', blank=True, null=True)
@@ -148,3 +148,12 @@ class CuEventPassengers(AbstractTimestampModel):
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'CU 코드입력 승객'
         verbose_name_plural = u'CU 코드입력 승객'
+
+    def make_gift_sent(self, sent=True):
+        if sent:
+            self.is_gift_sent = True
+            self.gift_sent_at = timezone.now
+        else:
+            self.is_gift_sent = False
+            self.gift_sent_at = None
+        self.save(update_fields=['is_gift_sent', 'gift_sent_at'])
