@@ -36,7 +36,7 @@ class RidePointEventAdmin(AbstractAdmin):
  
 
 class CuEventPassengersAdmin(AbstractAdmin):
-    list_display = ('passenger', 'passenger_email', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at') 
+    list_display = ('passenger', 'passenger_email', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at', 'pin_no', 'api_response_code') 
 
     actions = (
         'action_gift_sent',

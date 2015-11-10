@@ -145,6 +145,10 @@ class CuEventPassengers(AbstractTimestampModel):
     is_gift_sent = models.BooleanField(u'기프티콘 발송여부', default=False)
     gift_sent_at = models.DateTimeField(u'기프티콘 발송시각', blank=True, null=True)
 
+    pin_no = models.CharField(u'바코드번호', max_length=30, blank=True, null=True)
+    api_response_code = models.CharField(u'API응답코드', max_length=2, blank=True, null=True)
+
+
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'CU 코드입력 승객'
         verbose_name_plural = u'CU 코드입력 승객'
@@ -157,3 +161,6 @@ class CuEventPassengers(AbstractTimestampModel):
             self.is_gift_sent = False
             self.gift_sent_at = None
         self.save(update_fields=['is_gift_sent', 'gift_sent_at'])
+
+
+from cabbie.apps.event.receivers import *
