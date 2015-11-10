@@ -36,12 +36,16 @@ class RidePointEventAdmin(AbstractAdmin):
  
 
 class CuEventPassengersAdmin(AbstractAdmin):
-    list_display = ('passenger', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at') 
+    list_display = ('passenger', 'passenger_email', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at') 
 
     actions = (
         'action_gift_sent',
         'action_gift_sent_cancel',
     )
+
+    def passenger_email(self, obj):
+        return obj.passenger.email if obj.passenger else None
+    passenger_email.short_description = u'이메일'
 
     def action_gift_sent(self, request, queryset):
         passengers = list(queryset.all())
