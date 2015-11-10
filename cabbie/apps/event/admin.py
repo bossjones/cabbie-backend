@@ -55,7 +55,7 @@ class CuEventPassengersAdmin(AbstractAdmin):
     def action_gift_sent_cancel(self, request, queryset):
         passengers = list(queryset.all())
         for passenger in passengers:
-            passengers.make_gift_sent(sent=False)
+            passenger.make_gift_sent(sent=False)
         msg = u'{0}명의 CU 이벤트 승객을 기프티콘 전송완료 취소하였습니다.'.format(len(passengers))
         self.message_user(request, msg)
     action_gift_sent_cancel.short_description= u'기프티콘 전송완료 취소'

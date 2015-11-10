@@ -152,7 +152,7 @@ class CuEventPassengers(AbstractTimestampModel):
     def make_gift_sent(self, sent=True):
         if sent:
             self.is_gift_sent = True
-            self.gift_sent_at = timezone.now
+            self.gift_sent_at = timezone.now()
         else:
             self.is_gift_sent = False
             self.gift_sent_at = None
