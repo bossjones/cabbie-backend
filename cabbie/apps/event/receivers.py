@@ -44,14 +44,14 @@ def on_post_create_cu_event_passenger(sender, instance, **kwargs):
 
     # added
     data['PIN_YN'] = '0' 
-    data['MMS_SUBJECT'] = u'백기사 CU 모바일 상품권'      # title 
-    data['SMS_MSG'] = u'<백기사 CU 모바일 상품권>\n프리미엄 콜택시 앱 백기사 가입에 감사드리며 보내드리는 상품입니다.\n현재 첫 탑승 시 20,000 백기사 포인트를 적립해드리는 이벤트도 진행 중이오니, 많은 이용 부탁드립니다. 감사합니다.'   # content 
+    data['MMS_SUBJECT'] = u'백기사 CU 모바일 상품권'      # TODO: title 
+    data['SMS_MSG'] = u'프리미엄 콜택시 앱 백기사 가입에 감사드리며 보내드리는 상품입니다.'   # content 
     data['ORD_QTY'] = '1'
 
     response = requests.post(url + '/' + path, data=data)
     print response.text
 
-    success, response_code, pin_no = interpret(response.text)
+    success, response_code, pin_no, auth_id, auth_date = interpret(response.text)
 
     if success:
         instance.make_gift_sent()
@@ -59,7 +59,9 @@ def on_post_create_cu_event_passenger(sender, instance, **kwargs):
     # for DEBUG purpose
     instance.api_response_code = response_code
     instance.pin_no = pin_no
-    instance.save(update_fields=['api_response_code', 'pin_no'])
+    instance.auth_id = auth_id
+    instance.auth_date = auth_date
+    instance.save(update_fields=['api_response_code', 'pin_no', 'auth_id', 'auth_date'])
     
             
 
@@ -68,6 +70,8 @@ def interpret(response):
     success = False
     response_code = None 
     pin_no = None
+    auth_id = None
+    auth_date = None
     
     # RES_CODE 
     for response in root.iter('RES_CODE'):
@@ -79,12 +83,22 @@ def interpret(response):
         pin_no = pin.text
         break
 
+    # AUTH_ID
+    for auth_id in root.iter('AUTH_ID'):
+        auth_id = auth_id.text
+        break
+
+    # AUTH_DATE
+    for date in root.iter('DATE'):
+        auth_date = date.text
+        break
+
     if '00' == response_code:
         success = True
 
     print '[CU] response_code: {0}, pin_no: {1}'.format(response_code, pin_no)
 
-    return success, response_code, pin_no
+    return success, response_code, pin_no, auth_id, auth_date
 
 def encode(data):
     # SEED 
