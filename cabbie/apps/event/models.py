@@ -1,4 +1,5 @@
 # encoding: utf8
+import requests
 
 from django.db import models
 from django.utils import timezone
@@ -140,11 +141,56 @@ class CuEventCode(models.Model):
 
 
 class CuEventPassengers(AbstractTimestampModel):
-    passenger = models.OneToOneField(Passenger, blank=True, null=True)
+    passenger = models.OneToOneField(Passenger, related_name='cu_event', blank=True, null=True, on_delete=models.SET_NULL)
     code = models.CharField(u'코드', max_length=10) 
     is_gift_sent = models.BooleanField(u'기프티콘 발송여부', default=False)
     gift_sent_at = models.DateTimeField(u'기프티콘 발송시각', blank=True, null=True)
 
+    pin_no = models.CharField(u'바코드번호', max_length=30, blank=True, null=True)
+    api_response_code = models.CharField(u'API응답코드', max_length=2, blank=True, null=True)
+
+    auth_id = models.CharField(u'승인번호', max_length=20, blank=True, null=True)
+    auth_date = models.CharField(u'승인일자', max_length=20, blank=True, null=True)
+
+    is_issue_canceled = models.BooleanField(u'발행취소여부', default=False) 
+
     class Meta(AbstractTimestampModel.Meta):
         verbose_name = u'CU 코드입력 승객'
         verbose_name_plural = u'CU 코드입력 승객'
+
+    def make_gift_sent(self, sent=True):
+        if sent:
+            self.is_gift_sent = True
+            self.gift_sent_at = timezone.now()
+        else:
+            self.is_gift_sent = False
+            self.gift_sent_at = None
+        self.save(update_fields=['is_gift_sent', 'gift_sent_at'])
+
+    def cancel_gift_issue(self):
+        if self.auth_id and self.auth_date:
+            # url
+            url = 'http://{host_port}'.format(host_port=settings.CU_GIFT_SERVER)
+            path = 'cu/linkPublishLimit.do'
+
+            # data 
+            data = {}
+            data['COM_KEY'] = '186'
+            data['SEL_PRD_NO'] = '2015111001'                   # TODO: changed later 
+            data['ORD_NO'] = str(self.id)                       # any unique number within bktaxi
+            data['TRAN_GB'] = '1'   # '0': issue, '1': cancel, '2': PIN issue, '3': PIN cancel
+            data['ISSUE_APP_NO'] = self.auth_id 
+            data['ISSUE_APP_DAY'] = self.auth_date[:8]
+            data['CANCEL_GB'] = '0'
+            data['PIN_YN'] = '0'
+            data['ORD_QTY'] = '1'
+            data['BUY_PRC'] = '1520'
+
+            response = requests.post(url + '/' + path, data=data)
+            print response.text
+
+            self.is_issue_canceled = True
+            self.save(update_fields=['is_issue_canceled'])
+
+
+from cabbie.apps.event.receivers import *

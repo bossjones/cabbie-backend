@@ -109,7 +109,7 @@ class RecommendQueryView(APIView):
                 note = dropout.note
         
                 if note:
-                    dropout_name, dropout_phone = note.split() 
+                    dropout_name, dropout_phone = note.rsplit(' ', 1) 
 
                     if phone == dropout_phone:
                         return self.render_error(*ERR_004)

@@ -280,7 +280,7 @@ class PassengerAdmin(AbstractAdmin):
     list_max_show_all = 1000
 
     ordering = ('-date_joined',)
-    list_display = ('id', 'phone', 'device_type_kor', 'email', 'name', 'affiliation', 'app_version', 'point',
+    list_display = ('id', 'phone', 'device_type_kor', 'email', 'name', 'recommend_code', 'cu_event', 'affiliation', 'app_version', 'point',
                     'is_sms_agreed', 'is_email_agreed',
                     'total_ride_count',
                     'date_joined', 'link_to_rides')
@@ -336,6 +336,14 @@ class PassengerAdmin(AbstractAdmin):
             return u''
     device_type_kor.short_description = u'기기'
     
+    def cu_event(self, obj):
+        if obj.cu_event:
+            ret = u'{code}'.format(code=obj.cu_event.code)
+            if obj.cu_event.is_gift_sent:
+                ret += u'(G)'
+            return ret 
+        else:
+            return ''
 
 
 class DriverReservationAdminForm(forms.ModelForm):
