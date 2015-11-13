@@ -149,6 +149,8 @@ class CuEventPassengers(AbstractTimestampModel):
     pin_no = models.CharField(u'바코드번호', max_length=30, blank=True, null=True)
     api_response_code = models.CharField(u'API응답코드', max_length=2, blank=True, null=True)
 
+    res_msg = models.CharField(u'응답메시지', max_length=100, blank=True, null=True)
+
     auth_id = models.CharField(u'승인번호', max_length=20, blank=True, null=True)
     auth_date = models.CharField(u'승인일자', max_length=20, blank=True, null=True)
 
