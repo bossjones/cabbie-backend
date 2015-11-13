@@ -44,8 +44,7 @@ def on_post_create_cu_event_passenger(sender, instance, **kwargs):
 
     # added
     data['PIN_YN'] = '0' 
-    data['MMS_SUBJECT'] = u'백기사 CU 모바일 상품권'      # TODO: title 
-    data['SMS_MSG'] = u'프리미엄 콜택시 앱 백기사 가입에 감사드리며 보내드리는 상품입니다.'   # content 
+    data['SMS_MSG'] = u'프리미엄 콜택시 앱 백기사 가입 상품\n(첫 탑승 시 2만 포인트 적립 이벤트 진행 중)'   # content 
     data['ORD_QTY'] = '1'
 
     response = requests.post(url + '/' + path, data=data)
