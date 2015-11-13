@@ -51,7 +51,7 @@ def on_post_create_cu_event_passenger(sender, instance, **kwargs):
     response = requests.post(url + '/' + path, data=data)
     print response.text
 
-    success, response_code, pin_no, auth_id, auth_date = interpret(response.text)
+    success, response_code, pin_no, response_message, auth_id, auth_date = interpret(response.text)
 
     if success:
         instance.make_gift_sent()
@@ -59,9 +59,10 @@ def on_post_create_cu_event_passenger(sender, instance, **kwargs):
     # for DEBUG purpose
     instance.api_response_code = response_code
     instance.pin_no = pin_no
+    instance.res_msg = response_message
     instance.auth_id = auth_id
     instance.auth_date = auth_date
-    instance.save(update_fields=['api_response_code', 'pin_no', 'auth_id', 'auth_date'])
+    instance.save(update_fields=['api_response_code', 'pin_no', 'res_msg', 'auth_id', 'auth_date'])
     
             
 
@@ -70,6 +71,7 @@ def interpret(response):
     success = False
     response_code = None 
     pin_no = None
+    response_message = None
     auth_id = None
     auth_date = None
     
@@ -81,6 +83,11 @@ def interpret(response):
     # PIN_NO
     for pin in root.iter('PIN_NO'):
         pin_no = pin.text
+        break
+
+    # RES_MSG
+    for response in root.iter('RES_MSG'):
+        response_message = response.text
         break
 
     # AUTH_ID
@@ -98,7 +105,7 @@ def interpret(response):
 
     print '[CU] response_code: {0}, pin_no: {1}'.format(response_code, pin_no)
 
-    return success, response_code, pin_no, auth_id, auth_date
+    return success, response_code, pin_no, response_message, auth_id, auth_date
 
 def encode(data):
     # SEED 

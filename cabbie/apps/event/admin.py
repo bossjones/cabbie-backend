@@ -36,11 +36,12 @@ class RidePointEventAdmin(AbstractAdmin):
  
 
 class CuEventPassengersAdmin(AbstractAdmin):
-    list_display = ('id', 'passenger', 'passenger_email', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at', 'pin_no', 'api_response_code', 'auth_id', 'auth_date', 'is_issue_canceled') 
+    list_display = ('id', 'passenger', 'passenger_email', 'code', 'created_at', 'is_gift_sent', 'gift_sent_at', 'pin_no', 'api_response_code', 'res_msg', 'auth_id', 'auth_date', 'is_issue_canceled') 
 
     actions = (
         'action_gift_sent',
         'action_gift_sent_cancel',
+        'action_gift_issue_cancel',
     )
 
     def passenger_email(self, obj):
@@ -63,6 +64,16 @@ class CuEventPassengersAdmin(AbstractAdmin):
         msg = u'{0}명의 CU 이벤트 승객을 기프티콘 전송완료 취소하였습니다.'.format(len(passengers))
         self.message_user(request, msg)
     action_gift_sent_cancel.short_description= u'기프티콘 전송완료 취소'
+
+    
+    def action_gift_issue_cancel(self, request, queryset):
+        passengers = list(queryset.all())
+        for passenger in passengers:
+            passenger.cancel_gift_issue()
+        msg = u'{0}명의 CU 이벤트 승객의 기프티콘 발행을 취소하였습니다.'.format(len(passengers))
+        self.message_user(request, msg)
+    action_gift_issue_cancel.short_description= u'기프티콘 발행 취소'
+        
 
 
 admin.site.register(RidePointEvent, RidePointEventAdmin)
