@@ -141,7 +141,7 @@ class CuEventCode(models.Model):
 
 
 class CuEventPassengers(AbstractTimestampModel):
-    passenger = models.OneToOneField(Passenger, related_name='cu_event', blank=True, null=True)
+    passenger = models.OneToOneField(Passenger, related_name='cu_event', blank=True, null=True, on_delete=models.SET_NULL)
     code = models.CharField(u'코드', max_length=10) 
     is_gift_sent = models.BooleanField(u'기프티콘 발송여부', default=False)
     gift_sent_at = models.DateTimeField(u'기프티콘 발송시각', blank=True, null=True)
