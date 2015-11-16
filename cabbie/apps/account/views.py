@@ -79,6 +79,9 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
             # for recommendation
             recommenders = request.DATA.get('recommenders', [])
 
+            if recommenders is None or recommenders == '':
+                recommenders = []
+
             recommenders = json.loads(recommenders) if isinstance(recommenders, basestring) else recommenders
             recommenders = map(int, recommenders)
 
@@ -93,6 +96,10 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
 
             # for promotion codes
             promotion_codes = request.DATA.get('promotion_codes', [])
+
+            if promotion_codes is None or promotion_codes == '':
+                promotion_codes = []
+
             promotion_codes = json.loads(promotion_codes) if isinstance(promotion_codes, basestring) else promotion_codes 
 
             for promotion_code in promotion_codes:
