@@ -1,5 +1,6 @@
 # encoding: utf8
 import requests
+import xml.etree.ElementTree as ET
 
 from django.db import models
 from django.utils import timezone
@@ -191,8 +192,42 @@ class CuEventPassengers(AbstractTimestampModel):
             response = requests.post(url + '/' + path, data=data)
             print response.text
 
-            self.is_issue_canceled = True
-            self.save(update_fields=['is_issue_canceled'])
+            success, response_code, response_message = CuEventPassengers.interpret_response(response.text)
+
+            if success:
+                self.is_issue_canceled = True
+                self.res_msg = response_message
+                self.save(update_fields=['is_issue_canceled', 'res_msg'])
+            else:
+                self.res_msg = response_message
+                self.save(update_fields=['res_msg'])
+
+
+
+    @staticmethod
+    def interpret_response(response):
+        root = ET.fromstring(response)
+        success = False
+        response_code = None 
+        response_message = None
+        
+        # RES_CODE 
+        for response in root.iter('RES_CODE'):
+            response_code = response.text
+            break
+
+        # RES_MSG
+        for response in root.iter('RES_MSG'):
+            response_message = response.text
+            break
+
+        if '00' == response_code:
+            success = True
+
+        print '[CU] response_code: {0}, response_message: {1}'.format(response_code, response_message)
+
+        return success, response_code, response_message
+
 
 
 from cabbie.apps.event.receivers import *
