@@ -692,6 +692,12 @@ class WebSessionComplete(RideProxyMixin, LoggableMixin, DriverAuthenticatedWebHa
 
         self.write('{}')
 
+
+class WebSessionHealth(tornado.web.RequestHandler):
+    def get(self):
+        self.write('healthy!')
+
+
 # Server
 # ------
 
@@ -717,6 +723,9 @@ class LocationServer(LoggableMixin, SingletonMixin):
         application_web = tornado.web.Application([
             # web 
             # ---
+
+            # health check
+            tornado.web.url(r'/health', WebSessionHealth),
 
             # driver api
             tornado.web.url(r'/ride/location', WebSessionLocation),
