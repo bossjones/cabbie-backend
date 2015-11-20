@@ -83,7 +83,7 @@ class RequestNormalizedAdmin(AbstractAdmin):
     request_destination.short_description = u'목적지'
 
     def representative(self, obj):
-        return 'REP' if obj.is_representative else obj.parent
+        return 'Normalized' if obj.is_representative else obj.parent
     representative.short_description = u'대표여부'
 
 
