@@ -3,15 +3,27 @@
 import datetime
 
 from django.conf import settings
+from django.db.models import Max
+
 
 from cabbie.apps.drive.models import Request, RequestNormalized
 
 def run():
-    # cleanup normalized table
-    RequestNormalized.objects.all().delete()
+    # determine target requests
+    max_normalized_id = RequestNormalized.objects.all().aggregate(Max('id'))
+    most_recently_normalized = RequestNormalized.objects.get(id=max_normalized_id['id__max'])
 
-    launch_date = datetime.datetime.strptime(settings.BKTAXI_GRAND_LAUNCH_DATE, "%Y-%m-%d").date()
+    print 'Normalized until request {0}'.format(most_recently_normalized.ref_id)
 
-    # normalize
-    for request in Request.objects.filter(created_at__gte=launch_date).order_by('created_at'):
+    target_requests = Request.objects.filter(id__gt=most_recently_normalized.ref_id).order_by('created_at')
+
+    if len(target_requests) == 0:
+        print 'No target requests'
+        return
+
+    print 'New target request count: {0}'.format(len(target_requests))
+    return
+
+    for request in target_requests:
+        # normalize
         RequestNormalized.normalize(request)
