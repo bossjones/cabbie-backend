@@ -5,6 +5,7 @@ from celery.task import Task
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from django.db.models import Max
 
 from cabbie.apps.drive.models import Province, Region, Request, RequestNormalized, Ride, Hotspot
 
