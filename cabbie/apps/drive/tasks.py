@@ -96,6 +96,27 @@ class UpdateRequestRegionsTask(Task):
             request.save(update_fields=update_fields, ignore_updated_at=True)
 
 
+class NormalizeRequestTask(Task):
+    def run(self, *args, **kwargs):
+        # determine target requests
+        max_normalized_id = RequestNormalized.objects.all().aggregate(Max('id'))
+        most_recently_normalized = RequestNormalized.objects.get(id=max_normalized_id['id__max'])
+
+        print 'Normalized until request {0}'.format(most_recently_normalized.ref_id)
+
+        target_requests = Request.objects.filter(id__gt=most_recently_normalized.ref_id).order_by('created_at')
+
+        if len(target_requests) == 0:
+            print 'No target requests'
+            return
+
+        print 'New target request count: {0}'.format(len(target_requests))
+
+        for request in target_requests:
+            # normalize
+            RequestNormalized.normalize(request)
+
+
 # helper
 def _sync_model_with_db(model_class, **kwargs): 
     obj, created = model_class.objects.get_or_create(**kwargs)

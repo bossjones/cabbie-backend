@@ -22,7 +22,6 @@ def run():
         return
 
     print 'New target request count: {0}'.format(len(target_requests))
-    return
 
     for request in target_requests:
         # normalize
