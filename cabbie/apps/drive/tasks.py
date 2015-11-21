@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 
-from cabbie.apps.drive.models import Province, Region, Request, Ride, Hotspot
+from cabbie.apps.drive.models import Province, Region, Request, RequestNormalized, Ride, Hotspot
 
 
 class ComputeHotspotDailyTask(Task):
