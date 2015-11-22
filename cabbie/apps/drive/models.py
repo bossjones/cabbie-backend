@@ -219,6 +219,11 @@ class Request(AbstractTimestampModel):
         if self.state == self.REJECTED:
             post_request_rejected.send(sender=self.__class__, request=self)
 
+    def get_normalized_rep(self):
+        for normalized in self.normalized.all():
+            if normalized.is_representative:
+                return normalized
+        return None
  
 
 class RequestNormalized(AbstractTimestampModel):
@@ -238,6 +243,24 @@ class RequestNormalized(AbstractTimestampModel):
     @property
     def is_representative(self):
         return self.parent is None
+    
+    def is_approved(self):
+        if self.ref.approval:
+            return True
+
+        for normalized in self.childs.all():
+            if normalized.ref.approval:
+                return True 
+        return False
+
+    def is_completed(self):
+        if self.ref.approval and self.ref.approval.state in (Ride.BOARDED, Ride.COMPLETED, Ride.RATED):
+            return True
+
+        for normalized in self.childs.all():
+            if normalized.ref.approval and normalized.ref.approval.state in (Ride.BOARDED, Ride.COMPLETED, Ride.RATED):
+                return True
+        return False
 
     @staticmethod
     def normalize(request):
@@ -281,6 +304,35 @@ class RequestNormalized(AbstractTimestampModel):
 
 
             return rep, 'Rep request {req} found'.format(req=rep.ref.id)
+
+
+    @staticmethod
+    def get_normalized_count(queryset):
+        count = 0
+        for request in queryset.all():
+            normalized_rep = request.get_normalized_rep()
+            if normalized_rep:
+                count += 1
+        return count
+
+    @staticmethod
+    def get_approved_normalized_count(queryset):
+        count = 0
+        for request in queryset.all():
+            normalized_rep = request.get_normalized_rep()
+            if normalized_rep and normalized_rep.is_approved():
+                count += 1
+        return count
+
+    @staticmethod
+    def get_completed_normalized_count(queryset):
+        count = 0
+        for request in queryset.all():
+            normalized_rep = request.get_normalized_rep()
+            if normalized_rep and normalized_rep.is_completed():
+                count += 1
+        return count
+
 
 class Ride(IncrementMixin, AbstractTimestampModel):
     REQUESTED, APPROVED, REJECTED, CANCELED, DISCONNECTED, ARRIVED, BOARDED, \
