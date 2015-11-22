@@ -101,7 +101,7 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
                 promotion_codes = []
 
             if isinstance(promotion_codes, basestring):
-                code = promotion_codes.replace('[','').replace(']','')
+                code = promotion_codes.replace('[','').replace(']','').replace('"', '')
 
                 if len(code) == 5:
                     # save to cu code table
