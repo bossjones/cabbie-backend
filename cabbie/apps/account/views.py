@@ -100,11 +100,13 @@ class AbstractUserSignupView(CreateModelMixin, RetrieveModelMixin, GenericAPIVie
             if promotion_codes is None or promotion_codes == '':
                 promotion_codes = []
 
-            promotion_codes = json.loads(promotion_codes) if isinstance(promotion_codes, basestring) else promotion_codes 
+            if isinstance(promotion_codes, basestring):
+                code = promotion_codes.replace('[','').replace(']','')
 
-            for promotion_code in promotion_codes:
-                # save to cu code table
-                CuEventPassengers(passenger=user, code=promotion_code).save()
+                if len(code) == 5:
+                    # save to cu code table
+                    CuEventPassengers(passenger=user, code=code).save()
+
 
             # for affiliation
             if self.model == Passenger:
