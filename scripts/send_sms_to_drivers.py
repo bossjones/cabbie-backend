@@ -7,6 +7,9 @@ from cabbie.utils.sms import send_sms
 
 def run():
 
+#    TEST
+#    send_sms('sms/driver_event_20151123.txt', '01089861391', {})
+
     i = 0
 
     for driver in Driver.objects.filter(is_freezed=False):
@@ -16,7 +19,7 @@ def run():
         if ride_count == 0:
             i += 1
             # send
-            #send_sms('sms/driver_event_20151115.txt', driver.phone, {})
+        #    send_sms('sms/driver_event_20151123.txt', driver.phone, {})
             print '{0} {1}'.format(i, driver.name)
 
     print 'Total: {0}'.format(i)
