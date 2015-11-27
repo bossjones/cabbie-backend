@@ -128,8 +128,22 @@ class User(AbstractBaseUser, PermissionsMixin, ActiveMixin):
 
     @property
     def has_unread_notices(self):
-        unreads = Notice.objects.filter(visible_from__gt=self.last_notice_checked_at) 
-        return len(unreads) > 0
+
+        now = datetime.datetime.now()
+
+        qs = Notice.objects.filter(visible_from__gt=self.last_notice_checked_at, visible_from__lte=now, is_active=True) 
+
+        # visibility
+        if self.has_role('passenger'):
+            qs = qs.filter( Q(visibility=Notice.VISIBILITY_PASSENGER) | Q(visibility=Notice.VISIBILITY_ALL))
+
+        elif self.has_role('driver'):
+            qs = qs.filter( Q(visibility=Notice.VISIBILITY_DRIVER) | Q(visibility=Notice.VISIBILITY_ALL))
+
+        else:
+            qs = qs.filter(visibility=Notice.VISIBILITY_ALL)       
+
+        return len(qs) > 0
 
 
 class Passenger(User):
