@@ -456,11 +456,9 @@ ALLOWED_DEBUG_PHONE = ['01026254319', '01038919027']
 
 DRIVER_ACCOUNT_MANAGER = [
     '01045676685',  # Jangwoo Park 
-    '01089861391',  # Yuchan Hwang
     '01025069502',  # Hyungsoo Han 
     '01093400443',  # Joonyoung Yoon
     '01091857090',  # Yusang Lee
-    '01038919027',  # Juno Kim
     '01099532036'   # Sunghwan Choi
 ]
 
