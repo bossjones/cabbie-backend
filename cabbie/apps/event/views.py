@@ -1,4 +1,5 @@
 # encoding: utf-8
+import datetime
 
 from rest_framework.permissions import AllowAny
 
@@ -16,9 +17,15 @@ class EventCodeCheckView(APIView):
     permission_classes = (AllowAny,) 
 
     def get(self, request, *args, **kwargs):
+        event_ends_at = datetime.datetime.strptime('2015-12-17', "%Y-%m-%d").date()
+        today = datetime.date.today()
+
+        if today >= event_ends_at:
+            return self.render_error(*ERR_003)
+
         phone = request.GET.get('phone')
         promotion_code = request.GET.get('promotion_code')
-
+        
         # param check
         if phone is None or promotion_code is None:
             return self.render_error(*ERR_001)
