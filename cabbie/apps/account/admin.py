@@ -50,6 +50,40 @@ class StaffAdmin(AbstractAdmin):
 
 
 class DriverForm(forms.ModelForm):
+
+    def validate_province(self, province, region):
+        # check province
+        from cabbie.apps.drive.models import Province, Region
+
+        try:
+            province_object = Province.objects.get(name=province)
+        except Province.DoesNotExist, e:
+            province_list = [item['name'] for item in Province.objects.values('name')]
+            msg = u'허용되지 않는 시도지역입니다.\n가능지역: {0}'.format(u','.join(province_list))
+            return 'province', msg
+        else:    
+            if region:
+                try:
+                    Region.objects.get(name=region, depth=1, province=province_object) 
+                except Region.DoesNotExist, e:
+                    region_list = [item['name'] for item in Region.objects.filter(depth=1, province=province_object).values('name')]
+                    msg = u'{0}에 속하지 않는 지역입니다.\n가능지역: {1}'.format(province, u','.join(region_list))
+                    return 'region', msg
+        return None, None
+
+
+    def clean(self):
+        cleaned_data = super(DriverForm, self).clean()
+        province = cleaned_data.get('province')
+        region = cleaned_data.get('region')
+
+        # check province
+        field, msg = self.validate_province(province, region)
+
+        if field and msg:
+            self.add_error(field, msg)
+
+
     class Meta:
         model = Driver
         widgets = {

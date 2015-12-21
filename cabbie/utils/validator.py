@@ -25,6 +25,13 @@ class PhoneValidator(validators.RegexValidator):
     code = 'phone'
 
 
+def validate_province(value):
+    from cabbie.apps.drive.models import Province
+    provinces = [item['name'] for item in Province.objects.values('name')]
+    if value not in provinces:
+        raise ValidationError('%s is not allowed province' % value)
+
+
 validate_username = UsernameValidator()
 validate_password = PasswordValidator()
 validate_phone = PhoneValidator()
