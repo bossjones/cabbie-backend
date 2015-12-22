@@ -28,6 +28,8 @@ class Province(models.Model):
         verbose_name = u'시도'
         verbose_name_plural = u'시도'
 
+    PROVINCES_REQUIRING_REGION = [u'경기',]
+
 
 class Region(models.Model):
     name = models.CharField(u'지역', max_length=30)

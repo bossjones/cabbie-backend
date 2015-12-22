@@ -52,6 +52,8 @@ class ModelManager(LoggableMixin, SingletonMixin):
                 'ride_count': user.ride_count,
                 'rating': user.rating,
                 'image_urls': user.get_image_urls(),
+                'province': user.province,
+                'region': user.region,
             })
         return serialized
 

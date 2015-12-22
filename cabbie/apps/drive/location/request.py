@@ -1,3 +1,4 @@
+# encoding: utf-8
 import time
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -6,7 +7,7 @@ from functools import partial
 from django.conf import settings
 from tornado import gen
 
-from cabbie.apps.drive.models import Request
+from cabbie.apps.drive.models import Province, Request
 from cabbie.apps.drive.location.estimate import HaversineEstimator
 from cabbie.apps.drive.location.geo import Location
 from cabbie.apps.drive.location.model import ModelManager
@@ -326,6 +327,12 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             id_ = driver_['id']
             location_ = candidate['location']
 
+            # province rule
+            if not self.is_allowed_area(driver_):
+                self.info('Ignore driver {id} since its business area is not matched with source, destination'.format(id=id_))
+                continue
+            
+
             if location_ is None:
                 self.info('Ignore driver {id} since its location is not found'.format(id=id_))
                 continue
@@ -433,6 +440,74 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             self.info('Driver {0} location {1} is valid, because distance is {2}, and it\'s within {3}m from source {4}'
                         .format(driver_id, driver_location, distance_, target_distance, source_location))
             return True
+
+
+    def is_allowed_area(self, driver):
+        source_address = self._source.get('address')
+        destination_address = self._destination.get('address')
+        
+        if not source_address or not destination_address:
+            return False
+    
+        route = (source_address, destination_address)
+
+        _driver_business_area = self.driver_business_area(driver, route)
+        allowed = self.is_business_area(_driver_business_area, route)
+
+        self.debug('Area check: {0} driver is requested from {1} to {2}, allowed: {3}'
+                    .format(_driver_business_area, source_address, destination_address, allowed))
+    
+        return allowed
+
+    def driver_business_area(self, driver, route):
+        """
+        Populate driver's business area
+        
+        Route affects due to exceptional cases
+        """
+        # basic rule
+        _area = driver['province']
+
+        if _area in Province.PROVINCES_REQUIRING_REGION:
+            _area += ' ' + driver['region']
+
+        # exception 1: 경기 광명시 & 서울 구로구, 서울 금천구
+        exceptional_area = u'경기 광명시'
+        counter_area = [u'서울 구로구', u'서울 금천구']
+
+        if self.compare_area(exceptional_area, route) and _area == u'서울':
+            _area = [_area, exceptional_area]
+
+        if self.compare_area(counter_area, route) and _area == exceptional_area:
+            _area = [_area] + counter_area
+
+        self.debug('#{driver_id} driver\'s business area populated from {route}: {area}'.format(driver_id=driver['id'], route=route, area=_area))
+            
+        return _area
+
+    def is_business_area(self, business_area, route):
+        if isinstance(business_area, basestring):
+            business_area = [business_area]
+
+        return any([self.compare_area(area, route) for area in business_area])
+
+    def compare_area(self, area, route):
+        """
+        Compare area with route
+            
+        Param
+            area: basestring or list of basestring, which indicates business area
+            route: (source_address, destination_address)
+
+        Return
+            True when route matches with at least one area
+        """
+        if isinstance(area, basestring):
+            area = [area]
+        area_list = area 
+
+        return any([area == route[0][:len(area)] or area == route[1][:len(area)] for area in area_list])
+
 
     def send_request(self, driver_ids):
         passenger = self._passenger 
