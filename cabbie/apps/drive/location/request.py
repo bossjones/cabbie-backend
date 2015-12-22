@@ -444,12 +444,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
     def is_allowed_area(self, driver):
         source_address = self._source.get('address')
+        source_poi = self._source.get('poi')
         destination_address = self._destination.get('address')
+        destination_poi = self._destination.get('poi')
         
         if not source_address or not destination_address:
             return False
     
-        route = (source_address, destination_address)
+        route = ((source_address, destination_address), (source_poi, destination_poi))
 
         _driver_business_area = self.driver_business_area(driver, route)
         allowed = self.is_business_area(_driver_business_area, route)
@@ -471,15 +473,27 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         if _area in Province.PROVINCES_REQUIRING_REGION:
             _area += ' ' + driver['region']
 
-        # exception 1: 경기 광명시 & 서울 구로구, 서울 금천구
+        # exception 1 in address: 경기 광명시 & [서울 구로구, 서울 금천구]
         exceptional_area = u'경기 광명시'
         counter_area = [u'서울 구로구', u'서울 금천구']
 
-        if self.compare_area(exceptional_area, route) and _area == u'서울':
+        if self.compare_area(exceptional_area, route[0]) and _area == u'서울':
             _area = [_area, exceptional_area]
 
-        if self.compare_area(counter_area, route) and _area == exceptional_area:
+        if self.compare_area(counter_area, route[0]) and _area == exceptional_area:
             _area = [_area] + counter_area
+
+        # exception 2 in address: 경기 안양시, 과천시, 의왕시, 군포시        
+        exceptional_area = [u'경기 안양시', u'경기 과천시', u'경기 의왕시', u'경기 군포시']
+        if self.compare_area(exceptional_area, route[0]) and _area in exceptional_area:
+            _area = exceptional_area
+
+        # exception in poi: [인천공항, 인천국제공항, 김포공항, 김포국제공항] & [서울, 경기 부천시, 인천]
+        exceptional_area = [u'인천공항', u'인천국제공항', u'김포공항', u'김포국제공항']
+
+        if self.compare_area(exceptional_area, route[1]):
+            _area = [_area] + exceptional_area
+
 
         self.debug('#{driver_id} driver\'s business area populated from {route}: {area}'.format(driver_id=driver['id'], route=route, area=_area))
             
@@ -489,7 +503,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         if isinstance(business_area, basestring):
             business_area = [business_area]
 
-        return any([self.compare_area(area, route) for area in business_area])
+        return any([self.compare_area(area, route[0]) for area in business_area]) or any([self.compare_area(area, route[1]) for area in business_area])
 
     def compare_area(self, area, route):
         """
