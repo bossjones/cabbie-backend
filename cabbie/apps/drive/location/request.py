@@ -456,8 +456,11 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         _driver_business_area = self.driver_business_area(driver, route)
         allowed = self.is_business_area(_driver_business_area, route)
 
-        self.debug('Area check: {0} driver is requested from {1} to {2}, allowed: {3}'
-                    .format(_driver_business_area, source_address, destination_address, allowed))
+        if isinstance(_driver_business_area, basestring):
+            _driver_business_area = [_driver_business_area]
+
+        self.debug('[AREA] R{request_id}-D{driver_id}, Allowed? {allowed}, populated area: {populated_area}'
+                    .format(request_id=self._request_id, driver_id=driver['id'], allowed=allowed, populated_area=','.join(_driver_business_area)))
     
         return allowed
 
