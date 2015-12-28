@@ -4,7 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.db.models import Q
 
-from cabbie.apps.drive.models import Request, RequestNormalized, Ride, RideHistory, Favorite, Hotspot
+from cabbie.apps.drive.models import Region, Request, RequestNormalized, Ride, RideHistory, Favorite, Hotspot
 from cabbie.common.admin import AbstractAdmin, DateRangeFilter
 from cabbie.common.widgets import PointWidget
 from cabbie.utils.geo import distance
@@ -13,6 +13,23 @@ from cabbie.utils.geo import distance
 def rating_round_off(obj):
     return "%.3f" % (obj.rating)
 rating_round_off.short_description = u'평점'
+
+class RegionAdmin(AbstractAdmin):
+    list_filter = ('province',)
+    search_fields = (
+        'name',
+    )
+    list_display = ('province', 'name')
+    fields = ('province', 'name')
+    ordering = ('province',)
+    
+    def get_queryset(self, request):
+        qs = self.model._default_manager.get_queryset()
+        if ordering:
+            qs = qs.order_by(*ordering)
+        # only topmost region
+        qs = qs.filter(depth=1) 
+        return qs
 
 class RequestAdmin(AbstractAdmin):
     list_filter = ('passenger', 'state', 'created_at') 
@@ -338,6 +355,7 @@ class HotspotAdmin(AbstractAdmin):
     search_fields = ('address', 'poi')
 
 
+admin.site.register(Region, RegionAdmin)
 admin.site.register(Request, RequestAdmin)
 admin.site.register(RequestNormalized, RequestNormalizedAdmin)
 admin.site.register(Ride, RideAdmin)

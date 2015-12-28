@@ -33,7 +33,7 @@ class Province(models.Model):
 
 class Region(models.Model):
     name = models.CharField(u'지역', max_length=30)
-    depth = models.PositiveIntegerField(u'Depth', default=0) 
+    depth = models.PositiveIntegerField(u'Depth', default=1) 
     province = models.ForeignKey(Province, related_name='regions', verbose_name=u'시도')
     parent = models.ForeignKey('self', related_name='childs', verbose_name=u'상위지역'
                                     , null=True, blank=True, on_delete=models.SET_NULL)
