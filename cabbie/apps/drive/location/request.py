@@ -494,7 +494,7 @@ class RequestProxy(LoggableMixin, PubsubMixin):
         # exception in poi: [인천공항, 인천국제공항, 김포공항, 김포국제공항] & [서울, 경기 부천시, 인천]
         exceptional_area = [u'인천공항', u'인천국제공항', u'김포공항', u'김포국제공항']
 
-        if self.compare_area(exceptional_area, route[1]):
+        if self.compare_area(exceptional_area, route[1], source_only=True):
             _area = [_area] + exceptional_area
 
 
@@ -508,13 +508,14 @@ class RequestProxy(LoggableMixin, PubsubMixin):
 
         return any([self.compare_area(area, route[0]) for area in business_area]) or any([self.compare_area(area, route[1]) for area in business_area])
 
-    def compare_area(self, area, route):
+    def compare_area(self, area, route, source_only=False):
         """
         Compare area with route
             
         Param
             area: basestring or list of basestring, which indicates business area
-            route: (source_address, destination_address)
+            route: (source_address, destination_address) or (source_poi, destination_poi)
+            source_only: check only source if set to True, default=False
 
         Return
             True when route matches with at least one area
@@ -523,7 +524,10 @@ class RequestProxy(LoggableMixin, PubsubMixin):
             area = [area]
         area_list = area 
 
-        return any([area == route[0][:len(area)] or area == route[1][:len(area)] for area in area_list])
+        if source_only:
+            return any([area == route[0][:len(area)] for area in area_list])
+        else:
+            return any([area == route[0][:len(area)] or area == route[1][:len(area)] for area in area_list])
 
 
     def send_request(self, driver_ids):
