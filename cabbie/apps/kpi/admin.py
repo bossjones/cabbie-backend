@@ -201,7 +201,7 @@ class PassengerKpiAdmin(AbstractAdmin):
     list_per_page = 300
 
     addable = False
-    deletable = False
+    deletable = True
     list_display = (
                     'subscriber', 
                     '_dynamic_province',
@@ -367,7 +367,7 @@ class DriverKpiGenerateDateRangeFilter(DateRangeFilter):
 
 class DriverKpiAdmin(AbstractAdmin):
     addable = False
-    deletable = False
+    deletable = True
     list_display = (
                     'subscriber', '_average_rate_of_educated', '_average_rate_of_uneducated',
                     )
